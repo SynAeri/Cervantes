@@ -3,16 +3,19 @@
 
 'use client';
 
+import { WheatField } from '../components/WheatField';
+
 export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col bg-parchment">
+      <WheatField />
       <main className="flex-grow flex items-center justify-center p-6 relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
+        <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none z-[2]">
           <div className="absolute -top-24 -right-24 w-96 h-96 bg-terracotta/20 blur-[120px] rounded-full"></div>
           <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-wheat-gold/20 blur-[120px] rounded-full"></div>
         </div>
 
-        <div className="w-full max-w-md z-10">
+        <div className="w-full max-w-md relative z-10">
           <div className="text-center mb-12">
             <div className="inline-flex items-center justify-center mb-4">
               <div className="w-16 h-16 bg-terracotta rounded-lg flex items-center justify-center text-parchment font-extrabold text-2xl">
@@ -89,7 +92,7 @@ export default function LoginPage() {
         </div>
       </main>
 
-      <footer className="w-full py-8 border-t border-warm-grey bg-warm-white flex justify-between items-center px-12">
+      <footer className="w-full py-8 border-t border-warm-grey bg-warm-white flex justify-between items-center px-12 relative z-10">
         <div className="text-[11px] font-medium text-tertiary/60 font-label tracking-wide uppercase">
           © 2025 La Mancha
         </div>
