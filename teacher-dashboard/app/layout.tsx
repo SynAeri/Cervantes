@@ -6,13 +6,13 @@ import "./globals.css";
 import { PWARegister } from "./components/PWARegister";
 
 export const metadata: Metadata = {
-  title: "La Mancha - Scholarly Assessment System",
+  title: "Cervantes - Scholarly Assessment System",
   description: "Narrative formative assessment platform for teachers",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "La Mancha",
+    title: "Cervantes",
   },
 };
 
