@@ -1,0 +1,45 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+teacher-dashboard/node_modules
+student-dashboard/node_modules
+teacher-dashboard/.pnp
+student-dashboard/.pnp
+teacher-dashboard/.pnp.*
+student-dashboard/.pnp.*
+
+# testing
+teacher-dashboard/coverage
+student-dashboard/coverage
+
+# next.js
+teacher-dashboard/.next/
+teacher-dashboard/out/
+student-dashboard/.next/
+student-dashboard/out/
+
+# production
+teacher-dashboard/build
+student-dashboard/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+
+# vercel
+.vercel
+
+# typescript
+teacher-dashboard/*.tsbuildinfo
+teacher-dashboard/next-env.d.ts
+student-dashboard/*.tsbuildinfo
+student-dashboard/next-env.d.ts
