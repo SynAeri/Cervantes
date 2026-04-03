@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" width="1280" height="640">
+  <!-- Warm parchment base -->
+  <rect width="1280" height="640" fill="#F4F1EA"/>
+  
+  <!-- Subtle grain texture -->
+  <g opacity="0.05">
+    <circle cx="45" cy="30" r="1.2" fill="#C8A882"/>
+    <circle cx="120" cy="85" r="0.8" fill="#B89870"/>
+    <circle cx="230" cy="45" r="1" fill="#A08060"/>
+    <circle cx="310" cy="120" r="0.7" fill="#C8A882"/>
+    <circle cx="420" cy="70" r="1.1" fill="#B89870"/>
+    <circle cx="530" cy="110" r="0.9" fill="#A08060"/>
+    <circle cx="640" cy="40" r="1" fill="#C8A882"/>
+    <circle cx="750" cy="95" r="0.8" fill="#B89870"/>
+    <circle cx="860" cy="55" r="1.2" fill="#A08060"/>
+    <circle cx="970" cy="130" r="0.7" fill="#C8A882"/>
+    <circle cx="1080" cy="60" r="1" fill="#B89870"/>
+    <circle cx="1190" cy="100" r="0.9" fill="#A08060"/>
+    <circle cx="80" cy="200" r="0.8" fill="#C8A882"/>
+    <circle cx="190" cy="250" r="1.1" fill="#B89870"/>
+    <circle cx="350" cy="210" r="0.7" fill="#A08060"/>
+    <circle cx="480" cy="280" r="1" fill="#C8A882"/>
+    <circle cx="600" cy="230" r="0.9" fill="#B89870"/>
+    <circle cx="720" cy="260" r="1.2" fill="#A08060"/>
+    <circle cx="840" cy="220" r="0.8" fill="#C8A882"/>
+    <circle cx="960" cy="270" r="1" fill="#B89870"/>
+    <circle cx="1100" cy="240" r="0.7" fill="#A08060"/>
+    <circle cx="1220" cy="200" r="1.1" fill="#C8A882"/>
+    <circle cx="60" cy="350" r="1" fill="#B89870"/>
+    <circle cx="170" cy="400" r="0.8" fill="#A08060"/>
+    <circle cx="290" cy="370" r="1.2" fill="#C8A882"/>
+    <circle cx="410" cy="420" r="0.7" fill="#B89870"/>
+    <circle cx="540" cy="380" r="1" fill="#A08060"/>
+    <circle cx="660" cy="430" r="0.9" fill="#C8A882"/>
+    <circle cx="780" cy="390" r="1.1" fill="#B89870"/>
+    <circle cx="900" cy="440" r="0.8" fill="#A08060"/>
+    <circle cx="1020" cy="400" r="1" fill="#C8A882"/>
+    <circle cx="1150" cy="380" r="0.7" fill="#B89870"/>
+    <circle cx="100" cy="500" r="0.9" fill="#A08060"/>
+    <circle cx="250" cy="540" r="1" fill="#C8A882"/>
+    <circle cx="400" cy="510" r="1.2" fill="#B89870"/>
+    <circle cx="550" cy="560" r="0.8" fill="#A08060"/>
+    <circle cx="700" cy="520" r="1" fill="#C8A882"/>
+    <circle cx="850" cy="550" r="0.7" fill="#B89870"/>
+    <circle cx="1000" cy="530" r="1.1" fill="#A08060"/>
+    <circle cx="1150" cy="510" r="0.9" fill="#C8A882"/>
+    <circle cx="1250" cy="480" r="1" fill="#B89870"/>
+  </g>
+
+  <!-- Faint grain lines -->
+  <g opacity="0.02" stroke="#A08060" stroke-width="0.5" fill="none">
+    <line x1="0" y1="80" x2="1280" y2="82"/>
+    <line x1="0" y1="180" x2="1280" y2="179"/>
+    <line x1="0" y1="310" x2="1280" y2="312"/>
+    <line x1="0" y1="450" x2="1280" y2="448"/>
+    <line x1="0" y1="560" x2="1280" y2="562"/>
+  </g>
+
+  <!-- Top accent -->
+  <rect x="0" y="0" width="1280" height="3" fill="#C85A32"/>
+
+  <!-- === CERV — right-aligned to leave gap for windmill === -->
+  <text x="310" y="348" fill="#1E1C18" style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 80px; font-weight: 400; letter-spacing: 14px;">CERV</text>
+
+  <!-- === WINDMILL as A — larger than text, centred in gap === -->
+  <!-- Slanted shadow on the windmill body -->
+  <g transform="translate(628, 295)" opacity="0.08">
+    <g transform="skewX(-10) translate(8, 6)">
+      <path d="M-22 72 L-15 -4 Q0 -16 15 -4 L22 72 Z" fill="#1E1C18"/>
+      <path d="M-18 -1 L0 -24 L18 -1 Z" fill="#1E1C18"/>
+    </g>
+  </g>
+
+  <!-- Windmill -->
+  <g transform="translate(628, 295)">
+    <!-- Tower - A shape, no crossbar -->
+    <path d="M-22 72 L-15 -4 Q0 -16 15 -4 L22 72 Z" fill="#D6CEBF"/>
+    <!-- Roof - pale -->
+    <path d="M-18 -1 L0 -24 L18 -1 Z" fill="#D4A88A"/>
+    <!-- Blades - same dark colour as CERVANTES text -->
+    <g transform="translate(0, -10) rotate(18)">
+      <line x1="0" y1="-72" x2="0" y2="72" stroke="#1E1C18" stroke-width="2.8" fill="none"/>
+      <line x1="-72" y1="0" x2="72" y2="0" stroke="#1E1C18" stroke-width="2.8" fill="none"/>
+      <path d="M0 0 L0 -72 L-23 -63 Q-15 -35 0 0 Z" fill="#1E1C18" opacity="0.55"/>
+      <path d="M0 0 L72 0 L63 -23 Q35 -15 0 0 Z" fill="#1E1C18" opacity="0.55"/>
+      <path d="M0 0 L0 72 L23 63 Q15 35 0 0 Z" fill="#1E1C18" opacity="0.55"/>
+      <path d="M0 0 L-72 0 L-63 23 Q-35 15 0 0 Z" fill="#1E1C18" opacity="0.55"/>
+      <circle cx="0" cy="0" r="5" fill="#D4A88A"/>
+    </g>
+  </g>
+
+  <!-- === NTES — left-aligned after windmill gap === -->
+  <text x="680" y="348" fill="#1E1C18" style="font-family: 'Georgia', 'Times New Roman', serif; font-size: 80px; font-weight: 400; letter-spacing: 14px;">NTES</text>
+
+  <!-- Subtitle - dreamy wheat gold -->
+  <text x="640" y="400" text-anchor="middle" fill="#C4A245" style="font-family: -apple-system, 'Helvetica Neue', sans-serif; font-size: 15px; font-weight: 500; letter-spacing: 6px;">NARRATIVE FORMATIVE ASSESSMENT</text>
+
+  <!-- Separator -->
+  <line x1="550" y1="418" x2="730" y2="418" stroke="#C4A245" stroke-width="0.5" opacity="0.3"/>
+
+  <!-- Tagline -->
+  <text x="640" y="444" text-anchor="middle" fill="#6B5D48" opacity="0.5" style="font-family: -apple-system, 'Helvetica Neue', sans-serif; font-size: 13px; letter-spacing: 2px;">AI-driven Socratic dialogue · Visual novel assessment · Reasoning traces</text>
+
+  <!-- Bottom credit -->
+  <text x="640" y="595" text-anchor="middle" fill="#6B5D48" opacity="0.3" style="font-family: -apple-system, 'Helvetica Neue', sans-serif; font-size: 12px; letter-spacing: 1.5px;">Team La Mancha · Cambridge EduX 2026</text>
+
+  <!-- Bottom accent -->
+  <rect x="0" y="637" width="1280" height="3" fill="#C85A32"/>
+</svg>
