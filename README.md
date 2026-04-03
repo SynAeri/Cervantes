@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/banner.svg" alt="La Mancha" width="120">
+  <img src="assets/banner.png" alt="La Mancha" width="120">
 </p>
 
 <h3 align="center">Cervantes</h3>
