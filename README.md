@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="assets/logo-icon-transparent.svg" alt="La Mancha" width="120">
+  <img src="assets/banner.svg" alt="La Mancha" width="120">
 </p>
 
-<h3 align="center">La Mancha</h3>
+<h3 align="center">Cervantes</h3>
 <p align="center">Narrative formative assessment framework</p>
 <p align="center">
   <a href="https://cambridge-edtech-society.org/edux/edux-2026.html">Cambridge EduX Hackathon 2026</a> · Challenge 1: Redefining Higher Education Assessment
@@ -12,7 +12,7 @@
 
 ## What is this?
 
-La Mancha is an AI-supported assessment system that replaces static Q&A with visual-novel-style Socratic dialogue. Teachers configure assessment arcs around their syllabus; students encounter narrative scenes where AI characters probe their reasoning, push back on weak logic, and prompt revision. The system captures the full reasoning trace — not just final answers.
+Cervantes is an AI-supported assessment system that replaces static Q&A with visual-novel-style Socratic dialogue. Teachers configure assessment arcs around their syllabus; students encounter narrative scenes where AI characters probe their reasoning, push back on weak logic, and prompt revision. The system captures the full reasoning trace — not just final answers.
 
 ## How it works
 
