@@ -1,0 +1,77 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+@import "material-symbols/outlined.css";
+@import "tailwindcss";
+
+@theme inline {
+  --color-secondary-fixed-dim: #cdbff0;
+  --color-secondary-fixed: #e8ddff;
+  --color-primary: #cfbdff;
+  --color-on-surface-variant: #cbc4d4;
+  --color-on-primary: #381384;
+  --color-on-error-container: #ffdad6;
+  --color-on-primary-fixed: #22005d;
+  --color-outline-variant: #494552;
+  --color-surface-container-lowest: #0b0b0b;
+  --color-secondary-container: #4b4069;
+  --color-tertiary: #dbc839;
+  --color-primary-fixed: #e8ddff;
+  --color-on-background: #e5e2e1;
+  --color-surface-dim: #111111;
+  --color-inverse-on-surface: #313030;
+  --color-primary-fixed-dim: #cfbdff;
+  --color-surface-bright: #3a3939;
+  --color-outline: #948e9d;
+  --color-error: #ffb4ab;
+  --color-on-secondary-fixed: #1f153b;
+  --color-on-surface: #e5e2e1;
+  --color-primary-container: #a88bfa;
+  --color-inverse-primary: #684bb5;
+  --color-error-container: #93000a;
+  --color-tertiary-fixed: #f8e454;
+  --color-on-tertiary-fixed: #201c00;
+  --color-surface: #111111;
+  --color-on-primary-fixed-variant: #4f319c;
+  --color-on-tertiary-fixed-variant: #504700;
+  --color-tertiary-fixed-dim: #dbc839;
+  --color-background: #0b0b0b;
+  --color-surface-tint: #cfbdff;
+  --color-surface-container-low: #181818;
+  --color-on-secondary-container: #bcaede;
+  --color-tertiary-container: #af9e00;
+  --color-inverse-surface: #e5e2e1;
+  --color-on-error: #690005;
+  --color-on-primary-container: #3d1989;
+  --color-on-secondary-fixed-variant: #4b4069;
+  --color-on-secondary: #342a51;
+  --color-surface-container: #1d1d1d;
+  --color-on-tertiary: #373100;
+  --color-surface-container-highest: #2d2d2d;
+  --color-secondary: #cdbff0;
+  --color-on-tertiary-container: #3b3500;
+  --color-surface-variant: #2d2d2d;
+  --color-surface-container-high: #242424;
+
+  --font-headline: 'Plus Jakarta Sans', sans-serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+  --font-label: 'Plus Jakarta Sans', sans-serif;
+
+  --radius-DEFAULT: 0.25rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-full: 9999px;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20;
+}
+
+body {
+  font-family: var(--font-body);
+  letter-spacing: -0.01em;
+  background-color: var(--color-surface-container-lowest);
+  color: var(--color-on-surface);
+}
+
+::selection {
+  background-color: color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
