@@ -1,7 +1,7 @@
 # Class model for professor courses
 
 from sqlalchemy import Column, String, ForeignKey
-from app.backend.core.database import Base
+from core.database import Base
 
 class Class(Base):
     __tablename__ = "classes"

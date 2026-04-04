@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     JWT_EXPIRATION_HOURS: int = 168
 
     class Config:
-        env_file = str(Path(__file__).parent / ".env")
+        env_file = str(Path(__file__).parent.parent / ".env")
         case_sensitive = True
 
 settings = Settings()

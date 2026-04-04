@@ -2,9 +2,9 @@
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.backend.core.database import get_db
-from app.backend.features.signal_extraction.schemas import SignalExtractionRequest, SignalExtractionResponse
-from app.backend.features.signal_extraction import service
+from core.database import get_db
+from features.signal_extraction.schemas import SignalExtractionRequest, SignalExtractionResponse
+from features.signal_extraction import service
 
 router = APIRouter(prefix="/api/signals", tags=["signal_extraction"])
 

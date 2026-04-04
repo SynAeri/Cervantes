@@ -1,7 +1,7 @@
 # Professor model for authentication and profile
 
 from sqlalchemy import Column, String
-from app.backend.core.database import Base
+from core.database import Base
 
 class Professor(Base):
     __tablename__ = "professors"

@@ -3,7 +3,7 @@
 from sqlalchemy import Column, String, ForeignKey, DateTime, Enum, Integer, Text
 from sqlalchemy.dialects.postgresql import JSONB
 from datetime import datetime
-from app.backend.core.database import Base
+from core.database import Base
 import enum
 
 class ArcStatus(str, enum.Enum):

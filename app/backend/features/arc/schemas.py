@@ -20,25 +20,49 @@ class CurriculumData(BaseModel):
     prep_window_days: Optional[int] = None
     difficulty_level: str
 
+class CharacterProfile(BaseModel):
+    id: str
+    name: str
+    role: str
+    personality_prompt: str
+    voice_register: str
+    archetype: Optional[str] = None
+    subject_connection: Optional[str] = None
+    sprite_set: List[str]
+
 class SceneData(BaseModel):
+    scene_id: str
     scene_order: int
     scene_type: str  # bridge | deep | side_event
-    character_name: str
     concept_target: str
     misconception_target: Optional[str] = None  # for deep scenes
-    setup_prompt: str
+    exposing_scenario: Optional[str] = None
+    learning_outcome: str
+    correct_understanding: Optional[str] = None  # for deep scenes
+    arc_position: str  # opening | mid | climax | resolution
+    character: CharacterProfile
+    secondary_character: Optional[CharacterProfile] = None
+    setting: str
     socratic_angles: List[str]
 
 class NarrativeArc(BaseModel):
     arc_name: str
+    total_scenes: int
     scenes: List[SceneData]
+
+class StudentProfile(BaseModel):
+    student_id: Optional[str] = None
+    subjects: List[str]
+    extracurriculars: List[str]
+    year_level: str
 
 class ArcCreateRequest(BaseModel):
     class_id: str
     rubric_text: str
     professor_id: str
-    student_subjects: Optional[List[str]] = None  # For character archetype generation
-    student_extracurriculars: Optional[List[str]] = None  # For character flavor
+    student_id: Optional[str] = None  # For personalized arcs
+    student_subjects: Optional[List[str]] = None  # Fallback for character generation
+    student_extracurriculars: Optional[List[str]] = None  # Fallback for character flavor
 
 class ArcResponse(BaseModel):
     arc_id: str

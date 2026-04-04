@@ -2,7 +2,7 @@
 
 from sqlalchemy import Column, String
 from sqlalchemy.dialects.postgresql import JSONB
-from app.backend.core.database import Base
+from core.database import Base
 
 class Student(Base):
     __tablename__ = "students"
