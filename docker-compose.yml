@@ -11,21 +11,25 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./backend/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./app/backend/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   backend:
     build:
-      context: ./backend
+      context: ./app/backend
     container_name: cervantes-backend
     restart: unless-stopped
     depends_on:
       - db
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/cervantes
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-AIzaSyArsKAiFoDI4AxAmzqUfGpacRbuXjynd2I}
+      CURRICULLM_API_KEY: ${CURRICULLM_API_KEY:-sk_bbzzSR_8ugTM6ZipfzJvUEnEl39pIpv}
+      JWT_SECRET: ${JWT_SECRET:-cervantes-hackathon-jwt-secret-2026}
     ports:
       - "8000:8000"
     volumes:
-      - ./backend/app:/app/app
+      - ./app/backend:/app/app/backend
+      - ./app/prompts:/app/app/prompts
 
 volumes:
   postgres_data:

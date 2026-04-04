@@ -1,4 +1,19 @@
 fastapi
 uvicorn[standard]
+pydantic-settings
+python-dotenv
+python-multipart
+tenacity
+
+# Gemini (new SDK - replaces deprecated google-generativeai)
+google-genai
+
+# CurricuLLM (OpenAI-compatible API)
+openai
+
+# Firebase
+firebase-admin
+
+# Keep PostgreSQL support for local Docker dev (Firestore used in production)
 sqlalchemy
 psycopg2-binary

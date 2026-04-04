@@ -1,11 +1,15 @@
-# Gemini API wrapper with retry logic and structured output support
+# Gemini API wrapper using google-genai SDK (replaces deprecated google-generativeai)
+# Supports structured JSON output, proper system instructions, and async
 
 import json
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
-from app.backend.config import settings
+from app.backend.core.config import settings
 
-genai.configure(api_key=settings.GEMINI_API_KEY)
+# Create client once at module level
+client = genai.Client(api_key=settings.GEMINI_API_KEY)
+
 
 @retry(
     stop=stop_after_attempt(3),
@@ -16,20 +20,27 @@ async def generate_structured(
     system: str,
     user: str,
     response_format: str = "json",
-    model: str = "gemini-2.0-flash-exp",
-    temperature: float = 0.7
+    model: str | None = None,
+    temperature: float = 0.7,
+    response_schema: type | None = None,
 ) -> dict | str:
-    model_obj = genai.GenerativeModel(
-        model_name=model,
-        generation_config={
-            "temperature": temperature,
-            "response_mime_type": "application/json" if response_format == "json" else "text/plain"
-        }
+    model = model or settings.GEMINI_MODEL
+
+    config = types.GenerateContentConfig(
+        temperature=temperature,
+        system_instruction=system,
+        response_mime_type="application/json" if response_format == "json" else "text/plain",
     )
 
-    prompt = f"{system}\n\n{user}"
+    if response_schema and response_format == "json":
+        config.response_schema = response_schema
 
-    response = await model_obj.generate_content_async(prompt)
+    response = await client.aio.models.generate_content(
+        model=model,
+        contents=user,
+        config=config,
+    )
+
     text = response.text
 
     if response_format == "json":
@@ -40,17 +51,20 @@ async def generate_structured(
 
     return text
 
+
 async def generate_with_retry(
     system: str,
     user: str,
     response_format: str = "json",
-    model: str = "gemini-2.0-flash-exp",
-    temperature: float = 0.7
+    model: str | None = None,
+    temperature: float = 0.7,
+    response_schema: type | None = None,
 ) -> dict | str:
     return await generate_structured(
         system=system,
         user=user,
         response_format=response_format,
         model=model,
-        temperature=temperature
+        temperature=temperature,
+        response_schema=response_schema,
     )
