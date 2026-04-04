@@ -1,0 +1,1 @@
+# Signal extraction feature - post-scene reasoning trace analysis
