@@ -18,18 +18,26 @@ async def generate_arc(
     student_extracurriculars: list[str] = None
 ) -> Arc:
     """
-    Phase 1: CurricuLLM rubric parsing
-    Extracts structured curriculum data from uploaded rubric
+    Phase 1: CurricuLLM rubric parsing (MOCKED)
+    Using mock data from assets/Templates/mock_curricullm_data.md
+    TODO: Replace with actual CurricuLLM API call when ready
     """
-    curriculum_prompt = load_curricullm_prompt("curricullm_rubric_parse")
+    # TEMPORARY: Load mock curriculum data instead of calling CurricuLLM
+    import pathlib
+    mock_data_path = pathlib.Path(__file__).parent.parent.parent.parent.parent / "assets" / "Templates" / "mock_curricullm_data.md"
 
-    curriculum_data_dict = await llm_client.generate_with_retry(
-        system=curriculum_prompt,
-        user=f"Here are the assessment materials for parsing:\n\n---\n{rubric_text}\n---\n\nExtract the structured assessment summary as JSON.",
-        response_format="json",
-        model="gemini-2.0-flash-exp",
-        temperature=0.3
-    )
+    with open(mock_data_path, 'r') as f:
+        curriculum_data_dict = json.load(f)
+
+    # TODO: Uncomment this when CurricuLLM is ready
+    # curriculum_prompt = load_curricullm_prompt("curricullm_rubric_parse")
+    # curriculum_data_dict = await llm_client.generate_with_retry(
+    #     system=curriculum_prompt,
+    #     user=f"Here are the assessment materials for parsing:\n\n---\n{rubric_text}\n---\n\nExtract the structured assessment summary as JSON.",
+    #     response_format="json",
+    #     model="gemini-2.0-flash-exp",
+    #     temperature=0.3
+    # )
 
     curriculum_data = CurriculumData(**curriculum_data_dict)
 
