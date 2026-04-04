@@ -65,3 +65,13 @@ app/backend/_legacy_*/
 *.swp
 *.swo
 *~
+
+# service account keys (NEVER commit)
+*-service-account.json
+*-service-account-key.json
+
+# dev notes & reference (local only)
+dev/*
+!dev/research/
+dev/research/*
+!dev/research/.gitkeep

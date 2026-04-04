@@ -1,16 +1,18 @@
 # Arc generation service - orchestrates CurricuLLM → character generation → arc planning → scene generation
 # Implements full arc_sys.md architecture with misconception coverage enforcement
+# Cloud-ready version with Firebase/Firestore + real CurricuLLM API
 
 import json
 import uuid
 import logging
 from collections import Counter
-from sqlalchemy.orm import Session
-from core import llm_client
-from core.prompt_loader import load_curricullm_prompt, load_example_prompt, load_system_prompt
-from features.arc.models import Arc, Scene, ArcStatus
-from features.arc.schemas import CurriculumData, NarrativeArc, CharacterProfile
-from features.arc.character_generator import generate_character
+from google.cloud.firestore import AsyncClient
+from app.backend.core import llm_client
+from app.backend.core import curricullm_client
+from app.backend.core.config import settings
+from app.backend.core.prompt_loader import load_curricullm_prompt, load_example_prompt, load_system_prompt
+from app.backend.features.arc.schemas import CurriculumData, NarrativeArc, CharacterProfile
+from app.backend.features.arc.character_generator import generate_character
 
 logger = logging.getLogger(__name__)
 
@@ -45,9 +47,6 @@ def validate_arc_characters(arc: dict) -> list[str]:
         name = char.get("name")
         archetype = char.get("archetype")
         role = (char.get("role") or "").lower()
-        scene_type = scene.get("scene_type")
-        concept_target = scene.get("concept_target", "")
-        misconception_target = scene.get("misconception_target")
 
         # 1. Check for missing character
         if not name:
@@ -129,40 +128,57 @@ def validate_misconception_coverage(arc: dict, curriculum_data: dict) -> list[st
 
     return errors
 
+
 async def generate_arc(
     class_id: str,
     rubric_text: str,
     professor_id: str,
-    db: Session,
-    student_id: str = None,
-    student_subjects: list[str] = None,
-    student_extracurriculars: list[str] = None
-) -> Arc:
+    db: AsyncClient,
+    student_subjects: list[str] | None = None,
+    student_extracurriculars: list[str] | None = None,
+) -> dict:
     """
     Full arc generation pipeline:
-    1. CurricuLLM rubric parsing (currently mocked)
+    1. CurricuLLM rubric parsing (real API with Gemini fallback)
     2. Misconception coverage analysis
     3. Character generation for each scene
     4. Arc planning with proper structure
-    5. Database persistence
+    5. Firestore persistence
     """
 
-    # ===== PHASE 1: CurricuLLM rubric parsing (MOCKED) =====
-    import pathlib
-    mock_data_path = pathlib.Path("/app/assets/Templates/mock_curricullm_data.md")
+    # ===== PHASE 1: CurricuLLM rubric parsing =====
+    curriculum_prompt = load_curricullm_prompt("curricullm_rubric_parse")
 
-    with open(mock_data_path, 'r') as f:
-        curriculum_data_dict = json.load(f)
+    user_msg = (
+        f"Here are the assessment materials for parsing:\n\n---\n{rubric_text}\n---\n\n"
+        "Extract the structured assessment summary as JSON."
+    )
 
-    # TODO: Uncomment when CurricuLLM is ready
-    # curriculum_prompt = load_curricullm_prompt("curricullm_rubric_parse")
-    # curriculum_data_dict = await llm_client.generate_with_retry(
-    #     system=curriculum_prompt,
-    #     user=f"Here are the assessment materials for parsing:\n\n---\n{rubric_text}\n---\n\nExtract the structured assessment summary as JSON.",
-    #     response_format="json",
-    #     model="gemini-2.5-flash",
-    #     temperature=0.3
-    # )
+    if settings.CURRICULLM_API_KEY:
+        # Use real CurricuLLM API
+        try:
+            curriculum_data_dict = await curricullm_client.generate_curriculum_analysis(
+                system=curriculum_prompt,
+                user=user_msg,
+                temperature=0.3,
+                response_format="json",
+            )
+        except Exception:
+            # Fallback to Gemini if CurricuLLM fails
+            curriculum_data_dict = await llm_client.generate_with_retry(
+                system=curriculum_prompt,
+                user=user_msg,
+                response_format="json",
+                temperature=0.3,
+            )
+    else:
+        # No CurricuLLM key — use Gemini directly
+        curriculum_data_dict = await llm_client.generate_with_retry(
+            system=curriculum_prompt,
+            user=user_msg,
+            response_format="json",
+            temperature=0.3,
+        )
 
     curriculum_data = CurriculumData(**curriculum_data_dict)
 
@@ -369,12 +385,10 @@ IMPORTANT: Do NOT include "character" or "secondary_character" fields. Those are
         system="You are an arc planner. Return only valid JSON matching the requested structure.",
         user=arc_planning_prompt,
         response_format="json",
-        model="gemini-2.5-flash",
         temperature=0.7
     )
 
     # ===== PHASE 4.5: Validate arc structure (before character generation) =====
-    # Note: Characters aren't generated yet, so we validate after character injection
     coverage_errors = validate_misconception_coverage(arc_structure, curriculum_data.model_dump())
     if coverage_errors:
         for error in coverage_errors:
@@ -433,56 +447,61 @@ IMPORTANT: Do NOT include "character" or "secondary_character" fields. Those are
 
     narrative_arc = NarrativeArc(**narrative_arc_dict)
 
-    # ===== PHASE 6: Database persistence =====
+    # ===== PHASE 6: Firestore persistence =====
     arc_id = str(uuid.uuid4())
-    arc = Arc(
-        arc_id=arc_id,
-        class_id=class_id,
-        curriculum_data=curriculum_data.model_dump(),
-        narrative_arc=narrative_arc.model_dump(),
-        rubric_focus=curriculum_data.subject,
-        concept_targets=curriculum_data.key_concepts,
-        misconceptions=[m.model_dump() for m in curriculum_data.common_misconceptions],
-        status=ArcStatus.draft
-    )
-    db.add(arc)
+    arc_data = {
+        "arc_id": arc_id,
+        "class_id": class_id,
+        "professor_id": professor_id,
+        "curriculum_data": curriculum_data.model_dump(),
+        "narrative_arc": narrative_arc.model_dump(),
+        "rubric_focus": curriculum_data.subject,
+        "concept_targets": curriculum_data.key_concepts,
+        "misconceptions": [m.model_dump() for m in curriculum_data.common_misconceptions],
+        "status": "draft",
+    }
 
+    # Write arc document
+    await db.collection("arcs").document(arc_id).set(arc_data)
+
+    # Write scenes as subcollection
     for scene_data in narrative_arc.scenes:
-        scene = Scene(
-            scene_id=scene_data.scene_id,
-            arc_id=arc_id,
-            scene_order=scene_data.scene_order,
-            scene_type=scene_data.scene_type,
-            character_id=scene_data.character.id,
-            concept_target=scene_data.concept_target,
-            misconception_target=scene_data.misconception_target,
-            setup_narration=scene_data.exposing_scenario or scene_data.setting,
-            socratic_angles=scene_data.socratic_angles,
-            generated_scene_content=None  # Generated on-demand during publish
-        )
-        db.add(scene)
+        scene_id = scene_data.scene_id
+        scene_doc = {
+            "scene_id": scene_id,
+            "arc_id": arc_id,
+            "scene_order": scene_data.scene_order,
+            "scene_type": scene_data.scene_type,
+            "character_id": scene_data.character.id,
+            "character": scene_data.character.model_dump(),
+            "concept_target": scene_data.concept_target,
+            "misconception_target": scene_data.misconception_target,
+            "setup_narration": scene_data.exposing_scenario or scene_data.setting,
+            "socratic_angles": scene_data.socratic_angles,
+            "generated_scene_content": None,  # Generated on-demand during publish
+        }
+        await db.collection("scenes").document(scene_id).set(scene_doc)
 
-    db.commit()
-    db.refresh(arc)
-
-    return arc
+    return arc_data
 
 
-async def generate_scene_content(scene_id: str, db: Session) -> str:
+async def generate_scene_content(scene_id: str, db: AsyncClient) -> str:
     """
     Phase 2 of arc system: Scene generation
     Takes one planned scene and generates full interactive VN content
     """
-    scene = db.query(Scene).filter(Scene.scene_id == scene_id).first()
-    if not scene:
+    scene_doc = await db.collection("scenes").document(scene_id).get()
+    if not scene_doc.exists:
         raise ValueError(f"Scene not found: {scene_id}")
+    scene = scene_doc.to_dict()
 
-    arc = db.query(Arc).filter(Arc.arc_id == scene.arc_id).first()
-    if not arc:
+    arc_doc = await db.collection("arcs").document(scene["arc_id"]).get()
+    if not arc_doc.exists:
         raise ValueError(f"Arc not found for scene: {scene_id}")
+    arc = arc_doc.to_dict()
 
     # Extract scene plan from arc narrative
-    narrative_arc = arc.narrative_arc
+    narrative_arc = arc["narrative_arc"]
     scene_plan = None
     for s in narrative_arc["scenes"]:
         if s["scene_id"] == scene_id:
@@ -523,12 +542,12 @@ Follow the scene type rules from your system prompt:
         system=scene_gen_system,
         user=user_prompt,
         response_format="text",
-        model="gemini-2.5-flash",
-        temperature=0.85
+        temperature=0.85,
     )
 
-    # Store generated content
-    scene.generated_scene_content = scene_content
-    db.commit()
+    # Update scene with generated content
+    await db.collection("scenes").document(scene_id).update({
+        "generated_scene_content": scene_content,
+    })
 
     return scene_content

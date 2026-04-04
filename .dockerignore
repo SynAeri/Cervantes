@@ -1,0 +1,15 @@
+__pycache__
+*.pyc
+.git
+.gitignore
+*.md
+docker-compose.yml
+cloudbuild.yaml
+student-dashboard
+teacher-dashboard
+dev
+assets
+scripts
+.env
+*-service-account.json
+app/backend/sql

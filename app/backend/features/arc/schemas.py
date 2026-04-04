@@ -75,6 +75,12 @@ class ArcResponse(BaseModel):
     class Config:
         from_attributes = True
 
+class RubricUploadResponse(BaseModel):
+    filename: str
+    text: str
+    char_count: int
+
+
 class SceneGenerationRequest(BaseModel):
     scene_id: str
     generate_full_content: bool = True  # Generate full VN scene with formatting

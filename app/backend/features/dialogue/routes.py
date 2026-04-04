@@ -1,29 +1,29 @@
-# API routes for real-time Socratic dialogue
+# Dialogue routes (Firestore version)
 
+from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from core.database import get_db
-from features.dialogue.schemas import DialogueTurnRequest, DialogueTurnResponse
-from features.dialogue import service
+from app.backend.core.firebase import get_firestore_db
+from app.backend.core.auth import get_current_user
+from app.backend.features.dialogue.schemas import DialogueTurnRequest, DialogueTurnResponse
+from app.backend.features.dialogue import service
 
 router = APIRouter(prefix="/api/dialogue", tags=["dialogue"])
 
+
 @router.post("/turn", response_model=DialogueTurnResponse)
-async def generate_dialogue_turn_endpoint(
+async def dialogue_turn(
     request: DialogueTurnRequest,
-    db: Session = Depends(get_db)
+    user: Annotated[dict, Depends(get_current_user)],
+    db=Depends(get_firestore_db),
 ):
-    """
-    Generate next Socratic dialogue turn using pushback_dialogue.md
-    Runs during scene - real-time character response to student input
-    """
+    """Real-time Socratic dialogue during a scene"""
     try:
         response = await service.generate_dialogue_turn(
             scene_id=request.scene_id,
-            student_id=request.student_id,
+            student_id=user["uid"],
             student_response=request.student_response,
             conversation_history=request.conversation_history,
-            db=db
+            db=db,
         )
         return response
     except Exception as e:
