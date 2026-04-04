@@ -1,7 +1,7 @@
 # Enrollment model for student-class relationships
 
 from sqlalchemy import Column, String, ForeignKey, UniqueConstraint
-from app.backend.core.database import Base
+from core.database import Base
 
 class Enrollment(Base):
     __tablename__ = "enrollments"

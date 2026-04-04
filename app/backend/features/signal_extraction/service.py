@@ -3,11 +3,11 @@
 
 import json
 from sqlalchemy.orm import Session
-from app.backend.core import llm_client
-from app.backend.core.prompt_loader import load_system_prompt
-from app.backend.features.dialogue.models import ReasoningTrace, ReasoningStatus
-from app.backend.features.arc.models import Scene, Arc
-from app.backend.features.signal_extraction.schemas import SignalExtractionResult
+from core import llm_client
+from core.prompt_loader import load_system_prompt
+from features.dialogue.models import ReasoningTrace, ReasoningStatus
+from features.arc.models import Scene, Arc
+from features.signal_extraction.schemas import SignalExtractionResult
 
 async def extract_reasoning_signals(trace_id: str, db: Session) -> SignalExtractionResult:
     """
@@ -57,7 +57,7 @@ Focus on:
         system=signal_extraction_prompt,
         user=user_prompt,
         response_format="json",
-        model="gemini-2.0-flash-exp",
+        model="gemini-2.5-flash",
         temperature=0.2  # Lower temp for analytical task
     )
 

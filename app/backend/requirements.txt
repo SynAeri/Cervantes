@@ -6,3 +6,5 @@ pydantic
 pydantic-settings
 google-generativeai
 python-multipart
+tenacity
+python-dotenv

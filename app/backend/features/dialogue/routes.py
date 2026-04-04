@@ -2,9 +2,9 @@
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.backend.core.database import get_db
-from app.backend.features.dialogue.schemas import DialogueTurnRequest, DialogueTurnResponse
-from app.backend.features.dialogue import service
+from core.database import get_db
+from features.dialogue.schemas import DialogueTurnRequest, DialogueTurnResponse
+from features.dialogue import service
 
 router = APIRouter(prefix="/api/dialogue", tags=["dialogue"])
 

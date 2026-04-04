@@ -2,7 +2,7 @@
 
 from sqlalchemy import Column, String, Text
 from sqlalchemy.dialects.postgresql import JSONB
-from app.backend.core.database import Base
+from core.database import Base
 
 class CharacterTemplate(Base):
     __tablename__ = "character_templates"

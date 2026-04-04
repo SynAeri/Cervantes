@@ -3,21 +3,21 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.backend.core.database import engine, Base
+from core.database import engine, Base
 
 # Import all models to ensure they're registered with SQLAlchemy
-from app.backend.shared.professor import Professor
-from app.backend.shared.student import Student
-from app.backend.shared.class_model import Class
-from app.backend.shared.enrollment import Enrollment
-from app.backend.shared.character import CharacterTemplate
-from app.backend.features.arc.models import Arc, Scene, ArcStatus
-from app.backend.features.dialogue.models import ReasoningTrace, ReasoningStatus
+from shared.professor import Professor
+from shared.student import Student
+from shared.class_model import Class
+from shared.enrollment import Enrollment
+from shared.character import CharacterTemplate
+from features.arc.models import Arc, Scene, ArcStatus
+from features.dialogue.models import ReasoningTrace, ReasoningStatus
 
 # Import feature routers
-from app.backend.features.arc.routes import router as arc_router
-from app.backend.features.dialogue.routes import router as dialogue_router
-from app.backend.features.signal_extraction.routes import router as signals_router
+from features.arc.routes import router as arc_router
+from features.dialogue.routes import router as dialogue_router
+from features.signal_extraction.routes import router as signals_router
 
 Base.metadata.create_all(bind=engine)
 

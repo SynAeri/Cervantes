@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-PROMPTS_DIR = Path(__file__).parent.parent.parent / "prompts"
+PROMPTS_DIR = Path("/app/prompts")
 
 def load_system_prompt(name: str) -> str:
     path = PROMPTS_DIR / "system" / f"{name}.md"

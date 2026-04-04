@@ -3,7 +3,7 @@
 import json
 import google.generativeai as genai
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
-from app.backend.config import settings
+from core.config import settings
 
 genai.configure(api_key=settings.GEMINI_API_KEY)
 
@@ -16,35 +16,39 @@ async def generate_structured(
     system: str,
     user: str,
     response_format: str = "json",
-    model: str = "gemini-2.0-flash-exp",
+    model: str = "gemini-2.5-flash",
     temperature: float = 0.7
 ) -> dict | str:
-    model_obj = genai.GenerativeModel(
-        model_name=model,
-        generation_config={
-            "temperature": temperature,
-            "response_mime_type": "application/json" if response_format == "json" else "text/plain"
-        }
-    )
+    try:
+        model_obj = genai.GenerativeModel(
+            model_name=model,
+            generation_config={
+                "temperature": temperature,
+                "response_mime_type": "application/json" if response_format == "json" else "text/plain"
+            }
+        )
 
-    prompt = f"{system}\n\n{user}"
+        prompt = f"{system}\n\n{user}"
 
-    response = await model_obj.generate_content_async(prompt)
-    text = response.text
+        response = await model_obj.generate_content_async(prompt)
+        text = response.text
 
-    if response_format == "json":
-        try:
-            return json.loads(text)
-        except json.JSONDecodeError as e:
-            raise ValueError(f"Failed to parse LLM JSON response: {e}\nResponse: {text[:500]}")
+        if response_format == "json":
+            try:
+                return json.loads(text)
+            except json.JSONDecodeError as e:
+                raise ValueError(f"Failed to parse LLM JSON response: {e}\nResponse: {text[:500]}")
 
-    return text
+        return text
+    except Exception as e:
+        print(f"Gemini API Error: {type(e).__name__}: {str(e)}")
+        raise
 
 async def generate_with_retry(
     system: str,
     user: str,
     response_format: str = "json",
-    model: str = "gemini-2.0-flash-exp",
+    model: str = "gemini-2.5-flash",
     temperature: float = 0.7
 ) -> dict | str:
     return await generate_structured(

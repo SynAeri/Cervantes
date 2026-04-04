@@ -2,10 +2,10 @@
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.backend.core.database import get_db
-from app.backend.features.arc.schemas import ArcCreateRequest, ArcResponse, SceneGenerationRequest, SceneGenerationResponse
-from app.backend.features.arc import service
-from app.backend.features.arc.models import Arc, ArcStatus
+from core.database import get_db
+from features.arc.schemas import ArcCreateRequest, ArcResponse, SceneGenerationRequest, SceneGenerationResponse
+from features.arc import service
+from features.arc.models import Arc, ArcStatus
 
 router = APIRouter(prefix="/api/arc", tags=["arcs"])
 

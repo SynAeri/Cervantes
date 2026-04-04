@@ -3,7 +3,7 @@
 from sqlalchemy import Column, String, ForeignKey, Text, DateTime, Enum
 from sqlalchemy.dialects.postgresql import JSONB
 from datetime import datetime
-from app.backend.core.database import Base
+from core.database import Base
 import enum
 
 class ReasoningStatus(str, enum.Enum):

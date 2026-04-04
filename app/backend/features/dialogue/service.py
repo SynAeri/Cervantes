@@ -5,12 +5,12 @@ import json
 import uuid
 from datetime import datetime
 from sqlalchemy.orm import Session
-from app.backend.core import llm_client
-from app.backend.core.prompt_loader import load_system_prompt, load_annotation
-from app.backend.features.arc.models import Scene
-from app.backend.shared.character import CharacterTemplate
-from app.backend.features.dialogue.models import ReasoningTrace
-from app.backend.features.dialogue.schemas import ConversationTurn, DialogueTurnResponse
+from core import llm_client
+from core.prompt_loader import load_system_prompt, load_annotation
+from features.arc.models import Scene
+from shared.character import CharacterTemplate
+from features.dialogue.models import ReasoningTrace
+from features.dialogue.schemas import ConversationTurn, DialogueTurnResponse
 
 def format_conversation(history: list[ConversationTurn]) -> str:
     """Format conversation history for prompt context"""
@@ -110,7 +110,7 @@ Return JSON with:
         system=dialogue_prompt,
         user=user_prompt,
         response_format="json",
-        model="gemini-2.0-flash-exp",
+        model="gemini-2.5-flash",
         temperature=0.85
     )
 
