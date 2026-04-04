@@ -46,3 +46,30 @@ Cervantes is an AI-supported assessment system that replaces static Q&A with vis
 - **Database**: SQLite (hackathon) → PostgreSQL (production)
 - **Deployment**: Docker Compose (local) → GCP
 
+## Backend
+
+The backend is containerised using Docker and runs alongside a PostgreSQL database.
+
+### Running the backend
+
+1. Install and run Docker Desktop
+
+2. From the project root directory, start the services:
+
+```bash
+docker compose up --build
+```
+
+3. Verify the backend is working:
+
+Open in a browser:
+
+```
+http://localhost:8000/api/health
+```
+
+Expected response:
+
+```json
+{"status":"ok"}
+```
