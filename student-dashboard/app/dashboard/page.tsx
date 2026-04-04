@@ -5,9 +5,11 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { useAuth } from '../../lib/auth-context';
 
 export default function DashboardPage() {
   const router = useRouter();
+  const { signOut } = useAuth();
   const [slideDirection, setSlideDirection] = useState<'left' | 'right' | null>(null);
 
   const handleNavigation = (path: string, buttonIndex: number) => {
@@ -44,16 +46,25 @@ export default function DashboardPage() {
         <div className="absolute inset-0 bg-near-black/20"></div>
       </div>
 
-      <header className="fixed top-6 left-6 z-50 flex items-center px-4 py-1.5 gap-4 bg-near-black/80 border border-parchment/10">
-        <div className="flex items-center gap-2 text-parchment">
-          <span className="text-lg font-bold">7/28</span>
-          <span className="text-[10px] opacity-70">(WED)</span>
+      <header className="fixed top-6 left-6 right-6 z-50 flex items-center justify-between">
+        <div className="flex items-center px-4 py-1.5 gap-4 bg-near-black/80 border border-parchment/10">
+          <div className="flex items-center gap-2 text-parchment">
+            <span className="text-lg font-bold">7/28</span>
+            <span className="text-[10px] opacity-70">(WED)</span>
+          </div>
+          <div className="w-px h-3 bg-parchment/20"></div>
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-[14px] opacity-60">battery_full_alt</span>
+            <span className="material-symbols-outlined text-[14px] opacity-60">signal_cellular_alt</span>
+          </div>
         </div>
-        <div className="w-px h-3 bg-parchment/20"></div>
-        <div className="flex items-center gap-2">
-          <span className="material-symbols-outlined text-[14px] opacity-60">battery_full_alt</span>
-          <span className="material-symbols-outlined text-[14px] opacity-60">signal_cellular_alt</span>
-        </div>
+        <button
+          onClick={signOut}
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-near-black/80 border border-parchment/10 text-parchment/60 hover:text-terracotta transition-colors"
+        >
+          <span className="material-symbols-outlined text-[14px]">logout</span>
+          <span className="text-[9px] uppercase tracking-widest font-bold">Sign Out</span>
+        </button>
       </header>
 
       <main className="fixed inset-0 z-10 flex flex-col justify-end">
