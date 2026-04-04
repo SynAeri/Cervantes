@@ -1,43 +1,42 @@
-# Signal extraction service - post-scene reasoning analysis
-# Uses signal_extraction.md system prompt to extract structured reasoning traces
+# Signal extraction service - post-scene reasoning analysis (Firestore version)
+# Uses signal_extraction.md system prompt
 
 import json
-from sqlalchemy.orm import Session
-from core import llm_client
-from core.prompt_loader import load_system_prompt
-from features.dialogue.models import ReasoningTrace, ReasoningStatus
-from features.arc.models import Scene, Arc
-from features.signal_extraction.schemas import SignalExtractionResult
+from google.cloud.firestore import AsyncClient
+from app.backend.core import llm_client
+from app.backend.core.prompt_loader import load_system_prompt
+from app.backend.features.signal_extraction.schemas import SignalExtractionResult
 
-async def extract_reasoning_signals(trace_id: str, db: Session) -> SignalExtractionResult:
+
+async def extract_reasoning_signals(trace_id: str, db: AsyncClient) -> SignalExtractionResult:
     """
-    Run signal extraction AFTER a scene completes
-    Analyzes full conversation transcript using signal_extraction.md
-    Produces structured JSON reasoning trace for teacher dashboard
+    Run signal extraction AFTER a scene completes.
+    Analyzes full conversation transcript using signal_extraction.md.
     """
-    trace = db.query(ReasoningTrace).filter(ReasoningTrace.trace_id == trace_id).first()
-    if not trace:
+    trace_doc = await db.collection("reasoning_traces").document(trace_id).get()
+    if not trace_doc.exists:
         raise ValueError(f"Reasoning trace not found: {trace_id}")
+    trace = trace_doc.to_dict()
 
-    scene = db.query(Scene).filter(Scene.scene_id == trace.scene_id).first()
-    if not scene:
-        raise ValueError(f"Scene not found: {trace.scene_id}")
+    scene_doc = await db.collection("scenes").document(trace["scene_id"]).get()
+    if not scene_doc.exists:
+        raise ValueError(f"Scene not found: {trace['scene_id']}")
+    scene = scene_doc.to_dict()
 
-    arc = db.query(Arc).filter(Arc.arc_id == scene.arc_id).first()
-    curriculum_data = arc.curriculum_data if arc else {}
+    arc_doc = await db.collection("arcs").document(scene["arc_id"]).get()
+    curriculum_data = arc_doc.to_dict().get("curriculum_data", {}) if arc_doc.exists else {}
 
     signal_extraction_prompt = load_system_prompt("signal_extraction")
 
-    # Build runtime input matching signal_extraction.md expected format
     runtime_input = {
-        "scene_id": scene.scene_id,
-        "scene_type": scene.scene_type,
-        "concept": scene.concept_target,
-        "misconception_target": scene.misconception_target,
-        "correct_understanding": f"Understanding of {scene.concept_target}",
+        "scene_id": scene["scene_id"],
+        "scene_type": scene.get("scene_type"),
+        "concept": scene["concept_target"],
+        "misconception_target": scene.get("misconception_target"),
+        "correct_understanding": f"Understanding of {scene['concept_target']}",
         "rubric_dimensions": curriculum_data.get("learning_outcomes", []),
-        "character": scene.character_id,
-        "transcript": trace.conversation_history
+        "character": scene["character_id"],
+        "transcript": trace["conversation_history"],
     }
 
     user_prompt = f"""Analyze this completed scene and extract reasoning signals.
@@ -57,19 +56,18 @@ Focus on:
         system=signal_extraction_prompt,
         user=user_prompt,
         response_format="json",
-        model="gemini-2.5-flash",
-        temperature=0.2  # Lower temp for analytical task
+        temperature=0.2,
     )
 
     result = SignalExtractionResult(**extraction_dict)
 
     # Update trace with extraction results
-    trace.signal_extraction_result = result.model_dump()
-    trace.status = ReasoningStatus(result.status)
-    trace.reflection = result.reflection
-    trace.initial_answer = result.initial_response.selected
-    trace.revised_answer = result.revised_understanding
-
-    db.commit()
+    await db.collection("reasoning_traces").document(trace_id).update({
+        "signal_extraction_result": result.model_dump(),
+        "status": result.status,
+        "reflection": result.reflection,
+        "initial_answer": result.initial_response.selected,
+        "revised_answer": result.revised_understanding,
+    })
 
     return result

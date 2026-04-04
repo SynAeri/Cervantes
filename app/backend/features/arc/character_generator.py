@@ -2,8 +2,8 @@
 # Generates characters that fit the student's academic world
 
 import json
-from core import llm_client
-from features.arc.schemas import CharacterProfile
+from app.backend.core import llm_client
+from app.backend.features.arc.schemas import CharacterProfile
 
 ARCHETYPE_TEMPLATES = [
     {

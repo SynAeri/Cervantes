@@ -1,0 +1,48 @@
+steps:
+  # Build the Docker image (context = project root so we can COPY prompts)
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'australia-southeast1-docker.pkg.dev/$PROJECT_ID/cervantes/cervantes-backend:$COMMIT_SHA'
+      - '-t'
+      - 'australia-southeast1-docker.pkg.dev/$PROJECT_ID/cervantes/cervantes-backend:latest'
+      - '-f'
+      - 'app/backend/Dockerfile'
+      - '.'
+
+  # Push the image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - '--all-tags'
+      - 'australia-southeast1-docker.pkg.dev/$PROJECT_ID/cervantes/cervantes-backend'
+
+  # Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'cervantes-backend'
+      - '--image'
+      - 'australia-southeast1-docker.pkg.dev/$PROJECT_ID/cervantes/cervantes-backend:$COMMIT_SHA'
+      - '--region'
+      - 'australia-southeast1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--memory'
+      - '512Mi'
+      - '--cpu'
+      - '1'
+      - '--timeout'
+      - '300'
+      - '--set-env-vars'
+      - 'FIREBASE_PROJECT_ID=$PROJECT_ID'
+
+images:
+  - 'australia-southeast1-docker.pkg.dev/$PROJECT_ID/cervantes/cervantes-backend'
+
+options:
+  logging: CLOUD_LOGGING_ONLY

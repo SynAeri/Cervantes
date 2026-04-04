@@ -3,12 +3,19 @@
 
 'use client';
 
+import { useAuth } from '../../lib/auth-context';
+
 export function TopBar() {
+  const { user, signOut } = useAuth();
+
+  const displayName = user?.displayName || user?.email?.split('@')[0] || 'Professor';
+  const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
+
   return (
     <header className="flex justify-between items-center mb-16">
       <div>
         <h2 className="text-4xl font-extrabold text-primary tracking-tight leading-none mb-2">Welcome Back, Professor</h2>
-        <p className="text-tertiary text-sm font-medium">Department of Computational Intelligence</p>
+        <p className="text-tertiary text-sm font-medium">{user?.email}</p>
       </div>
 
       <div className="flex items-center gap-8">
@@ -28,13 +35,22 @@ export function TopBar() {
 
         <div className="flex items-center gap-3 pl-8 border-l border-warm-grey">
           <div className="text-right">
-            <p className="text-sm font-bold text-primary leading-tight">Dr. Aris Thorne</p>
+            <p className="text-sm font-bold text-primary leading-tight">{displayName}</p>
             <p className="text-[10px] text-terracotta uppercase tracking-widest font-extrabold mt-0.5">Professor</p>
           </div>
           <div className="w-10 h-10 rounded-lg bg-terracotta/10 border border-terracotta/20 flex items-center justify-center text-terracotta font-bold">
-            AT
+            {initials}
           </div>
         </div>
+
+        <button
+          onClick={signOut}
+          className="flex items-center gap-1.5 px-3 py-2 text-tertiary hover:text-terracotta hover:bg-terracotta/5 rounded-lg transition-all text-xs font-bold uppercase tracking-wider"
+          title="Sign out"
+        >
+          <span className="material-symbols-outlined text-lg">logout</span>
+          <span className="hidden lg:inline">Sign Out</span>
+        </button>
       </div>
     </header>
   );

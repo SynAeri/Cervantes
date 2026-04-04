@@ -22,13 +22,14 @@ services:
       - db
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/cervantes
-      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-AIzaSyArsKAiFoDI4AxAmzqUfGpacRbuXjynd2I}
+      CURRICULLM_API_KEY: ${CURRICULLM_API_KEY:-sk_bbzzSR_8ugTM6ZipfzJvUEnEl39pIpv}
+      JWT_SECRET: ${JWT_SECRET:-cervantes-hackathon-jwt-secret-2026}
     ports:
       - "8000:8000"
     volumes:
-      - ./app/backend:/app
-      - ./app/prompts:/app/prompts
-      - ./assets:/app/assets
+      - ./app/backend:/app/app/backend
+      - ./app/prompts:/app/app/prompts
 
 volumes:
   postgres_data:
