@@ -264,5 +264,164 @@ Once both old pure coins and new debased coins circulate at the same face value,
 [player_prompt]
 You refused Zheren's deal based on instinct, but Holo wants you to reason through it. If a kingdom actually did increase coin purity, would buying old coins beforehand be profitable? Why or why not?
 
+---
+
+# Deep scene example — A model range is not a promise
+
+## Academic mapping
+- Source: combined.txt
+- Extracted concept: Statistical model outputs describe uncertainty, not certainty; being “one standard deviation away” does not identify a guaranteed bottom or safe turning point
+- Target misconception: "If a model says the price is one standard deviation away or near the lower bound, then the stock has basically bottomed out and is likely to reverse from here."
+- Curriculum relevance: Mathematics / Statistics / Economics / Critical thinking, Years 11–12
+- Why this scene works: Haru latches onto a statistical phrase he does not really understand and tries to turn it into a concrete market guarantee, which exposes the misconception cleanly.
+
+## Context given to Gemini
+- Character: Haru (teen trader; abrasive, impatient, hates sounding ignorant)
+- Secondary character: Hagana (quiet, exact, unsettlingly calm with numbers)
+- Concept: Misreading a probabilistic model output as a guaranteed floor
+- Misconception target: "A lower bound or one-standard-deviation distance tells me the true bottom, so trading off it is basically justified."
+- Scene type: deep (multi-choice setup into freeform pushback)
+- Setting: Market hours, screen full of recalculating spreads and weak buying pressure
+- Inspired by: combined.txt, using the revised formatter instruction from Pasted text.txt to preserve source voice and cadence where possible.
+
+## Expected output — scene setup
+[narration]
+The spreads kept tightening every few minutes, as if the program were quietly redrawing the borders of the day while Haru watched. The stock had opened at 745 mools. Now it sat at 738, inching downward in a way that was too small to be dramatic and too stubborn to ignore.
+
+[narration]
+The buyers were not coming in. Haru could feel that much in his gut. What bothered him was the way the screen seemed to already have an opinion about the day, as though somebody had sketched the upper and lower edges in advance and expected reality to stay politely inside them.
+
+[character:Hagana]
+*neutral* "After adjustments, this price is one standard deviation away."
+
+[narration]
+Haru stared at the number, then at the phrase, as if together they ought to amount to an answer.
+
+[character:Haru]
+*serious* "So this price here was the bottom, was it?"
+
+[character:Hagana]
+*thoughtful* "No. That isn't what I said."
+
+[character:Haru]
+*challenging* "Then what use is it? If it can't tell me where the floor is, what's the point of dragging math into it?"
+
+[character:Hagana]
+*curious* "What did you hear just now? A range? Or a promise?"
+
+[player_prompt]
+Haru hears that the current price is "one standard deviation away" and starts treating that as if the stock has basically reached its bottom. Which option best matches Haru's mistaken reasoning?
+
+A. "If the price is one standard deviation from the model's center or near the lower bound, then it has probably reached the true bottom and should reverse from here."
+B. "A standard deviation describes spread or variability, not a guaranteed turning point, so I still need to reason about assumptions and uncertainty."
+C. "A model can summarize past patterns, but it does not remove the need to ask what the model is measuring and how reliable it is."
+D. "Even if a price looks low relative to a model, markets can still move beyond expected ranges, so it is not automatically safe."
+
+## Expected output — if student picks misconception path
+[character:Hagana]
+*challenging* "Say it properly, then. You think a statistical distance tells you the bottom."
+
+[character:Haru]
+*serious* "If the lower bound is 732 and it's already at 738, then yes, it's close enough to matter."
+
+[character:Hagana]
+*thoughtful* "Close to what? Close to a modeled range is not the same as close to certainty."
+
+[narration]
+Haru clicks his tongue in his head, but not out loud. The market keeps crawling lower by tiny amounts that feel insulting rather than informative.
+
+[character:Haru]
+*challenging* "It opened at 745. It's down one percent. That's nothing. A sneeze. If it's already near the lower side, then surely the drop is limited."
+
+[character:Hagana]
+*serious* "You just changed the claim."
+
+[character:Haru]
+*concerned* "What?"
+
+[character:Hagana]
+*thoughtful* "First you treated the model as if it revealed the bottom. Now you're treating it as if it guarantees limited downside. Those are not the same claim, and neither one follows automatically."
+
+[character:Hagana]
+*curious* "What does standard deviation actually tell you here? That reversal must happen? Or that the current price is a certain distance from the model's center under that model's assumptions?"
+
+[character:Haru]
+*serious* "The second one, I guess."
+
+[character:Hagana]
+*challenging* "Then stop smuggling the first claim in through the back door."
+
+[narration]
+The words sting because they are precise. Haru hates precise things when they corner him.
+
+[character:Hagana]
+*serious* "A model range can be wrong. The market can move past it. The assumptions can be thin. The information feeding it can be incomplete. You said so yourself — there was little information out there, so you couldn't tell."
+
+[character:Haru]
+*concerned* "Then the number isn't useless. Just... not what I wanted it to be."
+
+[character:Hagana]
+*encouraging* "Now we're getting somewhere."
+
+## Expected output — escalation to freeform
+[narration]
+The screen flickers again. 738. Then 737. The movement is petty, almost mean. Haru does not touch the keyboard. Not yet.
+
+[character:Hagana]
+*encouraging* "Explain it without bluffing this time."
+
+[player_prompt]
+🔑 **High-mark question — freeform response required.**
+Haru treats “one standard deviation away” and the model's lower bound as if they identify a real bottom or a safe point to buy. Explain why that reasoning is weak. In your answer:
+1) distinguish between a probabilistic model output and a guaranteed market outcome,
+2) explain why being near a modeled lower bound does not prove reversal or safety,
+3) state what extra information, assumptions, or reasoning Haru would need before claiming the trade is justified.
+
+## Expected output — after strong freeform response
+[character:Hagana]
+*relieved* "Yes. That's the shape of it."
+
+[character:Hagana]
+*thoughtful* "The model gives a structured estimate under assumptions. It does not command the market to obey. Being one standard deviation away tells you where the current price sits relative to the model, not that the stock has reached some true bottom hidden underneath reality."
+
+[character:Haru]
+*thoughtful* "So the mistake is treating a description of uncertainty like an answer."
+
+[character:Hagana]
+*serious* "Exactly. And 'near the lower bound' is still just 'near the lower bound.' It does not tell you why buyers should appear, whether the assumptions still hold, or whether today's information is incomplete."
+
+[character:Haru]
+*concerned* "Meaning I was turning probability into certainty because certainty would feel easier to trade."
+
+[character:Hagana]
+*encouraging* "And now you can stop doing that."
+
+[narration]
+The numbers on the display no longer look prophetic. Only narrow, provisional, and ready to betray anyone who mistakes them for fate.
+
+[narration]
+Journal update: Added reflection on the difference between modeled uncertainty and guaranteed outcomes in decision-making.
+
+## Expected output — after weak freeform response
+[character:Hagana]
+*challenging* "Too vague."
+
+[character:Hagana]
+*curious* "You said the model 'might be wrong.' Of course it might. Why does that matter here? What exact leap did Haru make from the model output to the trading claim?"
+
+[character:Hagana]
+*serious* "Try again by separating three things: what the model reports, what Haru concludes from it, and what is still missing before that conclusion would be justified."
+
+[character:Haru]
+*concerned* "So just being near the lower side doesn't tell me the market owes me a bounce."
+
+[character:Hagana]
+*encouraging* "Better. Keep going."
+
+[narration]
+The price ticks once more. No revelation comes with it.
+
+[narration]
+Journal update: Flagged for revisit — student needs a clearer distinction between probabilistic description, trading inference, and justified confidence.
 
 

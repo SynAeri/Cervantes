@@ -1,0 +1,1 @@
+# Arc generation feature - CurricuLLM → scene planning → VN generation

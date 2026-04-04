@@ -1,0 +1,1 @@
+# Core infrastructure - database, config, LLM client, prompt loader

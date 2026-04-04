@@ -43,3 +43,25 @@ teacher-dashboard/*.tsbuildinfo
 teacher-dashboard/next-env.d.ts
 student-dashboard/*.tsbuildinfo
 student-dashboard/next-env.d.ts
+
+# python backend
+app/backend/__pycache__/
+app/backend/**/__pycache__/
+app/backend/.env
+app/backend/**/*.pyc
+app/backend/**/*.pyo
+app/backend/**/*.pyd
+app/backend/.pytest_cache/
+app/backend/**/.pytest_cache/
+app/backend/*.db
+app/backend/*.db-journal
+app/backend/venv/
+app/backend/env/
+app/backend/ENV/
+app/backend/_legacy_*/
+*.log
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
