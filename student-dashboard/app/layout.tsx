@@ -1,16 +1,18 @@
-// Root layout for La Mancha Student Dashboard PWA
+// Root layout for La Mancha PWA
+// Includes PWA manifest and meta tags
 
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { PWARegister } from "./components/PWARegister";
 
 export const metadata: Metadata = {
-  title: "La Mancha - Student Portal",
-  description: "Narrative formative assessment for students",
+  title: "Cervantes - Scholarly Assessment System",
+  description: "Narrative formative assessment platform for teachers",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "La Mancha Student",
+    title: "Cervantes",
   },
 };
 
@@ -24,11 +26,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full antialiased dark">
+    <html lang="en" className="h-full antialiased dark bg-near-black">
       <head>
         <link rel="apple-touch-icon" href="/icon-192x192.png" />
       </head>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col bg-near-black">
+        <PWARegister />
+        {children}
+      </body>
     </html>
   );
 }
