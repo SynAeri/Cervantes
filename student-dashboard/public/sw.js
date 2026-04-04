@@ -1,7 +1,10 @@
 // Service worker for La Mancha PWA
 // Basic offline support and caching
+// DEVELOPMENT MODE: Disabled caching for development
 
 const CACHE_NAME = 'la-mancha-v1';
+const DEV_MODE = true; // Set to false for production
+
 const urlsToCache = [
   '/',
   '/login',
@@ -10,6 +13,10 @@ const urlsToCache = [
 ];
 
 self.addEventListener('install', (event) => {
+  if (DEV_MODE) {
+    self.skipWaiting();
+    return;
+  }
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => cache.addAll(urlsToCache))
@@ -17,6 +24,12 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  // In dev mode, always fetch fresh content
+  if (DEV_MODE) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then((response) => response || fetch(event.request))
