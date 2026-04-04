@@ -36,5 +36,6 @@ class Settings(BaseSettings):
     class Config:
         env_file = str(Path(__file__).parent / ".env")
         case_sensitive = True
+        extra = "ignore"
 
 settings = Settings()
