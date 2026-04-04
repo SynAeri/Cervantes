@@ -1,10 +1,16 @@
 # API routes for narrative arc generation and management (Firestore version)
 
 from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from app.backend.core.firebase import get_firestore_db
 from app.backend.core.auth import get_current_user, require_professor
-from app.backend.features.arc.schemas import ArcCreateRequest, SceneGenerationRequest, SceneGenerationResponse
+from app.backend.core.file_parser import extract_text_from_upload
+from app.backend.features.arc.schemas import (
+    ArcCreateRequest,
+    RubricUploadResponse,
+    SceneGenerationRequest,
+    SceneGenerationResponse,
+)
 from app.backend.features.arc import service
 
 router = APIRouter(prefix="/api/arc", tags=["arcs"])
@@ -29,6 +35,24 @@ async def generate_arc_endpoint(
         return arc
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Arc generation failed: {str(e)}")
+
+
+@router.post("/upload-rubric", response_model=RubricUploadResponse)
+async def upload_rubric(
+    user: Annotated[dict, Depends(require_professor)],
+    file: UploadFile = File(..., description="Rubric file (PDF, DOCX, or TXT)"),
+):
+    """Upload a rubric document and extract its text content.
+
+    The extracted text can then be passed to POST /api/arc/generate as rubric_text.
+    Supported formats: PDF, DOCX, TXT (max 10 MB).
+    """
+    extracted_text = await extract_text_from_upload(file)
+    return RubricUploadResponse(
+        filename=file.filename or "unknown",
+        text=extracted_text,
+        char_count=len(extracted_text),
+    )
 
 
 @router.get("/{arc_id}")

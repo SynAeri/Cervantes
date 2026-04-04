@@ -14,6 +14,10 @@ openai
 # Firebase
 firebase-admin
 
+# Document parsing (rubric file uploads)
+PyPDF2
+python-docx
+
 # Keep PostgreSQL support for local Docker dev (Firestore used in production)
 sqlalchemy
 psycopg2-binary
