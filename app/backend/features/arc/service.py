@@ -11,7 +11,7 @@ from app.backend.core import llm_client
 from app.backend.core import curricullm_client
 from app.backend.core.config import settings
 from app.backend.core.prompt_loader import load_curricullm_prompt, load_example_prompt, load_system_prompt
-from app.backend.features.arc.schemas import CurriculumData, NarrativeArc, CharacterProfile
+from app.backend.features.arc.schemas import CurriculumData, NarrativeArc, CharacterProfile, Misconception
 from app.backend.features.arc.character_generator import generate_character
 
 logger = logging.getLogger(__name__)
@@ -162,6 +162,7 @@ async def generate_arc(
                 user=user_msg,
                 temperature=0.3,
                 response_format="json",
+                max_tokens=8192,
             )
         except Exception:
             # Fallback to Gemini if CurricuLLM fails
@@ -170,6 +171,7 @@ async def generate_arc(
                 user=user_msg,
                 response_format="json",
                 temperature=0.3,
+                max_output_tokens=8192,
             )
     else:
         # No CurricuLLM key — use Gemini directly
@@ -178,13 +180,28 @@ async def generate_arc(
             user=user_msg,
             response_format="json",
             temperature=0.3,
+            max_output_tokens=8192,
         )
+
+    # Handle null/missing common_misconceptions from LLM
+    if "common_misconceptions" not in curriculum_data_dict or curriculum_data_dict["common_misconceptions"] is None:
+        curriculum_data_dict["common_misconceptions"] = []
 
     curriculum_data = CurriculumData(**curriculum_data_dict)
 
     # ===== PHASE 2: Misconception coverage enforcement =====
     # Ensure all misconceptions get assigned to scenes
-    misconceptions = curriculum_data.common_misconceptions
+    misconceptions = curriculum_data.common_misconceptions or []
+
+    # If no misconceptions provided, generate generic ones based on subject
+    if len(misconceptions) == 0:
+        generic_misconception = Misconception(
+            misconception=f"Students may struggle with applying {curriculum_data.subject} concepts to real-world scenarios",
+            why_students_think_this="Abstract concepts are difficult to connect to practical situations without guided practice"
+        )
+        misconceptions = [generic_misconception, generic_misconception]  # Create 2 deep scenes minimum
+        curriculum_data.common_misconceptions = misconceptions
+
     num_misconceptions = len(misconceptions)
 
     # Calculate scene distribution: 1 bridge + N deep scenes (one per misconception)
@@ -395,7 +412,10 @@ IMPORTANT: Do NOT include "character" or "secondary_character" fields. Those are
             logger.warning(f"Arc misconception coverage: {error}")
 
     # ===== PHASE 5: Character generation for each scene =====
-    scenes_with_characters = []
+    # Note: Characters are stored ONLY in scenes collection, not in narrative_arc
+    # This avoids duplication and keeps arc document lightweight
+    scenes_metadata = []
+    characters_for_scenes = []  # Store characters separately for scenes collection
     used_character_names = []
 
     for i, scene_plan in enumerate(arc_structure["scenes"]):
@@ -421,17 +441,22 @@ IMPORTANT: Do NOT include "character" or "secondary_character" fields. Those are
         # Track this character name
         used_character_names.append(character.name)
 
-        # Inject character into scene plan
-        scene_plan["scene_id"] = str(uuid.uuid4())
+        # Add character and scene_id to scene plan
+        scene_id = str(uuid.uuid4())
+        scene_plan["scene_id"] = scene_id
         scene_plan["character"] = character_dict
         scene_plan["secondary_character"] = None  # Add this field for schema compliance
-        scenes_with_characters.append(scene_plan)
 
-    # Build final narrative arc
+        # Store character for later insertion into scenes collection
+        characters_for_scenes.append((scene_id, character_dict))
+
+        scenes_metadata.append(scene_plan)
+
+    # Build final narrative arc (characters NOT included - stored separately in scenes collection)
     narrative_arc_dict = {
         "arc_name": arc_structure["arc_name"],
         "total_scenes": arc_structure["total_scenes"],
-        "scenes": scenes_with_characters
+        "scenes": scenes_metadata
     }
 
     # ===== PHASE 5.5: Validate character casting =====
@@ -464,16 +489,21 @@ IMPORTANT: Do NOT include "character" or "secondary_character" fields. Those are
     # Write arc document
     await db.collection("arcs").document(arc_id).set(arc_data)
 
-    # Write scenes as subcollection
+    # Write scenes to scenes collection (with characters)
+    # Create lookup dict for characters by scene_id
+    character_lookup = {scene_id: char for scene_id, char in characters_for_scenes}
+
     for scene_data in narrative_arc.scenes:
         scene_id = scene_data.scene_id
+        character_dict = character_lookup[scene_id]
+
         scene_doc = {
             "scene_id": scene_id,
             "arc_id": arc_id,
             "scene_order": scene_data.scene_order,
             "scene_type": scene_data.scene_type,
-            "character_id": scene_data.character.id,
-            "character": scene_data.character.model_dump(),
+            "character_id": character_dict["id"],
+            "character": character_dict,
             "concept_target": scene_data.concept_target,
             "misconception_target": scene_data.misconception_target,
             "setup_narration": scene_data.exposing_scenario or scene_data.setting,

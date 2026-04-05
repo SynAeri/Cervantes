@@ -15,7 +15,7 @@ class CurriculumData(BaseModel):
     year_level: str
     assessment_type: str
     learning_outcomes: List[str]
-    common_misconceptions: List[Misconception]
+    common_misconceptions: List[Misconception] = []
     key_concepts: List[str]
     prep_window_days: Optional[int] = None
     difficulty_level: str
@@ -40,7 +40,7 @@ class SceneData(BaseModel):
     learning_outcome: str
     correct_understanding: Optional[str] = None  # for deep scenes
     arc_position: str  # opening | mid | climax | resolution
-    character: CharacterProfile
+    character: CharacterProfile  # Keep in narrative_arc for validation
     secondary_character: Optional[CharacterProfile] = None
     setting: str
     socratic_angles: List[str]

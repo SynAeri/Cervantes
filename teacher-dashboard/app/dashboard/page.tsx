@@ -1,46 +1,33 @@
-// Main dashboard overview page for La Mancha
-// Shows all classes at a glance
+// Main dashboard overview page - refactored to use real API data
+// Shows all classes fetched from backend with React Query
 
 'use client';
 
 import Link from 'next/link';
 import { Sidebar } from '../components/Sidebar';
 import { TopBar } from '../components/TopBar';
-
-const classes = [
-  {
-    id: 'intro-ai',
-    name: 'Introduction to AI',
-    icon: 'psychology',
-    description: 'Fundamentals of artificial intelligence, machine learning, and neural networks.',
-    students: 89,
-    progress: 72,
-    status: 'ACTIVE',
-    color: 'primary'
-  },
-  {
-    id: 'economics',
-    name: 'Introduction to Economics',
-    icon: 'finance',
-    description: 'Analyzing global markets, fiscal policy, and microeconomic incentives in digital economies.',
-    students: 154,
-    progress: 68,
-    status: 'ACTIVE',
-    color: 'primary'
-  },
-  {
-    id: 'senior-seminar',
-    name: 'Senior Seminar',
-    icon: 'school',
-    description: 'Advanced research methods and critical analysis of contemporary issues.',
-    students: 32,
-    progress: 85,
-    status: 'ACTIVE',
-    color: 'primary'
-  }
-];
+import { useClasses } from '../hooks/useClasses';
 
 export default function DashboardPage() {
+  const { data: classes, isLoading, error } = useClasses();
+
+  if (error) {
+    return (
+      <div className="flex">
+        <Sidebar />
+        <main className="ml-64 min-h-screen bg-parchment p-10 flex-1">
+          <TopBar />
+          <div className="bg-warm-white p-8 rounded-xl border border-warm-grey">
+            <p className="text-terracotta font-bold">Error loading classes: {error.message}</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  const totalStudents = classes?.reduce((sum, cls) => sum + (cls.enrollment?.length || 0), 0) || 0;
+  const activeClasses = classes?.filter(cls => cls.status !== 'no_arc').length || 0;
+
   return (
     <div className="flex">
       <Sidebar />
@@ -58,65 +45,77 @@ export default function DashboardPage() {
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {classes.map((cls) => (
-                <Link key={cls.id} href={`/class/${cls.id}`}>
-                  <div className="group bg-warm-white p-6 rounded-xl border border-warm-grey hover:border-terracotta/30 transition-all duration-300 cursor-pointer relative overflow-hidden flex flex-col h-full">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-terracotta/5 rounded-full -mr-16 -mt-16 blur-2xl group-hover:bg-terracotta/10 transition-all duration-500"></div>
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="bg-warm-white p-6 rounded-xl border border-warm-grey h-48 animate-pulse">
+                    <div className="h-10 w-10 bg-terracotta/10 rounded-lg mb-4"></div>
+                    <div className="h-4 bg-warm-grey rounded mb-2 w-3/4"></div>
+                    <div className="h-3 bg-warm-grey rounded mb-6 w-full"></div>
+                    <div className="h-3 bg-warm-grey rounded w-1/2"></div>
+                  </div>
+                ))}
+              </div>
+            ) : classes && classes.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {classes.map((cls) => {
+                  const studentCount = cls.enrollment?.length || 0;
+                  const progress = 0;
+                  const statusLabel = cls.status === 'published' ? 'ACTIVE' : (cls.status?.toUpperCase() || 'DRAFT');
+                  const icon = cls.subject === 'Economics' ? 'finance' :
+                               cls.subject === 'Software Development' ? 'code' :
+                               cls.subject === 'English Standard' ? 'menu_book' : 'school';
 
-                    <div className="relative z-10">
-                      <div className="flex justify-between items-start mb-4">
-                        <div className="w-10 h-10 bg-terracotta/10 rounded-lg flex items-center justify-center text-terracotta group-hover:scale-110 transition-transform duration-300">
-                          <span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>{cls.icon}</span>
-                        </div>
-                        <span className="text-[8px] font-extrabold text-terracotta bg-terracotta/10 px-2 py-0.5 rounded-full tracking-widest">{cls.status}</span>
-                      </div>
+                  return (
+                    <Link key={cls.class_id} href={`/class/${cls.class_id}`}>
+                      <div className="group bg-warm-white p-6 rounded-xl border border-warm-grey hover:border-terracotta/30 transition-all duration-300 cursor-pointer relative overflow-hidden flex flex-col h-full">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-terracotta/5 rounded-full -mr-16 -mt-16 blur-2xl group-hover:bg-terracotta/10 transition-all duration-500"></div>
 
-                      <h4 className="text-lg font-bold text-primary tracking-tight mb-2 group-hover:text-terracotta transition-colors">{cls.name}</h4>
-                      <p className="text-[12px] text-tertiary leading-relaxed mb-6 line-clamp-2">{cls.description}</p>
+                        <div className="relative z-10">
+                          <div className="flex justify-between items-start mb-4">
+                            <div className="w-10 h-10 bg-terracotta/10 rounded-lg flex items-center justify-center text-terracotta group-hover:scale-110 transition-transform duration-300">
+                              <span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>{icon}</span>
+                            </div>
+                            <span className="text-[8px] font-extrabold text-terracotta bg-terracotta/10 px-2 py-0.5 rounded-full tracking-widest">{statusLabel}</span>
+                          </div>
 
-                      <div className="flex items-center justify-between pt-4 border-t border-warm-grey">
-                        <div className="flex items-center gap-1.5 text-tertiary">
-                          <span className="material-symbols-outlined text-base">group</span>
-                          <span className="text-[11px] font-bold">{cls.students}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-[11px] font-bold text-primary">{cls.progress}%</span>
-                          <div className="w-12 h-1 bg-warm-grey rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-terracotta transition-all duration-300 group-hover:bg-wheat-gold"
-                              style={{ width: `${cls.progress}%` }}
-                            ></div>
+                          <h4 className="text-lg font-bold text-primary tracking-tight mb-2 group-hover:text-terracotta transition-colors">{cls.name}</h4>
+                          <p className="text-[12px] text-tertiary leading-relaxed mb-6 line-clamp-2">
+                            {cls.subject} - {cls.module || 'General Course'}
+                          </p>
+
+                          <div className="flex items-center justify-between pt-4 border-t border-warm-grey">
+                            <div className="flex items-center gap-1.5 text-tertiary">
+                              <span className="material-symbols-outlined text-base">group</span>
+                              <span className="text-[11px] font-bold">{studentCount}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[11px] font-bold text-primary">{progress}%</span>
+                              <div className="w-12 h-1 bg-warm-grey rounded-full overflow-hidden">
+                                <div
+                                  className="h-full bg-terracotta transition-all duration-300 group-hover:bg-wheat-gold"
+                                  style={{ width: `${progress}%` }}
+                                ></div>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="bg-warm-white p-12 rounded-xl border border-warm-grey text-center">
+                <span className="material-symbols-outlined text-6xl text-tertiary/30 mb-4">school</span>
+                <p className="text-tertiary text-sm">No classes yet. Create your first class to get started.</p>
+              </div>
+            )}
 
             <div className="pt-8">
               <h3 className="text-[11px] font-extrabold text-tertiary uppercase tracking-[0.2em] mb-6">Recent Activity</h3>
               <div className="bg-warm-white rounded-xl border border-warm-grey p-6 space-y-4">
-                {[
-                  { student: 'Elena Ricci', action: 'Submitted Macro Essay', class: 'Economics', time: '2m ago' },
-                  { student: 'Julian Voss', action: 'Completed AI Lab 3', class: 'Intro to AI', time: '14m ago' },
-                  { student: 'Marcus Thorne', action: 'Started Research Proposal', class: 'Senior Seminar', time: '1h ago' },
-                ].map((activity, idx) => (
-                  <div key={idx} className="flex items-center justify-between py-3 border-b border-warm-grey last:border-0 hover:bg-parchment/50 px-3 -mx-3 rounded-lg transition-colors">
-                    <div className="flex items-center gap-4">
-                      <div className="w-8 h-8 rounded-full bg-terracotta/10 flex items-center justify-center text-terracotta text-xs font-bold">
-                        {activity.student.split(' ').map(n => n[0]).join('')}
-                      </div>
-                      <div>
-                        <p className="text-[13px] font-bold text-primary">{activity.student}</p>
-                        <p className="text-[11px] text-tertiary">{activity.action} · {activity.class}</p>
-                      </div>
-                    </div>
-                    <span className="text-[10px] text-tertiary/60 font-bold uppercase">{activity.time}</span>
-                  </div>
-                ))}
+                <p className="text-[12px] text-tertiary italic">Activity feed will be populated as students complete scenes</p>
               </div>
             </div>
           </section>
@@ -128,19 +127,23 @@ export default function DashboardPage() {
                 <div>
                   <div className="flex justify-between items-baseline mb-1">
                     <span className="text-[11px] text-tertiary font-bold">Total Students</span>
-                    <span className="text-2xl font-extrabold text-primary">275</span>
+                    <span className="text-2xl font-extrabold text-primary">
+                      {isLoading ? '--' : totalStudents}
+                    </span>
                   </div>
                 </div>
                 <div>
                   <div className="flex justify-between items-baseline mb-1">
                     <span className="text-[11px] text-tertiary font-bold">Active Classes</span>
-                    <span className="text-2xl font-extrabold text-primary">3</span>
+                    <span className="text-2xl font-extrabold text-primary">
+                      {isLoading ? '--' : activeClasses}
+                    </span>
                   </div>
                 </div>
                 <div>
                   <div className="flex justify-between items-baseline mb-1">
                     <span className="text-[11px] text-tertiary font-bold">Avg Completion</span>
-                    <span className="text-2xl font-extrabold text-terracotta">75%</span>
+                    <span className="text-2xl font-extrabold text-terracotta">0%</span>
                   </div>
                 </div>
               </div>
@@ -149,21 +152,7 @@ export default function DashboardPage() {
             <div className="bg-warm-white rounded-xl p-6 border border-warm-grey">
               <h4 className="text-[11px] font-extrabold text-tertiary uppercase tracking-widest mb-4">Upcoming</h4>
               <div className="space-y-3">
-                {[
-                  { title: 'Economics Midterm', date: 'Apr 15' },
-                  { title: 'AI Project Due', date: 'Apr 18' },
-                  { title: 'Seminar Presentations', date: 'Apr 22' },
-                ].map((item, idx) => (
-                  <div key={idx} className="flex items-start gap-3 pb-3 border-b border-warm-grey last:border-0">
-                    <div className="w-10 h-10 rounded-lg bg-wheat-gold/10 flex items-center justify-center flex-shrink-0">
-                      <span className="material-symbols-outlined text-wheat-gold text-lg">event</span>
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-[12px] font-bold text-primary">{item.title}</p>
-                      <p className="text-[10px] text-tertiary font-bold uppercase mt-0.5">{item.date}</p>
-                    </div>
-                  </div>
-                ))}
+                <p className="text-[12px] text-tertiary italic">No upcoming deadlines</p>
               </div>
             </div>
           </aside>
@@ -171,8 +160,8 @@ export default function DashboardPage() {
 
         <footer className="w-full py-12 mt-24 border-t border-warm-grey flex justify-between items-center">
           <div className="flex items-center gap-4">
-            <div className="w-6 h-6 bg-terracotta/10 rounded flex items-center justify-center text-[10px] font-extrabold text-terracotta">L</div>
-            <p className="text-[13px] text-tertiary/60 font-medium tracking-tight">© 2025 La Mancha. Built for Excellence.</p>
+            <div className="w-6 h-6 bg-terracotta/10 rounded flex items-center justify-center text-[10px] font-extrabold text-terracotta">C</div>
+            <p className="text-[13px] text-tertiary/60 font-medium tracking-tight">© 2026 Cervantes. Built for Scholarly Assessment.</p>
           </div>
           <div className="flex gap-8">
             <a className="text-[13px] text-tertiary hover:text-terracotta transition-colors font-semibold" href="#">Privacy Policy</a>

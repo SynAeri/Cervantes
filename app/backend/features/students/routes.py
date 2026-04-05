@@ -1,0 +1,236 @@
+# Student endpoints - fetches student data from Firestore
+# Connects to: users, enrollments, reasoning_traces collections
+
+from fastapi import APIRouter, HTTPException, Depends
+from typing import List, Dict, Optional
+from datetime import datetime
+from app.backend.core.firebase import get_firestore_db
+from app.backend.core.auth import get_current_user
+
+router = APIRouter(prefix="/api/students", tags=["students"])
+
+@router.get("")
+async def get_all_students(current_user: dict = Depends(get_current_user)):
+    """Get all students across all classes"""
+    db = get_firestore_db()
+
+    # Get all users with role="student"
+    users_ref = db.collection("users")
+    students_query = users_ref.where("role", "==", "student")
+    students_docs = students_query.stream()
+
+    students = []
+    async for doc in students_docs:
+        if doc.exists:
+            student_data = doc.to_dict()
+            # Use uid as the student identifier (matches enrollments.student_id)
+            student_uid = student_data.get("uid")
+
+            # Get enrollments for this student
+            enrollments_ref = db.collection("enrollments")
+            enrollments_query = enrollments_ref.where("student_id", "==", student_uid)
+            enrollments_docs = enrollments_query.stream()
+
+            enrollments = []
+            async for enr_doc in enrollments_docs:
+                if enr_doc.exists:
+                    enr_data = enr_doc.to_dict()
+                    class_id = enr_data.get("class_id")
+
+                    # Get class name
+                    class_doc = await db.collection("classes").document(class_id).get()
+                    class_name = class_doc.to_dict().get("name") if class_doc.exists else class_id
+
+                    enrollments.append({
+                        "class_id": class_id,
+                        "class_name": class_name,
+                        "enrolled_at": enr_data.get("enrolled_at")
+                    })
+
+            students.append({
+                "student_id": student_uid,
+                "uid": student_uid,
+                "full_name": student_data.get("full_name"),
+                "email": student_data.get("email"),
+                "enrollments": enrollments
+            })
+
+    return students
+
+
+@router.get("/{student_id}")
+async def get_student_detail(student_id: str, current_user: dict = Depends(get_current_user)):
+    """Get detailed information for a specific student"""
+    db = get_firestore_db()
+
+    # Get student from users collection
+    users_ref = db.collection("users")
+    students_query = users_ref.where("student_id", "==", student_id).limit(1)
+    students_docs = students_query.stream()
+
+    student_data = None
+    async for doc in students_docs:
+        if doc.exists:
+            student_data = doc.to_dict()
+            break
+
+    if not student_data:
+        raise HTTPException(status_code=404, detail="Student not found")
+
+    # Get enrollments
+    enrollments_ref = db.collection("enrollments")
+    enrollments_query = enrollments_ref.where("student_id", "==", student_id)
+    enrollments_docs = enrollments_query.stream()
+
+    enrollments = []
+    async for enr_doc in enrollments_docs:
+        if enr_doc.exists:
+            enr_data = enr_doc.to_dict()
+            class_id = enr_data.get("class_id")
+
+            # Get class details
+            class_doc = await db.collection("classes").document(class_id).get()
+            class_name = class_doc.to_dict().get("name") if class_doc.exists else class_id
+
+            enrollments.append({
+                "class_id": class_id,
+                "class_name": class_name,
+                "enrolled_at": enr_data.get("enrolled_at"),
+                "extracurriculars": enr_data.get("extracurriculars", []),
+                "subjects": enr_data.get("subjects", [])
+            })
+
+    return {
+        "student_id": student_id,
+        "uid": student_data.get("uid"),
+        "full_name": student_data.get("full_name"),
+        "email": student_data.get("email"),
+        "enrollments": enrollments
+    }
+
+
+@router.get("/class/{class_id}")
+async def get_class_students(class_id: str, current_user: dict = Depends(get_current_user)):
+    """Get all students enrolled in a specific class with progress data"""
+    db = get_firestore_db()
+
+    # Verify class exists
+    class_doc = await db.collection("classes").document(class_id).get()
+    if not class_doc.exists:
+        raise HTTPException(status_code=404, detail="Class not found")
+
+    # Get enrollments for this class
+    enrollments_ref = db.collection("enrollments")
+    enrollments_query = enrollments_ref.where("class_id", "==", class_id)
+    enrollments_docs = enrollments_query.stream()
+
+    students = []
+    async for enr_doc in enrollments_docs:
+        if enr_doc.exists:
+            enr_data = enr_doc.to_dict()
+            student_id = enr_data.get("student_id")
+
+            # Get student details from users collection
+            # Note: student_id from enrollments matches uid in users collection
+            student_doc = await db.collection("users").document(student_id).get()
+
+            if not student_doc.exists:
+                continue
+
+            student_data = student_doc.to_dict()
+
+            # Get reasoning traces for this student and class to calculate progress
+            # Note: reasoning_traces collection is currently empty
+            traces_ref = db.collection("reasoning_traces")
+            traces_query = traces_ref.where("student_id", "==", student_id).where("class_id", "==", class_id)
+            traces_docs = traces_query.stream()
+
+            total_traces = 0
+            mastery_count = 0
+            misconception_count = 0
+            critical_count = 0
+            dimensions_scores = {}
+            last_active = None
+            scenes_completed = 0
+
+            async for trace_doc in traces_docs:
+                if trace_doc.exists:
+                    trace_data = trace_doc.to_dict()
+                    total_traces += 1
+
+                    # Track status
+                    status = trace_data.get("status")
+                    if status == "mastery":
+                        mastery_count += 1
+                    elif status == "misconception":
+                        misconception_count += 1
+                    elif status == "critical":
+                        critical_count += 1
+
+                    # Track dimension scores
+                    dimension = trace_data.get("rubric_dimension")
+                    score = trace_data.get("score", 0)
+                    if dimension:
+                        if dimension not in dimensions_scores:
+                            dimensions_scores[dimension] = []
+                        dimensions_scores[dimension].append(score)
+
+                    # Track last active
+                    timestamp = trace_data.get("timestamp")
+                    if timestamp and (not last_active or timestamp > last_active):
+                        last_active = timestamp
+
+                    scenes_completed += 1
+
+            # Calculate average dimension scores
+            dimensions = {}
+            for dim, scores in dimensions_scores.items():
+                dimensions[dim] = round(sum(scores) / len(scores)) if scores else 0
+
+            # Calculate overall progress (0-100)
+            if total_traces > 0:
+                progress = round((mastery_count * 100 + misconception_count * 50) / total_traces)
+            else:
+                progress = 0
+
+            # Determine arc status
+            if critical_count > 0:
+                arc_status = "flagged"
+            elif total_traces == 0:
+                arc_status = "not_started"
+            elif progress >= 80:
+                arc_status = "complete"
+            else:
+                arc_status = "in_progress"
+
+            # Format last active
+            if last_active:
+                now = datetime.now()
+                diff = now - last_active
+                if diff.seconds < 3600:
+                    last_active_str = f"{diff.seconds // 60}m ago"
+                elif diff.seconds < 86400:
+                    last_active_str = f"{diff.seconds // 3600}h ago"
+                else:
+                    last_active_str = f"{diff.days}d ago"
+            else:
+                last_active_str = "Never"
+
+            students.append({
+                "student_id": student_id,
+                "student_name": student_data.get("full_name"),
+                "email": student_data.get("email"),
+                "progress": progress,
+                "dimensions": dimensions,
+                "arc_status": arc_status,
+                "scenes_completed": scenes_completed,
+                "total_scenes": 5,  # Default, should come from arc configuration
+                "last_active": last_active_str,
+                "enrollment": {
+                    "enrolled_at": enr_data.get("enrolled_at"),
+                    "extracurriculars": enr_data.get("extracurriculars", []),
+                    "subjects": enr_data.get("subjects", [])
+                }
+            })
+
+    return students
