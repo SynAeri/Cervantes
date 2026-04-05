@@ -64,7 +64,7 @@ Return a character as JSON with this structure:
   "voice_register": "How they sound - e.g., 'clipped and precise', 'relaxed but sharp', 'uncertain but curious'",
   "archetype": "One of the archetypes from the list",
   "subject_connection": "How their role naturally connects to the student's subjects and the concept",
-  "sprite_set": ["neutral", "surprised", "thoughtful", "concerned", "amused", "serious", "encouraging", "challenging", "curious", "relieved"]
+  "sprite_set": ["neutral", "encouraging", "concerned", "challenging", "surprised"]
 }}"""
 
     archetype_instruction = f"\n**Required archetype:** {preferred_archetype}" if preferred_archetype else ""
