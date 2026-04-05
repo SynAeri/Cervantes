@@ -5,6 +5,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { PWARegister } from "./components/PWARegister";
 import { AuthProvider } from "../lib/auth-context";
+import { Providers } from "./components/Providers";
 
 export const metadata: Metadata = {
   title: "Cervantes - Scholarly Assessment System",
@@ -33,9 +34,11 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col bg-near-black">
         <PWARegister />
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        <Providers>
+          <AuthProvider>
+            {children}
+          </AuthProvider>
+        </Providers>
       </body>
     </html>
   );
