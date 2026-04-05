@@ -1,5 +1,6 @@
 fastapi
 uvicorn[standard]
+pydantic
 pydantic-settings
 python-dotenv
 python-multipart
@@ -7,6 +8,7 @@ tenacity
 
 # Gemini (new SDK - replaces deprecated google-generativeai)
 google-genai
+google-generativeai
 
 # CurricuLLM (OpenAI-compatible API)
 openai
@@ -21,9 +23,10 @@ python-docx
 # Keep PostgreSQL support for local Docker dev (Firestore used in production)
 sqlalchemy
 psycopg2-binary
-pydantic
-pydantic-settings
-google-generativeai
-python-multipart
-tenacity
-python-dotenv
+
+# Testing
+pytest
+pytest-asyncio
+httpx
+pytest-mock
+factory-boy

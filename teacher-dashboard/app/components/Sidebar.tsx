@@ -6,16 +6,18 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useClasses } from '../hooks/useClasses';
 
 export function Sidebar() {
   const [classesOpen, setClassesOpen] = useState(true);
   const pathname = usePathname();
+  const { data: classesData, isLoading } = useClasses();
 
-  const classes = [
-    { id: 'intro-ai', name: 'Intro to AI', href: '/class/intro-ai' },
-    { id: 'economics', name: 'Economics', href: '/class/economics' },
-    { id: 'senior-seminar', name: 'Senior Seminar', href: '/class/senior-seminar' },
-  ];
+  const classes = classesData?.map(cls => ({
+    id: cls.class_id,
+    name: cls.name,
+    href: `/class/${cls.class_id}`
+  })) || [];
 
   return (
     <aside className="h-screen w-64 fixed left-0 top-0 z-40 bg-parchment-dark border-r border-warm-grey shadow-[4px_0_12px_rgba(30,28,24,0.08)] flex flex-col py-6 px-4 gap-y-6">

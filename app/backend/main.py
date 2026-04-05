@@ -8,6 +8,8 @@ from app.backend.core.firebase import init_firebase
 
 # Import feature routers
 from app.backend.features.auth.routes import router as auth_router
+from app.backend.features.classes.routes import router as class_router
+from app.backend.features.students.routes import router as students_router
 from app.backend.features.arc.routes import router as arc_router
 from app.backend.features.dialogue.routes import router as dialogue_router
 from app.backend.features.signal_extraction.routes import router as signals_router
@@ -44,6 +46,8 @@ app.add_middleware(
 
 # Register feature routes
 app.include_router(auth_router)
+app.include_router(class_router)
+app.include_router(students_router)
 app.include_router(arc_router)
 app.include_router(dialogue_router)
 app.include_router(signals_router)
@@ -61,7 +65,7 @@ async def root():
             "auth": "Firebase Auth",
             "database": "Firestore",
         },
-        "features": ["auth", "arc", "dialogue", "signal_extraction"],
+        "features": ["auth", "classes", "students", "arc", "dialogue", "signal_extraction"],
     }
 
 

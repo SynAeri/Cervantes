@@ -55,6 +55,29 @@ async def upload_rubric(
     )
 
 
+@router.get("/class/{class_id}")
+async def get_arcs_by_class(
+    class_id: str,
+    user: Annotated[dict, Depends(get_current_user)],
+    db=Depends(get_firestore_db),
+):
+    """Get all arcs for a specific class"""
+    try:
+        arcs_ref = db.collection("arcs")
+        query = arcs_ref.where("class_id", "==", class_id)
+        arcs_docs = query.stream()
+
+        arcs = []
+        async for doc in arcs_docs:
+            if doc.exists:
+                arc_data = doc.to_dict()
+                arcs.append(arc_data)
+
+        return arcs
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch arcs: {str(e)}")
+
+
 @router.get("/{arc_id}")
 async def get_arc(
     arc_id: str,
