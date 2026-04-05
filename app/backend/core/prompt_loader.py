@@ -1,8 +1,14 @@
 # Loads .md prompt files from /app/prompts/ directory
 
 from pathlib import Path
+import os
 
-PROMPTS_DIR = Path("/app/prompts")
+# Support both local dev and Docker environments
+if os.path.exists("/app/prompts"):
+    PROMPTS_DIR = Path("/app/prompts")
+else:
+    # Local dev: relative to project root
+    PROMPTS_DIR = Path(__file__).parent.parent.parent / "prompts"
 
 def load_system_prompt(name: str) -> str:
     path = PROMPTS_DIR / "system" / f"{name}.md"

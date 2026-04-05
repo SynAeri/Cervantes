@@ -7,13 +7,14 @@ import { use, useState } from 'react';
 import Link from 'next/link';
 import { Sidebar } from '../../../../components/Sidebar';
 import { TopBar } from '../../../../components/TopBar';
-import { RubricUpload } from '../../../../components/features/arc-generator/RubricUpload';
-import { ArcReview } from '../../../../components/features/arc-generator/ArcReview';
+import { DocumentUploadZone } from '../../../../components/features/arc-generator/DocumentUploadZone';
+import { ArcReviewModal } from '../../../../components/features/arc-generator/ArcReviewModal';
 import { useGenerateArc, useApproveArc } from '../../../../hooks/useArcMutations';
 import { useClass } from '../../../../hooks/useClasses';
+import { api } from '../../../../lib/api';
 import type { Arc } from '../../../../lib/types';
 
-type WorkflowStep = 'upload' | 'generating' | 'review' | 'approved';
+type WorkflowStep = 'upload' | 'generating' | 'approved';
 
 export default function NewArcPage({ params }: { params: Promise<{ classId: string }> }) {
   const { classId } = use(params);
@@ -21,6 +22,8 @@ export default function NewArcPage({ params }: { params: Promise<{ classId: stri
   const [step, setStep] = useState<WorkflowStep>('upload');
   const [generatedArc, setGeneratedArc] = useState<Arc | null>(null);
   const [rubricData, setRubricData] = useState<any>(null);
+  const [generationStage, setGenerationStage] = useState<string>('Uploading rubric...');
+  const [showReviewModal, setShowReviewModal] = useState(false);
 
   const generateMutation = useGenerateArc();
   const approveMutation = useApproveArc();
@@ -32,6 +35,24 @@ export default function NewArcPage({ params }: { params: Promise<{ classId: stri
   };
 
   const handleGenerateArc = async (parsedRubric: any) => {
+    const stages = [
+      'Parsing rubric with CurricuLLM...',
+      'Extracting learning objectives...',
+      'Identifying misconceptions...',
+      'Generating narrative structure...',
+      'Creating character profiles...',
+      'Planning scene sequences...',
+      'Finalizing arc...'
+    ];
+
+    let currentStageIndex = 0;
+    const stageInterval = setInterval(() => {
+      if (currentStageIndex < stages.length) {
+        setGenerationStage(stages[currentStageIndex]);
+        currentStageIndex++;
+      }
+    }, 2000);
+
     try {
       const arc = await generateMutation.mutateAsync({
         class_id: classId,
@@ -40,9 +61,12 @@ export default function NewArcPage({ params }: { params: Promise<{ classId: stri
         student_subjects: [],
         student_extracurriculars: [],
       });
+      clearInterval(stageInterval);
       setGeneratedArc(arc);
-      setStep('review');
+      setShowReviewModal(true);
+      setStep('upload'); // Stay on upload page, show modal
     } catch (error) {
+      clearInterval(stageInterval);
       console.error('Arc generation failed:', error);
       setStep('upload');
     }
@@ -52,6 +76,7 @@ export default function NewArcPage({ params }: { params: Promise<{ classId: stri
     if (!generatedArc) return;
     try {
       await approveMutation.mutateAsync(generatedArc.arc_id);
+      setShowReviewModal(false);
       setStep('approved');
     } catch (error) {
       console.error('Arc approval failed:', error);
@@ -59,6 +84,7 @@ export default function NewArcPage({ params }: { params: Promise<{ classId: stri
   };
 
   const handleRegenerate = () => {
+    setShowReviewModal(false);
     setGeneratedArc(null);
     setStep('upload');
   };
@@ -91,9 +117,9 @@ export default function NewArcPage({ params }: { params: Promise<{ classId: stri
 
           <div className="mb-8">
             <div className="flex items-center gap-4">
-              {(['upload', 'generating', 'review', 'approved'] as WorkflowStep[]).map((s, index) => {
+              {(['upload', 'generating', 'approved'] as WorkflowStep[]).map((s, index) => {
                 const isActive = s === step;
-                const isComplete = ['upload', 'generating', 'review', 'approved'].indexOf(step) > index;
+                const isComplete = ['upload', 'generating', 'approved'].indexOf(step) > index;
 
                 return (
                   <div key={s} className="flex items-center gap-4 flex-1">
@@ -110,7 +136,7 @@ export default function NewArcPage({ params }: { params: Promise<{ classId: stri
                         {s.replace('_', ' ')}
                       </span>
                     </div>
-                    {index < 3 && (
+                    {index < 2 && (
                       <div className={`h-0.5 flex-1 ${isComplete ? 'bg-mastery' : 'bg-warm-grey'}`} />
                     )}
                   </div>
@@ -121,7 +147,7 @@ export default function NewArcPage({ params }: { params: Promise<{ classId: stri
 
           <div className="space-y-8">
             {step === 'upload' && (
-              <RubricUpload classId={classId} onUploadSuccess={handleUploadSuccess} />
+              <DocumentUploadZone classId={classId} onUploadSuccess={handleUploadSuccess} />
             )}
 
             {step === 'generating' && (
@@ -130,18 +156,16 @@ export default function NewArcPage({ params }: { params: Promise<{ classId: stri
                   <span className="material-symbols-outlined text-6xl text-terracotta">autorenew</span>
                 </div>
                 <h3 className="text-lg font-bold text-primary mb-2">Generating Assessment Arc</h3>
-                <p className="text-[13px] text-tertiary max-w-md mx-auto">
-                  CurricuLLM is analyzing your rubric and Gemini is generating personalized narrative scenes...
+                <p className="text-[13px] text-wheat font-bold mb-4 animate-pulse">
+                  {generationStage}
+                </p>
+                <div className="max-w-md mx-auto bg-parchment rounded-full h-2 overflow-hidden">
+                  <div className="bg-terracotta h-full animate-pulse" style={{ width: '60%' }}></div>
+                </div>
+                <p className="text-[11px] text-tertiary mt-4 max-w-md mx-auto">
+                  This may take 30-60 seconds as we analyze your rubric and generate personalized content
                 </p>
               </div>
-            )}
-
-            {step === 'review' && generatedArc && (
-              <ArcReview
-                arc={generatedArc}
-                onApprove={handleApprove}
-                onRegenerate={handleRegenerate}
-              />
             )}
 
             {step === 'approved' && (
@@ -167,6 +191,17 @@ export default function NewArcPage({ params }: { params: Promise<{ classId: stri
             )}
           </div>
         </div>
+
+        {/* Arc Review Modal */}
+        {generatedArc && (
+          <ArcReviewModal
+            arc={generatedArc}
+            isOpen={showReviewModal}
+            onClose={() => setShowReviewModal(false)}
+            onApprove={handleApprove}
+            onRegenerate={handleRegenerate}
+          />
+        )}
       </main>
     </div>
   );

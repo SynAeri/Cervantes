@@ -30,6 +30,7 @@ async def generate_curriculum_analysis(
     model: str | None = None,
     temperature: float = 0.3,
     response_format: str = "json",
+    max_tokens: int = 8192,
 ) -> dict | str:
     """
     Send a prompt to CurricuLLM for curriculum-aligned analysis.
@@ -45,6 +46,7 @@ async def generate_curriculum_analysis(
             {"role": "user", "content": user},
         ],
         "temperature": temperature,
+        "max_tokens": max_tokens,
     }
 
     if response_format == "json":
@@ -57,6 +59,19 @@ async def generate_curriculum_analysis(
         try:
             return json.loads(text)
         except json.JSONDecodeError as e:
-            raise ValueError(f"CurricuLLM JSON parse failed: {e}\nResponse: {text[:500]}")
+            # Try to fix common JSON truncation issues
+            if text.endswith('"') and not text.endswith('"}'):
+                # Truncated in the middle of a string value
+                text = text + '"]}'
+            elif not text.endswith('}'):
+                # Missing closing braces
+                open_braces = text.count('{') - text.count('}')
+                text = text + ('}' * open_braces)
+
+            # Try again
+            try:
+                return json.loads(text)
+            except:
+                raise ValueError(f"CurricuLLM JSON parse failed: {e}\nResponse: {text[:1000]}")
 
     return text

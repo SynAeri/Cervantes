@@ -15,6 +15,7 @@ openai
 
 # Firebase
 firebase-admin
+google-cloud-firestore
 
 # Document parsing (rubric file uploads)
 PyPDF2

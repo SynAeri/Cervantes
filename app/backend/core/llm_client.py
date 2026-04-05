@@ -23,6 +23,7 @@ async def generate_structured(
     model: str | None = None,
     temperature: float = 0.7,
     response_schema: type | None = None,
+    max_output_tokens: int = 8192,
 ) -> dict | str:
     model = model or settings.GEMINI_MODEL
 
@@ -30,6 +31,7 @@ async def generate_structured(
         temperature=temperature,
         system_instruction=system,
         response_mime_type="application/json" if response_format == "json" else "text/plain",
+        max_output_tokens=max_output_tokens,
     )
 
     if response_schema and response_format == "json":
@@ -47,7 +49,20 @@ async def generate_structured(
         try:
             return json.loads(text)
         except json.JSONDecodeError as e:
-            raise ValueError(f"Failed to parse LLM JSON response: {e}\nResponse: {text[:500]}")
+            # Try to fix common JSON truncation issues
+            if text.endswith('"') and not text.endswith('"}'):
+                # Truncated in the middle of a string value
+                text = text + '"]}'
+            elif not text.endswith('}'):
+                # Missing closing braces
+                open_braces = text.count('{') - text.count('}')
+                text = text + ('}' * open_braces)
+
+            # Try again
+            try:
+                return json.loads(text)
+            except:
+                raise ValueError(f"Failed to parse LLM JSON response: {e}\nResponse: {text[:1000]}")
 
     return text
 
@@ -59,6 +74,7 @@ async def generate_with_retry(
     model: str | None = None,
     temperature: float = 0.7,
     response_schema: type | None = None,
+    max_output_tokens: int = 8192,
 ) -> dict | str:
     return await generate_structured(
         system=system,
@@ -67,4 +83,5 @@ async def generate_with_retry(
         model=model,
         temperature=temperature,
         response_schema=response_schema,
+        max_output_tokens=max_output_tokens,
     )

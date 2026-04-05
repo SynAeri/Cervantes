@@ -3,24 +3,121 @@
 
 'use client';
 
-import { use } from 'react';
+import { use, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Sidebar } from '../../components/Sidebar';
 import { TopBar } from '../../components/TopBar';
 import { StudentRow } from '../../components/StudentRow';
 import { StudentProgressTable } from '../../components/StudentProgressTable';
+import { ArcStatusBox } from '../../components/ArcStatusBox';
+import { ArcReviewModal } from '../../components/features/arc-generator/ArcReviewModal';
 import { useClass } from '../../hooks/useClasses';
 import { useArcs } from '../../hooks/useArcs';
 import { useClassStudents } from '../../hooks/useStudents';
+import { useApproveArc } from '../../hooks/useArcMutations';
+import { api } from '../../lib/api';
+import type { Arc } from '../../lib/types';
 
 export default function ClassDetailPage({ params }: { params: Promise<{ classId: string }> }) {
   const { classId } = use(params);
+  const router = useRouter();
   const { data: classData, isLoading: classLoading, error: classError } = useClass(classId);
-  const { data: arcs, isLoading: arcsLoading } = useArcs(classId);
+  const { data: arcs, isLoading: arcsLoading, refetch: refetchArcs } = useArcs(classId);
   const { data: students, isLoading: studentsLoading } = useClassStudents(classId);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [pendingArc, setPendingArc] = useState<Arc | null>(null);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const approveMutation = useApproveArc();
 
   const isLoading = classLoading || arcsLoading;
   const currentArc = arcs?.[0];
+
+  const handleArcGenerated = (arc: Arc) => {
+    // Don't auto-show modal, just refresh to show the draft arc
+    refetchArcs();
+  };
+
+  const handleReviewClick = () => {
+    if (currentArc) {
+      setPendingArc(currentArc);
+      setShowReviewModal(true);
+    }
+  };
+
+  const handleApprove = async () => {
+    if (!pendingArc) return;
+    try {
+      await approveMutation.mutateAsync(pendingArc.arc_id);
+      setShowReviewModal(false);
+      setPendingArc(null);
+      refetchArcs(); // Refresh to show the approved arc
+    } catch (error) {
+      console.error('Arc approval failed:', error);
+    }
+  };
+
+  const handleRegenerate = async () => {
+    if (!pendingArc) return;
+
+    // Delete the draft arc
+    if (confirm('Discard this arc and start over?')) {
+      try {
+        await api.arc.delete(pendingArc.arc_id);
+        setShowReviewModal(false);
+        setPendingArc(null);
+        refetchArcs();
+      } catch (e: any) {
+        alert('Failed to delete arc: ' + e.message);
+      }
+    }
+  };
+
+  const handleCloseModal = async () => {
+    // When X is clicked, delete the draft arc
+    if (pendingArc && pendingArc.status === 'draft') {
+      if (confirm('Discard this draft arc?')) {
+        try {
+          await api.arc.delete(pendingArc.arc_id);
+          setShowReviewModal(false);
+          setPendingArc(null);
+          refetchArcs();
+        } catch (e: any) {
+          alert('Failed to delete arc: ' + e.message);
+        }
+      }
+    } else {
+      setShowReviewModal(false);
+    }
+  };
+
+  const handlePublish = async () => {
+    if (!currentArc) return;
+    if (confirm('Publish this arc to students? This will generate all scenes and assign character variants.')) {
+      setIsPublishing(true);
+      try {
+        await api.arc.publish(currentArc.arc_id);
+        await refetchArcs();
+        alert('Arc published successfully!');
+      } catch (e: any) {
+        alert('Failed to publish: ' + e.message);
+      } finally {
+        setIsPublishing(false);
+      }
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!currentArc) return;
+    if (confirm('Delete this arc and all scenes? This cannot be undone.')) {
+      try {
+        await api.arc.delete(currentArc.arc_id);
+        refetchArcs();
+      } catch (e: any) {
+        alert('Failed to delete arc: ' + e.message);
+      }
+    }
+  };
 
   // Extract unique dimension names from students
   const dimensionNames = students && students.length > 0
@@ -117,50 +214,16 @@ export default function ClassDetailPage({ params }: { params: Promise<{ classId:
                 </div>
               </div>
 
-              <div className="bg-warm-white p-8 rounded-xl border border-warm-grey flex flex-col h-full">
-                <div className="flex items-center justify-between mb-8">
-                  <h4 className="text-[11px] font-extrabold text-tertiary uppercase tracking-widest">Arc Status</h4>
-                  <span className="material-symbols-outlined text-tertiary/50">assessment</span>
-                </div>
-                {isLoading ? (
-                  <div className="space-y-4">
-                    <div className="h-4 bg-warm-grey rounded w-3/4 animate-pulse"></div>
-                    <div className="h-4 bg-warm-grey rounded w-1/2 animate-pulse"></div>
-                  </div>
-                ) : currentArc ? (
-                  <div className="flex-1 space-y-4">
-                    <div>
-                      <p className="text-[11px] text-tertiary font-bold uppercase mb-1">Arc ID</p>
-                      <p className="text-[13px] font-bold text-primary">{currentArc.arc_id}</p>
-                    </div>
-                    <div>
-                      <p className="text-[11px] text-tertiary font-bold uppercase mb-1">Status</p>
-                      <p className="text-[13px] font-bold text-terracotta">{currentArc.status}</p>
-                    </div>
-                    <div>
-                      <p className="text-[11px] text-tertiary font-bold uppercase mb-1">Scenes</p>
-                      <p className="text-[13px] font-bold text-primary">{currentArc.scenes?.length || 0} scenes</p>
-                    </div>
-                    <Link href={`/arc/${currentArc.arc_id}`}>
-                      <button className="mt-4 text-[10px] font-extrabold text-terracotta hover:text-terracotta/80 transition-all uppercase tracking-widest flex items-center gap-1">
-                        View Arc Details
-                        <span className="material-symbols-outlined text-xs">arrow_forward</span>
-                      </button>
-                    </Link>
-                  </div>
-                ) : (
-                  <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
-                    <span className="material-symbols-outlined text-5xl text-tertiary/20 mb-4">auto_stories</span>
-                    <p className="text-[13px] text-tertiary mb-4">No arc created yet for this class</p>
-                    <Link href={`/class/${classId}/arc/new`}>
-                      <button className="text-[10px] font-extrabold text-terracotta hover:text-terracotta/80 transition-all uppercase tracking-widest flex items-center gap-1">
-                        Create Arc
-                        <span className="material-symbols-outlined text-xs">add</span>
-                      </button>
-                    </Link>
-                  </div>
-                )}
-              </div>
+              <ArcStatusBox
+                classId={classId}
+                currentArc={currentArc}
+                isLoading={isLoading}
+                isPublishing={isPublishing}
+                onArcGenerated={handleArcGenerated}
+                onPublish={handlePublish}
+                onDelete={handleDelete}
+                onReviewClick={handleReviewClick}
+              />
             </div>
 
             <div className="pt-8">
@@ -232,11 +295,16 @@ export default function ClassDetailPage({ params }: { params: Promise<{ classId:
         </footer>
       </main>
 
-      <Link href={`/class/${classId}/arc/new`}>
-        <button className="fixed bottom-10 right-10 w-16 h-16 bg-terracotta text-parchment rounded-2xl shadow-[0_20px_50px_rgba(200,90,50,0.2)] flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-300 z-50">
-          <span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: "'wght' 700" }}>add</span>
-        </button>
-      </Link>
+      {/* Arc Review Modal */}
+      {pendingArc && (
+        <ArcReviewModal
+          arc={pendingArc}
+          isOpen={showReviewModal}
+          onClose={handleCloseModal}
+          onApprove={handleApprove}
+          onRegenerate={handleRegenerate}
+        />
+      )}
     </div>
   );
 }
