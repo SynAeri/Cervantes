@@ -51,8 +51,7 @@ async def generate_dialogue_turn(
         "character": {
             "name": scene["character_id"],
             "personality_prompt": character_personality,
-            "sprite_set": ["neutral", "surprised", "thoughtful", "concerned", "amused",
-                          "serious", "encouraging", "challenging", "curious", "relieved"],
+            "sprite_set": ["neutral", "encouraging", "concerned", "challenging", "surprised"],
         },
         "scene_context": {
             "setting": scene.get("setup_narration"),
