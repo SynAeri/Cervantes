@@ -13,9 +13,18 @@ import {
 } from 'firebase/auth';
 import { useRouter, usePathname } from 'next/navigation';
 import { auth } from './firebase';
+import { apiFetch } from '../app/lib/api';
+
+interface StudentProfile {
+  student_id: string;
+  full_name: string;
+  email: string;
+  enrolled_classes: string[];
+}
 
 interface AuthContextType {
   user: User | null;
+  studentProfile: StudentProfile | null;
   loading: boolean;
   token: string | null;
   signIn: (email: string, password: string) => Promise<void>;
@@ -23,6 +32,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signInWithMicrosoft: () => Promise<void>;
+  loginWithStudentId: (studentId: string) => Promise<{ success: boolean; message?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -32,6 +42,7 @@ const microsoftProvider = new OAuthProvider('microsoft.com');
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [studentProfile, setStudentProfile] = useState<StudentProfile | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -52,16 +63,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return unsubscribe;
   }, []);
 
-  // Redirect logic
+  // Restore student profile from localStorage on mount
+  useEffect(() => {
+    const stored = localStorage.getItem('student_profile');
+    if (stored) {
+      try {
+        setStudentProfile(JSON.parse(stored));
+      } catch (e) {
+        localStorage.removeItem('student_profile');
+      }
+    }
+  }, []);
+
+  // Redirect logic - allow student profile OR Firebase user
   useEffect(() => {
     if (loading) return;
-    if (!user && pathname !== '/login') {
+    const isAuthenticated = user || studentProfile;
+    if (!isAuthenticated && pathname !== '/login') {
       router.replace('/login');
     }
-    if (user && pathname === '/login') {
+    if (isAuthenticated && pathname === '/login') {
       router.replace('/dashboard');
     }
-  }, [user, loading, pathname, router]);
+  }, [user, studentProfile, loading, pathname, router]);
 
   const signIn = async (email: string, password: string) => {
     await signInWithEmailAndPassword(auth, email, password);
@@ -73,6 +97,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     await firebaseSignOut(auth);
+    setStudentProfile(null);
+    localStorage.removeItem('student_profile');
     router.replace('/login');
   };
 
@@ -84,8 +110,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await signInWithPopup(auth, microsoftProvider);
   };
 
+  const loginWithStudentId = async (studentId: string): Promise<{ success: boolean; message?: string }> => {
+    try {
+      const response = await apiFetch<{ success: boolean; message?: string; student?: StudentProfile }>('/api/auth/student-login', {
+        method: 'POST',
+        body: JSON.stringify({ student_id: studentId }),
+      });
+
+      if (response.success && response.student) {
+        setStudentProfile(response.student);
+        localStorage.setItem('student_profile', JSON.stringify(response.student));
+        return { success: true };
+      }
+
+      return { success: false, message: response.message || 'Login failed' };
+    } catch (error) {
+      return { success: false, message: 'Network error. Please try again.' };
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, token, signIn, signUp, signOut, signInWithGoogle, signInWithMicrosoft }}>
+    <AuthContext.Provider value={{
+      user,
+      studentProfile,
+      loading,
+      token,
+      signIn,
+      signUp,
+      signOut,
+      signInWithGoogle,
+      signInWithMicrosoft,
+      loginWithStudentId
+    }}>
       {children}
     </AuthContext.Provider>
   );

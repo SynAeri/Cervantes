@@ -59,6 +59,59 @@ async def register_user(request: RegisterRequest, db=Depends(get_firestore_db)):
         raise HTTPException(status_code=500, detail=f"Registration failed: {str(e)}")
 
 
+@router.post("/student-login")
+async def student_login(
+    request: dict,
+    db=Depends(get_firestore_db),
+):
+    """
+    Validate student ID and return student profile.
+    Used by student dashboard for simple ID-based authentication.
+    Does NOT create Firebase Auth session - that's handled client-side.
+    """
+    student_id = request.get("student_id")
+    if not student_id:
+        raise HTTPException(status_code=400, detail="student_id is required")
+
+    # Normalize student ID (add prefix if needed)
+    normalized_id = student_id if student_id.startswith("student_") else f"student_{student_id}"
+
+    # Query Firestore users collection
+    user_doc = await db.collection("users").document(normalized_id).get()
+
+    if not user_doc.exists:
+        return {"success": False, "message": "Student not found"}
+
+    user_data = user_doc.to_dict()
+
+    # Validate role is student
+    if user_data.get("role") != "student":
+        return {"success": False, "message": "Invalid credentials"}
+
+    # Query enrolled classes from enrollments collection
+    enrollments_ref = db.collection("enrollments")
+    enrollments_query = enrollments_ref.where("student_id", "==", normalized_id)
+    enrollments_docs = enrollments_query.stream()
+
+    enrolled_classes = []
+    async for enrollment_doc in enrollments_docs:
+        if enrollment_doc.exists:
+            enrollment_data = enrollment_doc.to_dict()
+            class_id = enrollment_data.get("class_id")
+            if class_id:
+                enrolled_classes.append(class_id)
+
+    return {
+        "success": True,
+        "student": {
+            "student_id": normalized_id,
+            "full_name": user_data.get("full_name", ""),
+            "email": user_data.get("email", ""),
+            "enrolled_classes": enrolled_classes
+        }
+    }
+
+
 @router.get("/me", response_model=UserProfile)
 async def get_my_profile(
     user: Annotated[dict, Depends(get_current_user)],

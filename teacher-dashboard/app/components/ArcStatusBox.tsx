@@ -173,7 +173,7 @@ export function ArcStatusBox({
         </div>
         <div className="flex-1 flex flex-col">
           <div className="flex items-start justify-between mb-4">
-            <div className="space-y-4 flex-1">
+            <div className="space-y-4 flex-1 min-w-0">
               <div>
                 <p className="text-[11px] text-tertiary font-bold uppercase mb-1">Arc ID</p>
                 <p className="text-[13px] font-bold text-primary">{currentArc.arc_id}</p>
@@ -186,6 +186,20 @@ export function ArcStatusBox({
                 <p className="text-[11px] text-tertiary font-bold uppercase mb-1">Scenes</p>
                 <p className="text-[13px] font-bold text-primary">{currentArc.scenes?.length || 0} scenes</p>
               </div>
+              {currentArc.status === 'published' && (
+                <div className="min-w-0">
+                  <p className="text-[11px] text-tertiary font-bold uppercase mb-1">Student Link</p>
+                  <a
+                    href={`https://cervantes-backend-prod--cervantes-caebc.asia-southeast1.hosted.app/${currentArc.arc_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[13px] font-bold text-[#2563eb] hover:text-[#1d4ed8] transition-colors flex items-center gap-1 group min-w-0"
+                  >
+                    <span className="truncate min-w-0">cervantes-student.com/{currentArc.arc_id}</span>
+                    <span className="material-symbols-outlined text-xs flex-shrink-0 group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+                  </a>
+                </div>
+              )}
             </div>
 
             {/* Three-dot Menu */}
