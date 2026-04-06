@@ -8,7 +8,7 @@ export class APIError extends Error {
     public statusText: string,
     public detail: string
   ) {
-    super(detail);
+    super(typeof detail === 'string' ? detail : JSON.stringify(detail));
     this.name = 'APIError';
   }
 }
@@ -31,13 +31,35 @@ export async function apiFetch<T>(
     const error = await response.json().catch(() => ({
       detail: response.statusText
     }));
-    throw new APIError(response.status, response.statusText, error.detail || 'Unknown error');
+
+    // Extract detail as string
+    let detail = 'Unknown error';
+    if (typeof error.detail === 'string') {
+      detail = error.detail;
+    } else if (error.message) {
+      detail = error.message;
+    } else if (typeof error === 'string') {
+      detail = error;
+    } else {
+      detail = response.statusText || 'Request failed';
+    }
+
+    throw new APIError(response.status, response.statusText, detail);
   }
 
   return response.json();
 }
 
 export const api = {
+  arc: {
+    validateArcId: (arcId: string) =>
+      apiFetch<{ exists: boolean; status?: string }>(`/api/arc/${arcId}`),
+    checkStudentAccess: (arcId: string, studentId: string) =>
+      apiFetch<any>(`/api/arc/${arcId}/check-student-access`, {
+        method: 'POST',
+        body: JSON.stringify({ student_id: studentId }),
+      }),
+  },
   scene: {
     getById: (sceneId: string) => apiFetch<any>(`/api/scene/${sceneId}`),
   },
