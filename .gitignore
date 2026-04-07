@@ -90,5 +90,9 @@ character-generation/ComfyUI/**
 !character-generation/ComfyUI/
 !character-generation/ComfyUI/custom_nodes/
 !character-generation/ComfyUI/custom_nodes/**
-!character-generation/ComfyUI/models/
-!character-generation/ComfyUI/models/**
+!character-generation/ComfyUI/workflows/
+!character-generation/ComfyUI/workflows/**
+
+character-generation/ComfyUI/models/**/.cache/
+character-generation/ComfyUI/models/**/huggingface/
+character-generation/ComfyUI/**/__pycache__/
