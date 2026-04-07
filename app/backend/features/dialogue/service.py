@@ -75,7 +75,59 @@ async def generate_dialogue_turn(
     if 'concept_target' not in scene:
         raise ValueError(f"Scene {actual_scene_id} missing required field: concept_target")
 
-    character_personality = f"{scene['character_id']} (character)"
+    # Fetch the assigned character from character pool (same logic as scenes/routes.py)
+    normalized_student_id = student_id if student_id.startswith("student_") else f"student_{student_id}"
+    assignments_ref = db.collection("student_scene_assignments")
+    assignments_query = assignments_ref.where(filter=FieldFilter("arc_id", "==", arc_id)).where(filter=FieldFilter("student_id", "==", normalized_student_id)).where(filter=FieldFilter("scene_order", "==", scene_order))
+    assignments_docs = assignments_query.stream()
+
+    assignment_data = None
+    async for doc in assignments_docs:
+        if doc.exists:
+            assignment_data = doc.to_dict()
+            break
+
+    # Get character name from character pool if available
+    assigned_character_name = None
+    if assignment_data:
+        character_pool_id = assignment_data.get("character_pool_id")
+        assigned_variant = assignment_data.get("assigned_variant")
+
+        if character_pool_id:
+            pool_doc = await db.collection("character_pools").document(character_pool_id).get()
+            if pool_doc.exists:
+                pool_data = pool_doc.to_dict()
+                name_variants = pool_data.get("name_variants", [])
+                selected_variant = next((v for v in name_variants if v.get("variant_id") == assigned_variant), None)
+
+                if selected_variant:
+                    assigned_character_name = selected_variant.get("name")
+                    print(f"DEBUG: Found assigned character from pool: {assigned_character_name} (variant {assigned_variant})")
+
+    # Get character name: priority order
+    # 1. From conversation history (already mapped character names)
+    # 2. From assigned_character (character pool assignment)
+    # 3. Fallback to character_id
+    character_name = None
+
+    # Check conversation history first
+    for turn in conversation_history:
+        if turn.role == "character" and turn.character_id:
+            character_name = turn.character_id
+            print(f"DEBUG: Using character name from conversation history: {character_name}")
+            break
+
+    # If no history, use assigned character from character pool
+    if not character_name and assigned_character_name:
+        character_name = assigned_character_name
+        print(f"DEBUG: Using character name from character pool: {character_name}")
+
+    # Final fallback to raw character_id
+    if not character_name:
+        character_name = scene['character_id']
+        print(f"DEBUG: Fallback to scene character_id: {character_name}")
+
+    character_personality = f"{character_name} (character)"
 
     dialogue_prompt = load_system_prompt("pushback_dialogue")
     emotion_tags = load_annotation("emotion_tags")
@@ -112,8 +164,7 @@ async def generate_dialogue_turn(
         response_type = "freeform"
         response_content = student_response or ""
 
-    # Get character name for use in prompts
-    character_name = scene["character_id"]
+    # character_name already extracted above from conversation history
 
     runtime_context = {
         "character": {
@@ -305,7 +356,7 @@ Example: "character_dialogue": "[character:name] *emotion* Text\\n[character:nam
             # Remove [narration] and sign-off lines
             dialogue_lines = response.character_dialogue.split("\n")
             cleaned_lines = []
-            character_name = scene["character_id"]
+            # character_name already correctly set at top of function
 
             for line in dialogue_lines:
                 line_lower = line.lower()
@@ -351,5 +402,9 @@ Example: "character_dialogue": "[character:name] *emotion* Text\\n[character:nam
         "created_at": datetime.utcnow().isoformat(),
     }
     await db.collection("reasoning_traces").document(trace_id).set(trace_data)
+
+    # Character name is already correct (from conversation history or character pool)
+    # No need to apply character mapping again - it would create duplicate mappings
+    print(f"DEBUG: Dialogue response using character: {character_name}")
 
     return response

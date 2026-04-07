@@ -11,12 +11,14 @@ import { ChoicePanel } from './ChoicePanel';
 import { FreeformInput } from './FreeformInput';
 import { MultiPartFreeformInput } from './MultiPartFreeformInput';
 import { CharacterSprite } from './CharacterSprite';
+import { api } from '../../lib/api';
 
 interface VNPlayerProps {
   sceneContent: string;
   characterName: string;
   characterRole: string;
   sceneId: string;
+  location?: string;
   onSceneComplete: (conversationHistory: any[]) => void;
 }
 
@@ -25,27 +27,157 @@ export function VNPlayer({
   characterName,
   characterRole,
   sceneId,
+  location = 'office',
   onSceneComplete,
 }: VNPlayerProps) {
   const [blocks, setBlocks] = useState<VNBlock[]>([]);
   const [currentBlockIndex, setCurrentBlockIndex] = useState(0);
-  const [conversationHistory, setConversationHistory] = useState<any[]>([]);
+  const [conversationHistory, setConversationHistory] = useState<any[]>([]); // Scene-level history
+  const [arcJournalEntries, setArcJournalEntries] = useState<any[]>([]); // Arc-wide persistent journal
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
   const [currentEmotion, setCurrentEmotion] = useState<string | undefined>();
   const [showJournal, setShowJournal] = useState(false);
+  const [charactersPresent, setCharactersPresent] = useState<Set<string>>(new Set()); // Track all characters in scene
+  const [charactersIntroduced, setCharactersIntroduced] = useState<Set<string>>(new Set()); // Characters who have spoken
+  const [activeCharacter, setActiveCharacter] = useState<string | null>(null); // Currently speaking character
+  const [characterEmotions, setCharacterEmotions] = useState<Map<string, string>>(new Map()); // Track last emotion per character
+  const [characterMappings, setCharacterMappings] = useState<any>(null); // Character sprite mappings
+  const [nameToMappingIndex, setNameToMappingIndex] = useState<Map<string, any>>(new Map()); // Reverse lookup: assigned_name -> mapping
+
+  // Load character mappings and arc journal on mount
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const studentId = searchParams.get('studentId');
+    const arcId = searchParams.get('arcId');
+
+    if (studentId && arcId) {
+      // Load character mappings for sprite assignment
+      api.characterMappings.get(studentId, arcId)
+        .then(data => {
+          setCharacterMappings(data.character_mappings);
+
+          // Create reverse lookup: assigned_name -> mapping
+          const reverseLookup = new Map();
+          Object.values(data.character_mappings || {}).forEach((mapping: any) => {
+            reverseLookup.set(mapping.assigned_name, mapping);
+          });
+          setNameToMappingIndex(reverseLookup);
+
+          console.log('Loaded character mappings:', data.character_mappings);
+          console.log('Name lookup:', reverseLookup);
+        })
+        .catch(err => console.error('Failed to load character mappings:', err));
+    }
+  }, []);
+
+  // Load arc journal on mount
+  useEffect(() => {
+    const loadArcJournal = async () => {
+      const searchParams = new URLSearchParams(window.location.search);
+      const studentId = searchParams.get('studentId');
+      const arcId = searchParams.get('arcId');
+
+      if (studentId && arcId) {
+        try {
+          const journalData = await api.arcJournal.get(studentId, arcId);
+          setArcJournalEntries(journalData.entries || []);
+          console.log(`Loaded arc journal: ${journalData.entries?.length || 0} entries`);
+        } catch (error) {
+          console.error('Failed to load arc journal:', error);
+          // Journal doesn't exist yet - will be created on first append
+          setArcJournalEntries([]);
+        }
+      }
+    };
+
+    loadArcJournal();
+  }, []);
 
   useEffect(() => {
     const parsedBlocks = parseVNScene(sceneContent);
     setBlocks(parsedBlocks);
     setCurrentBlockIndex(0);
+    // Reset scene-level history when new scene loads
+    setConversationHistory([]);
+
+    // Extract all unique characters from scene
+    const characters = new Set<string>();
+    parsedBlocks.forEach(block => {
+      if (block.type === 'dialogue' && block.character) {
+        characters.add(block.character);
+      }
+    });
+    setCharactersPresent(characters);
+    console.log(`Scene has ${characters.size} characters:`, Array.from(characters));
+
+    // Reset introduced characters and their emotions when new scene loads
+    setCharactersIntroduced(new Set());
+    setCharacterEmotions(new Map());
+
+    // Don't set active character yet - let it be set when first dialogue appears
+    setActiveCharacter(null);
   }, [sceneContent]);
 
   const currentBlock = blocks[currentBlockIndex];
   const isLastBlock = currentBlockIndex >= blocks.length - 1;
 
+  // Update active character when block changes
+  useEffect(() => {
+    if (currentBlock?.type === 'dialogue') {
+      setActiveCharacter(currentBlock.character);
+      setCurrentEmotion(currentBlock.emotion);
+
+      // Update this character's last emotion state
+      setCharacterEmotions(prev => {
+        const updated = new Map(prev);
+        updated.set(currentBlock.character, currentBlock.emotion || 'neutral');
+        return updated;
+      });
+
+      // Add character to introduced set when they first speak
+      setCharactersIntroduced(prev => {
+        const updated = new Set(prev);
+        updated.add(currentBlock.character);
+        return updated;
+      });
+    } else {
+      // During narration/prompts, keep characters visible but no one active
+      setActiveCharacter(null);
+    }
+  }, [currentBlockIndex, currentBlock]);
+
   const handleNext = () => {
+    // Build updated history with current block
+    let updatedHistory = conversationHistory;
+
+    // Add current block to conversation history if it's dialogue or narration
+    if (currentBlock.type === 'dialogue') {
+      updatedHistory = [
+        ...conversationHistory,
+        {
+          role: 'character',
+          content: currentBlock.content,
+          character_id: currentBlock.character, // Use character from parsed block, not prop
+          emotion_tag: currentBlock.emotion,
+          timestamp: new Date().toISOString(),
+        },
+      ];
+      setConversationHistory(updatedHistory);
+    } else if (currentBlock.type === 'narration') {
+      updatedHistory = [
+        ...conversationHistory,
+        {
+          role: 'narration',
+          content: currentBlock.content,
+          timestamp: new Date().toISOString(),
+        },
+      ];
+      setConversationHistory(updatedHistory);
+    }
+
     if (isLastBlock) {
-      onSceneComplete(conversationHistory);
+      // Pass the updated history to onSceneComplete
+      onSceneComplete(updatedHistory);
     } else {
       setCurrentBlockIndex(prev => prev + 1);
     }
@@ -133,20 +265,8 @@ export function VNPlayer({
 
       const data = await dialogueResponse.json();
 
-      // Add AI response to history
-      const updatedHistory = [
-        ...newHistory,
-        {
-          role: 'character',
-          content: data.character_dialogue,
-          character_id: characterName,
-          emotion_tag: data.emotion_tag,
-          timestamp: new Date().toISOString(),
-        },
-      ];
-      setConversationHistory(updatedHistory);
-
       // Parse the AI response to extract dialogue and player_prompt blocks
+      // NOTE: Individual blocks will be added to conversation history as user clicks through via handleNext()
       const parsedBlocks = parseVNScene(data.character_dialogue);
 
       // Check if should_end_scene is false but there's no player_prompt
@@ -169,7 +289,10 @@ export function VNPlayer({
       setIsWaitingForResponse(false);
 
       if (data.should_end_scene) {
-        onSceneComplete(updatedHistory);
+        // Don't pass updatedHistory since we removed it - use current conversation history
+        // The parsed blocks haven't been clicked through yet, so they won't be in history
+        // This is fine - the scene is ending anyway and full history will be saved
+        onSceneComplete(conversationHistory);
       } else {
         // Advance to the first inserted block (the AI's dialogue)
         setCurrentBlockIndex(currentBlockIndex + 1);
@@ -222,20 +345,8 @@ export function VNPlayer({
 
       const data = await dialogueResponse.json();
 
-      // Add AI response to history
-      const updatedHistory = [
-        ...newHistory,
-        {
-          role: 'character',
-          content: data.character_dialogue,
-          character_id: characterName,
-          emotion_tag: data.emotion_tag,
-          timestamp: new Date().toISOString(),
-        },
-      ];
-      setConversationHistory(updatedHistory);
-
       // Parse the AI response to extract dialogue and player_prompt blocks
+      // NOTE: Individual blocks will be added to conversation history as user clicks through via handleNext()
       const parsedBlocks = parseVNScene(data.character_dialogue);
       console.log(`Parsed ${parsedBlocks.length} blocks from AI response:`, parsedBlocks.map(b => b.type));
 
@@ -298,11 +409,20 @@ export function VNPlayer({
 
       {/* Background */}
       <div className="fixed inset-0 z-0 bg-near-black">
-        <img
-          alt=""
-          className="w-full h-full object-cover grayscale-[0.1] brightness-75"
-          src="/city.jpeg"
-        />
+        <picture>
+          <source srcSet={`/backgrounds/${location}/bg.jpg`} type="image/jpeg" />
+          <source srcSet={`/backgrounds/${location}/bg.jpeg`} type="image/jpeg" />
+          <source srcSet={`/backgrounds/${location}/bg.png`} type="image/png" />
+          <img
+            alt=""
+            className="w-full h-full object-cover grayscale-[0.1] brightness-75"
+            src={`/backgrounds/${location}/bg.jpg`}
+            onError={(e) => {
+              // Fallback to solid background if image not found
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+        </picture>
         <div className="absolute inset-0 bg-near-black/20"></div>
       </div>
 
@@ -337,37 +457,69 @@ export function VNPlayer({
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
-          {conversationHistory.length === 0 ? (
+          {/* Show arc-wide journal + current scene history combined */}
+          {arcJournalEntries.length === 0 && conversationHistory.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center px-4">
               <span className="material-symbols-outlined text-5xl text-wheat-gold/30 mb-3">auto_stories</span>
               <p className="text-parchment/60 text-sm">No conversation yet</p>
               <p className="text-parchment/40 text-xs mt-2">Dialogue appears here as you progress</p>
             </div>
           ) : (
-            conversationHistory.map((turn, index) => (
-              <div
-                key={index}
-                className={`p-3 rounded-lg ${
-                  turn.role === 'student'
-                    ? 'bg-terracotta/10 border-l-4 border-terracotta'
-                    : turn.role === 'character'
-                    ? 'bg-wheat-gold/10 border-l-4 border-wheat-gold'
-                    : 'bg-parchment/5 border-l-4 border-parchment/30'
-                }`}
-              >
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-xs font-bold uppercase tracking-wider text-parchment/80">
-                    {turn.role === 'student' ? 'You' : turn.role === 'character' ? turn.character_id || 'Character' : 'Narration'}
-                  </span>
-                  {turn.emotion_tag && (
-                    <span className="text-xs text-wheat-gold/60 italic">({turn.emotion_tag})</span>
-                  )}
+            <>
+              {/* Arc journal entries (from previous scenes) */}
+              {arcJournalEntries.map((turn, index) => (
+                <div
+                  key={`arc-${index}`}
+                  className={`p-3 rounded-lg ${
+                    turn.role === 'student'
+                      ? 'bg-terracotta/10 border-l-4 border-terracotta'
+                      : turn.role === 'character'
+                      ? 'bg-wheat-gold/10 border-l-4 border-wheat-gold'
+                      : 'bg-parchment/5 border-l-4 border-parchment/30'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[10px] font-mono text-parchment/40">Scene {turn.scene_order}</span>
+                    <span className="text-xs font-bold uppercase tracking-wider text-parchment/80">
+                      {turn.role === 'student' ? 'You' : turn.role === 'character' ? turn.character_id || 'Character' : 'Narration'}
+                    </span>
+                    {turn.emotion_tag && (
+                      <span className="text-xs text-wheat-gold/60 italic">({turn.emotion_tag})</span>
+                    )}
+                  </div>
+                  <p className="text-parchment/90 text-xs leading-relaxed whitespace-pre-wrap">
+                    {turn.content}
+                  </p>
                 </div>
-                <p className="text-parchment/90 text-xs leading-relaxed whitespace-pre-wrap">
-                  {turn.content}
-                </p>
-              </div>
-            ))
+              ))}
+
+              {/* Current scene history (not yet saved to journal) */}
+              {conversationHistory.map((turn, index) => (
+                <div
+                  key={`current-${index}`}
+                  className={`p-3 rounded-lg border-2 border-dashed ${
+                    turn.role === 'student'
+                      ? 'bg-terracotta/10 border-terracotta/60'
+                      : turn.role === 'character'
+                      ? 'bg-wheat-gold/10 border-wheat-gold/60'
+                      : 'bg-parchment/5 border-parchment/40'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[10px] font-mono text-parchment/40">Current</span>
+                    <span className="text-xs font-bold uppercase tracking-wider text-parchment/80">
+                      {turn.role === 'student' ? 'You' : turn.role === 'character' ? turn.character_id || 'Character' : 'Narration'}
+                    </span>
+                    {turn.emotion_tag && (
+                      <span className="text-xs text-wheat-gold/60 italic">({turn.emotion_tag})</span>
+                    )}
+                  </div>
+                  <p className="text-parchment/90 text-xs leading-relaxed whitespace-pre-wrap">
+                    {turn.content}
+                  </p>
+                </div>
+              ))}
+            </>
           )}
         </div>
       </div>
@@ -384,13 +536,55 @@ export function VNPlayer({
       <main className="fixed inset-0 z-10 flex flex-col justify-end">
         {/* Character display area */}
         <div className="flex-1 flex items-end justify-center relative pt-15">
-          {currentBlock.type === 'dialogue' && (
-            <CharacterSprite
-              name={characterName}
-              role={characterRole}
-              emotion={currentEmotion}
-            />
-          )}
+          {/* Render only characters that have been introduced (spoken at least once) */}
+          {Array.from(charactersIntroduced).map((characterName, index) => {
+            const isActive = characterName === activeCharacter;
+            const totalCharacters = charactersIntroduced.size;
+
+            // Use character's last emotion state (preserved when inactive)
+            const lastEmotion = characterEmotions.get(characterName) || 'neutral';
+
+            // Calculate position based on number of characters (VN standard positioning)
+            let translateX = '-50%'; // Default: center the sprite
+            if (totalCharacters === 1) {
+              translateX = '-50%'; // Single character: perfectly centered
+            } else if (totalCharacters === 2) {
+              // Two characters: left (-25%) and right (-75%) with spacing
+              translateX = index === 0 ? 'calc(-50% - 200px)' : 'calc(-50% + 200px)';
+            } else {
+              // For 3+ characters, spread them out evenly
+              const positions = totalCharacters;
+              const spacing = 400 / (positions - 1); // 400px total spread
+              translateX = `calc(-50% - 200px + ${index * spacing}px)`;
+            }
+
+            // Get sprite mapping for this character using assigned name
+            const mapping = nameToMappingIndex.get(characterName);
+            const gender = mapping?.gender;
+            const spriteIndex = mapping?.sprite_index;
+
+            console.log(`DEBUG: Character ${characterName} - mapping:`, mapping, `gender: ${gender}, spriteIndex: ${spriteIndex}`);
+
+            return (
+              <div
+                key={characterName}
+                className="absolute bottom-0 left-1/2 transition-all duration-700 ease-out"
+                style={{
+                  transform: `translateX(${translateX})`,
+                }}
+              >
+                <CharacterSprite
+                  name={characterName}
+                  role={characterRole}
+                  emotion={lastEmotion}
+                  isActive={isActive}
+                  position={totalCharacters === 1 ? 'center' : index === 0 ? 'left' : 'right'}
+                  gender={gender}
+                  spriteIndex={spriteIndex}
+                />
+              </div>
+            );
+          })}
 
           {/* Choice panel in middle of screen */}
           {currentBlock.type === 'player_prompt' && currentBlock.isMultiChoice && currentBlock.options && (
@@ -417,7 +611,7 @@ export function VNPlayer({
 
             {currentBlock.type === 'dialogue' && (
               <DialogueBox
-                character={characterName}
+                character={currentBlock.character}
                 text={currentBlock.content}
                 emotion={currentBlock.emotion}
                 onNext={handleNext}

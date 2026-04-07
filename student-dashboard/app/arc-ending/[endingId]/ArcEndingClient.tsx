@@ -20,8 +20,16 @@ export function ArcEndingClient({ params }: { params: Promise<{ endingId: string
   const [showReflection, setShowReflection] = useState(false);
   const [reflectionAnswer, setReflectionAnswer] = useState('');
 
-  const studentId = searchParams.get('studentId');
-  const arcId = searchParams.get('arcId');
+  const studentId = searchParams.get('studentId') || localStorage.getItem('currentStudentId') || '';
+  const arcId = searchParams.get('arcId') || localStorage.getItem('currentArcId') || '';
+
+  // Store in localStorage for journal access
+  useEffect(() => {
+    if (studentId && arcId) {
+      localStorage.setItem('currentStudentId', studentId);
+      localStorage.setItem('currentArcId', arcId);
+    }
+  }, [studentId, arcId]);
 
   useEffect(() => {
     const fetchEnding = async () => {
@@ -71,8 +79,12 @@ export function ArcEndingClient({ params }: { params: Promise<{ endingId: string
     // TODO: Save reflection to backend
     console.log('Reflection submitted:', reflectionAnswer);
 
-    // Navigate to journal
-    router.push('/journal');
+    // Navigate to journal with student and arc IDs
+    if (studentId && arcId) {
+      router.push(`/journal?studentId=${studentId}&arcId=${arcId}`);
+    } else {
+      router.push('/');
+    }
   };
 
   if (loading) {
@@ -125,7 +137,7 @@ export function ArcEndingClient({ params }: { params: Promise<{ endingId: string
 
           <div className="flex justify-end gap-4 mt-6">
             <button
-              onClick={() => router.push('/journal')}
+              onClick={() => studentId && arcId ? router.push(`/journal?studentId=${studentId}&arcId=${arcId}`) : router.push('/')}
               className="px-6 py-2 bg-parchment/10 text-parchment/80 font-medium rounded transition-colors hover:bg-parchment/20"
             >
               Skip
@@ -165,53 +177,67 @@ export function ArcEndingClient({ params }: { params: Promise<{ endingId: string
         </div>
       </div>
 
-      {/* Content */}
+      {/* Main content - matching VNPlayer layout */}
       <main className="fixed inset-0 z-10 flex flex-col justify-end">
-        <div className="w-full px-0 bg-near-black/95 relative flex flex-col min-h-[40vh]">
+        {/* Character display area (sprites would go here) */}
+        <div className="flex-1 flex items-end justify-center relative pt-15">
+          {/* TODO: Add character sprite based on currentBlock.character */}
+        </div>
+
+        {/* Interaction area - VN standard 1/4 of page */}
+        <div className="w-full px-0 bg-near-black/95 relative flex flex-col min-h-[25vh]">
+          {/* Gradient overlay at top edge */}
           <div className="absolute -top-24 left-0 right-0 h-24 bg-gradient-to-b from-transparent via-transparent to-near-black/95 pointer-events-none z-20"></div>
 
-          <div className="relative w-full pt-2 flex-1 overflow-y-auto px-6 py-4">
-            {currentBlock && (
-              <>
-                {currentBlock.type === 'narration' && (
-                  <div className="mb-6">
-                    <p className="text-parchment/70 italic text-lg leading-relaxed">
-                      {currentBlock.content}
-                    </p>
-                  </div>
-                )}
-
-                {currentBlock.type === 'dialogue' && (
-                  <div className="mb-6">
-                    <div className="mb-2">
-                      <span className="text-wheat-gold font-semibold text-lg">
-                        {currentBlock.character}
-                      </span>
-                      {currentBlock.emotion && (
-                        <span className="text-parchment/50 text-sm ml-2">
-                          [{currentBlock.emotion}]
-                        </span>
-                      )}
+          {/* Dialogue/Narration content */}
+          <div className="relative w-full pt-2 flex-1 flex flex-col justify-between">
+            <div className="px-8 py-6 flex-1 flex flex-col justify-center">
+              {currentBlock && (
+                <>
+                  {currentBlock.type === 'narration' && (
+                    <div className="max-w-4xl mx-auto">
+                      <div className="bg-parchment/5 border-l-4 border-wheat-gold/40 px-6 py-4 rounded-r-lg">
+                        <p className="text-parchment/70 italic text-base leading-relaxed">
+                          {currentBlock.content}
+                        </p>
+                      </div>
                     </div>
-                    <p className="text-parchment text-lg leading-relaxed pl-4">
-                      {currentBlock.content}
-                    </p>
-                  </div>
-                )}
+                  )}
 
-                <button
-                  onClick={handleNext}
-                  className="mt-6 px-8 py-3 bg-terracotta text-parchment font-bold rounded-lg hover:bg-terracotta/80 transition-colors"
-                >
-                  {isLastBlock ? 'Continue' : 'Next'}
-                </button>
-              </>
-            )}
-          </div>
+                  {currentBlock.type === 'dialogue' && (
+                    <div className="max-w-4xl mx-auto">
+                      <div className="bg-near-black/50 border border-parchment/10 rounded-xl px-6 py-5">
+                        <div className="flex items-center gap-3 mb-3">
+                          <span className="text-wheat-gold font-semibold text-lg tracking-wide">
+                            {currentBlock.character}
+                          </span>
+                          {currentBlock.emotion && (
+                            <span className="text-xs px-2 py-1 bg-parchment/10 text-parchment/60 rounded-full">
+                              {currentBlock.emotion}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-parchment text-base leading-relaxed">
+                          {currentBlock.content}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
 
-          <div className="flex flex-col items-center gap-3 px-6 pb-4 pt-3 border-t border-parchment/10">
-            <div className="text-parchment/60 text-[10px] tracking-[0.4em] uppercase font-light">
-              {currentBlockIndex + 1}/{blocks.length}
+            {/* Progress indicator and next button */}
+            <div className="flex items-center justify-between px-8 py-4 border-t border-parchment/10">
+              <div className="text-parchment/40 text-xs tracking-[0.2em] uppercase font-light">
+                {currentBlockIndex + 1}/{blocks.length}
+              </div>
+              <button
+                onClick={handleNext}
+                className="px-6 py-2.5 bg-terracotta text-near-black font-bold rounded-lg hover:bg-terracotta/90 transition-all hover:scale-105 active:scale-95"
+              >
+                {isLastBlock ? 'Reflect' : 'Continue'}
+              </button>
             </div>
           </div>
         </div>

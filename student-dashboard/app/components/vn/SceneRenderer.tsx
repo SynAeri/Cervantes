@@ -31,6 +31,7 @@ export function SceneRenderer({ sceneId, sceneData, onComplete }: SceneRendererP
       characterName={sceneData.assigned_character?.name || sceneData.character?.name || 'Character'}
       characterRole={sceneData.assigned_character?.role || sceneData.character?.role || 'Unknown'}
       sceneId={sceneId}
+      location={sceneData.location || 'office'}
       onSceneComplete={onComplete}
     />
   );

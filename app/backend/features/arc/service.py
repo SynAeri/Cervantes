@@ -354,9 +354,14 @@ Plan the arc with:
 1. **Arc name** - thematic title
 2. **Scene sequencing** - opening bridge → deep scenes in order of complexity
 3. **Arc position tags** - opening, mid, climax, resolution
-4. **Settings** - where each scene takes place (market, workshop, office, etc.)
-5. **Learning outcomes** - what student should understand after each scene
-6. **Archetype assignments** - follow the casting rules above
+4. **Settings** - descriptive text of where the scene takes place
+5. **Locations** - choose appropriate background visual from these options:
+   - "city" - urban outdoor scenes, streets, public spaces
+   - "office" - professional workplaces, startups, corporate settings
+   - "classroom" - academic settings, lectures, study groups
+   - "library" - quiet study spaces, research environments
+6. **Learning outcomes** - what student should understand after each scene
+7. **Archetype assignments** - follow the casting rules above
 
 Do NOT generate characters - those will be generated separately.
 Do NOT include character objects in your output.
@@ -378,6 +383,7 @@ Return JSON matching this exact structure:
       "correct_understanding": null,
       "arc_position": "opening",
       "setting": "string - where this scene takes place",
+      "location": "office",
       "socratic_angles": []
     }},
     {{
@@ -391,6 +397,7 @@ Return JSON matching this exact structure:
       "correct_understanding": "what the student should believe instead",
       "arc_position": "mid",
       "setting": "string - where this scene takes place",
+      "location": "classroom",
       "socratic_angles": ["probing question 1", "probing question 2"]
     }}
   ]

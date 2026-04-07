@@ -42,7 +42,8 @@ class SceneData(BaseModel):
     arc_position: str  # opening | mid | climax | resolution
     character: CharacterProfile  # Keep in narrative_arc for validation
     secondary_character: Optional[CharacterProfile] = None
-    setting: str
+    setting: str  # Text description of location
+    location: str = "office"  # Background folder: city, office, classroom, library
     socratic_angles: List[str]
 
 class NarrativeArc(BaseModel):

@@ -93,7 +93,29 @@ export const api = {
       body: JSON.stringify(data),
     }),
   },
+  arcJournal: {
+    get: (studentId: string, arcId: string) =>
+      apiFetch<any>(`/api/arc-journal/${studentId}/${arcId}`),
+    append: (data: {
+      student_id: string;
+      arc_id: string;
+      scene_id: string;
+      scene_order: number;
+      new_entries: any[];
+    }) => apiFetch<any>('/api/arc-journal/append', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+    markComplete: (studentId: string, arcId: string) =>
+      apiFetch<any>(`/api/arc-journal/${studentId}/${arcId}/complete`, {
+        method: 'POST',
+      }),
+  },
   journal: {
     getByStudent: (studentId: string) => apiFetch<any[]>(`/api/student/${studentId}/journal`),
+  },
+  characterMappings: {
+    get: (studentId: string, arcId: string) =>
+      apiFetch<any>(`/api/character-mappings/${studentId}/${arcId}`),
   },
 };
