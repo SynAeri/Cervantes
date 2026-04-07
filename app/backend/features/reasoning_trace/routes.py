@@ -59,27 +59,26 @@ async def save_reasoning_trace(
         )
 
 
-@router.get("/{trace_id}")
-async def get_reasoning_trace(
-    trace_id: str,
+@router.get("/student/{student_id}")
+async def get_all_traces_for_student(
+    student_id: str,
     db: AsyncClient = Depends(get_firestore_db)
 ):
-    """Get reasoning trace by ID"""
+    """Get ALL reasoning traces for a student across all scenes"""
     try:
-        trace_doc = await db.collection("reasoning_traces").document(trace_id).get()
+        traces_query = db.collection("reasoning_traces")\
+            .where("student_id", "==", student_id)\
+            .order_by("created_at", direction="DESCENDING")
 
-        if not trace_doc.exists:
-            raise HTTPException(status_code=404, detail="Reasoning trace not found")
+        traces = await traces_query.get()
 
-        return trace_doc.to_dict()
+        return [trace.to_dict() for trace in traces]
 
-    except HTTPException:
-        raise
     except Exception as e:
-        logger.error(f"Failed to get reasoning trace: {str(e)}")
+        logger.error(f"Failed to get reasoning traces for student {student_id}: {str(e)}")
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to get reasoning trace: {str(e)}"
+            detail=f"Failed to get reasoning traces: {str(e)}"
         )
 
 
@@ -105,4 +104,28 @@ async def get_traces_by_student_scene(
         raise HTTPException(
             status_code=500,
             detail=f"Failed to get reasoning traces: {str(e)}"
+        )
+
+
+@router.get("/{trace_id}")
+async def get_reasoning_trace(
+    trace_id: str,
+    db: AsyncClient = Depends(get_firestore_db)
+):
+    """Get reasoning trace by ID"""
+    try:
+        trace_doc = await db.collection("reasoning_traces").document(trace_id).get()
+
+        if not trace_doc.exists:
+            raise HTTPException(status_code=404, detail="Reasoning trace not found")
+
+        return trace_doc.to_dict()
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get reasoning trace: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to get reasoning trace: {str(e)}"
         )

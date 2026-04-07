@@ -4,6 +4,7 @@
 'use client';
 
 import { useState } from 'react';
+import { StudentDetailModal } from './StudentDetailModal';
 
 interface StudentProgress {
   student_id: string;
@@ -22,7 +23,7 @@ interface StudentProgressTableProps {
 }
 
 export function StudentProgressTable({ students, dimensionNames }: StudentProgressTableProps) {
-  const [expandedStudent, setExpandedStudent] = useState<string | null>(null);
+  const [selectedStudent, setSelectedStudent] = useState<StudentProgress | null>(null);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -101,7 +102,7 @@ export function StudentProgressTable({ students, dimensionNames }: StudentProgre
               <tr
                 key={student.student_id}
                 className="border-b border-warm-grey hover:bg-parchment/50 transition-colors cursor-pointer"
-                onClick={() => setExpandedStudent(expandedStudent === student.student_id ? null : student.student_id)}
+                onClick={() => setSelectedStudent(student)}
               >
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
@@ -156,6 +157,14 @@ export function StudentProgressTable({ students, dimensionNames }: StudentProgre
           </tbody>
         </table>
       </div>
+
+      {/* Student detail modal */}
+      {selectedStudent && (
+        <StudentDetailModal
+          student={selectedStudent}
+          onClose={() => setSelectedStudent(null)}
+        />
+      )}
     </div>
   );
 }

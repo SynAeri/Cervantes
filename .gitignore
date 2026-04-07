@@ -75,3 +75,6 @@ dev/*
 !dev/research/
 dev/research/*
 !dev/research/.gitkeep
+!dev/slides/
+!dev/chat-summary.md
+screenshots/

@@ -19,6 +19,19 @@ export interface Arc {
   status: 'draft' | 'generating' | 'published';
   scenes: Scene[];
   created_at: string;
+  curriculum_data?: {
+    subject: string;
+    module: string;
+    year_level: string;
+    learning_outcomes?: string[];
+    common_misconceptions?: {
+      misconception: string;
+      why_students_think_this: string;
+      exposing_scenario?: string;
+    }[];
+    key_concepts?: string[];
+  };
+  narrative_arc?: { arc_name: string };
 }
 
 export interface Scene {
@@ -30,6 +43,9 @@ export interface Scene {
   misconception_target: string;
   exposing_scenario: string;
   content: string;
+  learning_outcome?: string;
+  setting?: string;
+  socratic_angles?: string[];
 }
 
 export interface CharacterProfile {
@@ -38,6 +54,7 @@ export interface CharacterProfile {
   archetype: string;
   personality: string;
   backstory: string;
+  personality_prompt?: string;
 }
 
 export interface Student {

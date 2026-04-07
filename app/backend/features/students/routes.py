@@ -7,7 +7,10 @@ from datetime import datetime
 from app.backend.core.firebase import get_firestore_db
 from app.backend.core.auth import get_current_user
 
+import logging
+
 router = APIRouter(prefix="/api/students", tags=["students"])
+logger = logging.getLogger(__name__)
 
 @router.get("")
 async def get_all_students(current_user: dict = Depends(get_current_user)):
@@ -234,3 +237,53 @@ async def get_class_students(class_id: str, current_user: dict = Depends(get_cur
             })
 
     return students
+
+
+@router.get("/{student_id}/reasoning-traces")
+async def get_student_reasoning_traces(student_id: str, current_user: dict = Depends(get_current_user)):
+    """Get all reasoning traces for a student across all scenes (compatibility endpoint)"""
+    db = get_firestore_db()
+
+    try:
+        traces_ref = db.collection("reasoning_traces")
+        traces_query = traces_ref.where("student_id", "==", student_id).order_by("created_at", direction="DESCENDING")
+        traces_docs = traces_query.stream()
+
+        traces = []
+        async for doc in traces_docs:
+            if doc.exists:
+                traces.append(doc.to_dict())
+
+        return traces
+
+    except Exception as e:
+        logger.error(f"Failed to get reasoning traces for student {student_id}: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to get reasoning traces: {str(e)}"
+        )
+
+
+@router.get("/{student_id}/arc-journals")
+async def get_student_arc_journals(student_id: str, current_user: dict = Depends(get_current_user)):
+    """Get all arc journal entries for a student"""
+    db = get_firestore_db()
+
+    try:
+        journals_ref = db.collection("arc_journals")
+        journals_query = journals_ref.where("student_id", "==", student_id)
+        journals_docs = journals_query.stream()
+
+        journals = []
+        async for doc in journals_docs:
+            if doc.exists:
+                journals.append(doc.to_dict())
+
+        return journals
+
+    except Exception as e:
+        logger.error(f"Failed to get arc journals for student {student_id}: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to get arc journals: {str(e)}"
+        )

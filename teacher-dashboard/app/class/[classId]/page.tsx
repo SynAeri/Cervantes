@@ -8,9 +8,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Sidebar } from '../../components/Sidebar';
 import { TopBar } from '../../components/TopBar';
-import { StudentRow } from '../../components/StudentRow';
 import { StudentProgressTable } from '../../components/StudentProgressTable';
 import { ArcStatusBox } from '../../components/ArcStatusBox';
+import { ScenariosTab } from '../../components/ScenariosTab';
 import { ArcReviewModal } from '../../components/features/arc-generator/ArcReviewModal';
 import { useClass } from '../../hooks/useClasses';
 import { useArcs } from '../../hooks/useArcs';
@@ -25,6 +25,7 @@ export default function ClassDetailPage({ params }: { params: Promise<{ classId:
   const { data: classData, isLoading: classLoading, error: classError } = useClass(classId);
   const { data: arcs, isLoading: arcsLoading, refetch: refetchArcs } = useArcs(classId);
   const { data: students, isLoading: studentsLoading } = useClassStudents(classId);
+  const [activeTab, setActiveTab] = useState<'students' | 'scenarios'>('students');
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [pendingArc, setPendingArc] = useState<Arc | null>(null);
   const [isPublishing, setIsPublishing] = useState(false);
@@ -264,28 +265,76 @@ export default function ClassDetailPage({ params }: { params: Promise<{ classId:
               />
             </div>
 
+            {/* Tab navigation */}
             <div className="pt-8">
-              <h3 className="text-[11px] font-extrabold text-tertiary uppercase tracking-[0.2em] mb-6">Student Performance</h3>
-              {studentsLoading ? (
-                <div className="bg-warm-white rounded-xl border border-warm-grey p-8">
-                  <div className="space-y-4">
-                    <div className="h-8 bg-warm-grey rounded animate-pulse"></div>
-                    <div className="h-8 bg-warm-grey rounded animate-pulse"></div>
-                    <div className="h-8 bg-warm-grey rounded animate-pulse"></div>
-                  </div>
-                </div>
-              ) : studentsWithProgress && studentsWithProgress.length > 0 ? (
-                <StudentProgressTable
-                  students={studentsWithProgress}
-                  dimensionNames={dimensionNames}
-                />
-              ) : (
-                <div className="bg-warm-white rounded-xl border border-warm-grey p-12 text-center">
-                  <span className="material-symbols-outlined text-6xl text-tertiary/30 mb-4 block">
-                    group_off
+              <div className="flex items-center gap-1 border-b border-warm-grey mb-6" role="tablist">
+                <button
+                  role="tab"
+                  aria-selected={activeTab === 'students'}
+                  onClick={() => setActiveTab('students')}
+                  className={`px-4 py-2.5 text-[11px] font-extrabold uppercase tracking-[0.2em] transition-all relative focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-terracotta rounded-sm ${
+                    activeTab === 'students'
+                      ? 'text-terracotta'
+                      : 'text-tertiary hover:text-primary'
+                  }`}
+                >
+                  <span className="flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-sm">group</span>
+                    Student Performance
                   </span>
-                  <p className="text-[13px] text-tertiary">No students enrolled yet</p>
-                </div>
+                  <span className={`absolute bottom-0 left-0 right-0 h-0.5 rounded-full transition-all duration-200 ${
+                    activeTab === 'students' ? 'bg-terracotta opacity-100' : 'bg-transparent opacity-0'
+                  }`} />
+                </button>
+                <button
+                  role="tab"
+                  aria-selected={activeTab === 'scenarios'}
+                  onClick={() => setActiveTab('scenarios')}
+                  className={`px-4 py-2.5 text-[11px] font-extrabold uppercase tracking-[0.2em] transition-all relative focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-terracotta rounded-sm ${
+                    activeTab === 'scenarios'
+                      ? 'text-terracotta'
+                      : 'text-tertiary hover:text-primary'
+                  }`}
+                >
+                  <span className="flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-sm">auto_stories</span>
+                    Scenarios
+                  </span>
+                  <span className={`absolute bottom-0 left-0 right-0 h-0.5 rounded-full transition-all duration-200 ${
+                    activeTab === 'scenarios' ? 'bg-terracotta opacity-100' : 'bg-transparent opacity-0'
+                  }`} />
+                </button>
+              </div>
+
+              {/* Tab content */}
+              {activeTab === 'students' && (
+                <>
+                  {studentsLoading ? (
+                    <div className="bg-warm-white rounded-xl border border-warm-grey p-8">
+                      <div className="space-y-4">
+                        <div className="h-8 bg-warm-grey rounded animate-pulse"></div>
+                        <div className="h-8 bg-warm-grey rounded animate-pulse"></div>
+                        <div className="h-8 bg-warm-grey rounded animate-pulse"></div>
+                      </div>
+                    </div>
+                  ) : studentsWithProgress && studentsWithProgress.length > 0 ? (
+                    <StudentProgressTable
+                      students={studentsWithProgress}
+                      dimensionNames={dimensionNames}
+                    />
+                  ) : (
+                    <div className="bg-warm-white rounded-xl border border-warm-grey p-12 text-center">
+                      <span className="material-symbols-outlined text-6xl text-tertiary/30 mb-4 block">
+                        group_off
+                      </span>
+                      <p className="text-[13px] text-tertiary">No students enrolled yet</p>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {activeTab === 'scenarios' && (
+                <ScenariosTab classId={classId} />
               )}
             </div>
           </section>
