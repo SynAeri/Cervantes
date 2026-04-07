@@ -84,7 +84,7 @@ dev/*
 dev/research/*
 !dev/research/.gitkeep
 
-# comfyui
+# comfyui AI
 character-generation/ComfyUI/**
 
 !character-generation/ComfyUI/
