@@ -370,7 +370,17 @@ async def delete_arc(
     user: Annotated[dict, Depends(require_professor)],
     db=Depends(get_firestore_db),
 ):
-    """Delete an arc completely with cascade delete of all related data"""
+    """Delete an arc completely with cascade delete of all related data
+
+    This cascading delete removes:
+    - All scenes associated with the arc
+    - All character pools for the arc
+    - All student scene assignments
+    - All character mappings (student character assignments)
+    - All arc journals (student conversation history)
+    - All arc endings (student arc completion records)
+    - The arc document itself
+    """
     doc = await db.collection("arcs").document(arc_id).get()
     if not doc.exists:
         raise HTTPException(status_code=404, detail="Arc not found")
@@ -408,7 +418,44 @@ async def delete_arc(
             await db.collection("student_scene_assignments").document(assignment_doc.id).delete()
             deleted_assignments += 1
 
-    # Step 4: Delete the arc itself
+    # Step 4: Delete all character mappings (student character assignments)
+    mappings_ref = db.collection("student_character_mappings")
+    mappings_query = mappings_ref.where("arc_id", "==", arc_id)
+    mappings_docs = mappings_query.stream()
+
+    deleted_mappings = 0
+    async for mapping_doc in mappings_docs:
+        if mapping_doc.exists:
+            await db.collection("student_character_mappings").document(mapping_doc.id).delete()
+            deleted_mappings += 1
+
+    # Step 5: Delete all arc journals (student conversation history)
+    journals_ref = db.collection("arc_journals")
+    journals_query = journals_ref.where("arc_id", "==", arc_id)
+    journals_docs = journals_query.stream()
+
+    deleted_journals = 0
+    async for journal_doc in journals_docs:
+        if journal_doc.exists:
+            await db.collection("arc_journals").document(journal_doc.id).delete()
+            deleted_journals += 1
+
+    # Step 6: Delete all arc endings (student arc completion records)
+    endings_ref = db.collection("arc_endings")
+    endings_query = endings_ref.where("arc_id", "==", arc_id)
+    endings_docs = endings_query.stream()
+
+    deleted_endings = 0
+    async for ending_doc in endings_docs:
+        if ending_doc.exists:
+            await db.collection("arc_endings").document(ending_doc.id).delete()
+            deleted_endings += 1
+
+    # Step 7: Delete reasoning traces for this arc (optional - may want to keep for analytics)
+    # Reasoning traces don't have arc_id directly, so we'd need to query by scene_id
+    # For now, we'll skip this to preserve student learning data
+
+    # Step 8: Delete the arc itself
     await db.collection("arcs").document(arc_id).delete()
 
     return {
@@ -416,7 +463,11 @@ async def delete_arc(
         "arc_id": arc_id,
         "deleted_scenes": deleted_scenes,
         "deleted_character_pools": deleted_pools,
-        "deleted_student_assignments": deleted_assignments
+        "deleted_student_assignments": deleted_assignments,
+        "deleted_character_mappings": deleted_mappings,
+        "deleted_arc_journals": deleted_journals,
+        "deleted_arc_endings": deleted_endings,
+        "note": "Reasoning traces preserved for learning analytics"
     }
 
 

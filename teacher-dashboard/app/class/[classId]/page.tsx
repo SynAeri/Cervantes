@@ -68,6 +68,7 @@ export default function ClassDetailPage({ params }: { params: Promise<{ classId:
       arc_status,
       scenes_completed: scenesCompleted,
       total_scenes: totalScenes,
+      progress: totalScenes > 0 ? Math.round((scenesCompleted / totalScenes) * 100) : 0,
     };
   }) || students;
 
@@ -207,9 +208,9 @@ export default function ClassDetailPage({ params }: { params: Promise<{ classId:
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="group bg-warm-white p-8 rounded-xl border border-warm-grey hover:border-terracotta/20 transition-all duration-500 relative overflow-hidden flex flex-col justify-between h-full">
+              <div className="group bg-warm-white p-8 rounded-xl border border-warm-grey hover:border-terracotta/20 transition-all duration-500 relative overflow-hidden flex flex-col h-full">
                 <div className="absolute top-0 right-0 w-48 h-48 bg-terracotta/5 rounded-full -mr-24 -mt-24 blur-3xl group-hover:bg-terracotta/10 transition-all"></div>
-                <div>
+                <div className="flex-1">
                   <div className="flex justify-between items-start mb-6">
                     {isLoading ? (
                       <div className="w-12 h-12 bg-terracotta/10 rounded-lg animate-pulse"></div>
@@ -230,13 +231,63 @@ export default function ClassDetailPage({ params }: { params: Promise<{ classId:
                   ) : (
                     <>
                       <h4 className="text-2xl font-bold text-primary tracking-tight mb-3">{classData?.name}</h4>
-                      <p className="text-[14px] text-tertiary leading-relaxed max-w-sm">
+                      <p className="text-[14px] text-tertiary leading-relaxed mb-4">
                         {classData?.subject} - {classData?.module || 'General Course'}
                       </p>
+
+                      {/* Curriculum Data Section */}
+                      {currentArc?.curriculum_data && (
+                        <div className="mt-6 space-y-4">
+                          {/* Learning Outcomes */}
+                          {currentArc.curriculum_data.learning_outcomes && currentArc.curriculum_data.learning_outcomes.length > 0 && (
+                            <div>
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className="material-symbols-outlined text-wheat-gold text-sm">target</span>
+                                <h5 className="text-[10px] font-extrabold uppercase tracking-widest text-tertiary">Learning Objectives</h5>
+                              </div>
+                              <div className="space-y-1.5 max-h-32 overflow-y-auto pr-2">
+                                {currentArc.curriculum_data.learning_outcomes.slice(0, 3).map((outcome, idx) => (
+                                  <div key={idx} className="flex items-start gap-2">
+                                    <span className="text-wheat-gold text-[10px] mt-0.5">•</span>
+                                    <p className="text-[11px] text-body leading-relaxed">{outcome}</p>
+                                  </div>
+                                ))}
+                                {currentArc.curriculum_data.learning_outcomes.length > 3 && (
+                                  <p className="text-[10px] text-tertiary/60 italic pl-3">
+                                    +{currentArc.curriculum_data.learning_outcomes.length - 3} more
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Key Concepts */}
+                          {currentArc.curriculum_data.key_concepts && currentArc.curriculum_data.key_concepts.length > 0 && (
+                            <div>
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className="material-symbols-outlined text-terracotta text-sm">lightbulb</span>
+                                <h5 className="text-[10px] font-extrabold uppercase tracking-widest text-tertiary">Key Concepts</h5>
+                              </div>
+                              <div className="flex flex-wrap gap-1.5">
+                                {currentArc.curriculum_data.key_concepts.slice(0, 4).map((concept, idx) => (
+                                  <span key={idx} className="text-[10px] font-semibold px-2 py-1 bg-terracotta/10 text-terracotta rounded">
+                                    {concept}
+                                  </span>
+                                ))}
+                                {currentArc.curriculum_data.key_concepts.length > 4 && (
+                                  <span className="text-[10px] font-semibold px-2 py-1 bg-warm-grey/30 text-tertiary/60 rounded">
+                                    +{currentArc.curriculum_data.key_concepts.length - 4}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </>
                   )}
                 </div>
-                <div className="flex items-center justify-between mt-10 pt-6 border-t border-warm-grey">
+                <div className="flex items-center justify-between mt-6 pt-6 border-t border-warm-grey">
                   <div className="flex items-center gap-2 text-tertiary">
                     <span className="material-symbols-outlined text-lg">group</span>
                     <span className="text-[12px] font-bold">

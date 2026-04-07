@@ -42,10 +42,10 @@ interface GraphEdge {
 // ---------------------------------------------------------------------------
 
 const STATUS_COLORS: Record<string, string> = {
-  mastery: '#3B827E',
-  revised_with_scaffolding: '#D4A347',
-  critical_gap: '#9E3B3B',
-  none: '#8A7F72',
+  mastery: '#3B827E',           // Muted teal (good)
+  revised_with_scaffolding: '#D4A347',  // Goldenrod (warning)
+  critical_gap: '#9E3B3B',      // Crimson (critical)
+  none: '#8A7F72',              // Warm grey (neutral)
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -91,14 +91,17 @@ function buildGraph(traces: ReasoningTrace[], scenes?: Scene[]) {
     const scene = sceneMap.get(trace.scene_id);
     const sceneNumber = scene?.scene_number ?? idx + 1;
 
-    // Scene node — place left-to-right
+    // Scene node — scatter in circular/organic pattern (Obsidian-style)
+    const angle = (idx / dedupedTraces.length) * Math.PI * 2;
+    const radius = 100 + idx * 20; // Smaller radius for tighter layout
+    const jitter = ((idx * 37) % 30) - 15; // Reduced jitter
     nodes.push({
       id: sceneNodeId,
       type: 'scene',
       label: `Scene ${sceneNumber}`,
       status: trace.status,
-      x: 120 + idx * 180,
-      y: 250,
+      x: 300 + Math.cos(angle) * radius + jitter,
+      y: 250 + Math.sin(angle) * radius + jitter * 0.7,
       vx: 0,
       vy: 0,
       trace,
@@ -111,22 +114,22 @@ function buildGraph(traces: ReasoningTrace[], scenes?: Scene[]) {
       if (prevId) edges.push({ source: prevId, target: sceneNodeId, type: 'progression' });
     }
 
-    // Concept node — deterministic offset based on index
+    // Concept node — scatter around the scene organically
     const concept = scene?.concept_target;
     if (concept) {
       let conceptNodeId = seenConcepts.get(concept);
       if (!conceptNodeId) {
         conceptNodeId = `concept-${concept}`;
         seenConcepts.set(concept, conceptNodeId);
-        // Position concept above/below alternating with deterministic offset
-        const above = seenConcepts.size % 2 === 0;
-        const offset = ((idx * 17 + concept.length * 7) % 40) - 20; // deterministic pseudo-random
+        // Position concept in orbit around scene with random offset
+        const conceptAngle = angle + ((seenConcepts.size * 47) % 360) * (Math.PI / 180);
+        const conceptDist = 50 + ((idx * 23) % 30); // Smaller orbit
         nodes.push({
           id: conceptNodeId,
           type: 'concept',
           label: concept,
-          x: 120 + idx * 180 + offset,
-          y: above ? 110 + (idx % 3) * 15 : 380 + (idx % 3) * 15,
+          x: 300 + Math.cos(angle) * radius + Math.cos(conceptAngle) * conceptDist,
+          y: 250 + Math.sin(angle) * radius + Math.sin(conceptAngle) * conceptDist,
           vx: 0,
           vy: 0,
         });
@@ -345,6 +348,7 @@ function SceneNode({
   isHovered,
   onHover,
   onClick,
+  onMouseDown,
   index,
 }: {
   node: GraphNode;
@@ -352,11 +356,11 @@ function SceneNode({
   isHovered: boolean;
   onHover: (id: string | null) => void;
   onClick: (node: GraphNode) => void;
+  onMouseDown: (e: React.MouseEvent, nodeId: string) => void;
   index: number;
 }) {
-  const r = 22;
-  const color = '#C85A32';
-  const sColor = statusColor(node.status);
+  const r = 18; // Bigger radius
+  const sColor = statusColor(node.status); // Use status color for the node
   const active = isSelected || isHovered;
   const statusLabel = STATUS_LABELS[node.status ?? ''] ?? 'Not evaluated';
 
@@ -369,7 +373,7 @@ function SceneNode({
 
   return (
     <g
-      className="animate-node-in cursor-pointer scene-node-g"
+      className="animate-node-in cursor-move scene-node-g"
       style={{
         animationDelay: `${index * 60}ms`,
         transformOrigin: `${node.x}px ${node.y}px`,
@@ -380,6 +384,7 @@ function SceneNode({
       onMouseEnter={() => onHover(node.id)}
       onMouseLeave={() => onHover(null)}
       onClick={() => onClick(node)}
+      onMouseDown={(e) => onMouseDown(e, node.id)}
       onKeyDown={handleKeyDown}
     >
       {/* Hit area */}
@@ -398,15 +403,13 @@ function SceneNode({
 
       {/* Main circle */}
       <circle
-        cx={node.x} cy={node.y} r={r}
-        fill={active ? `${color}20` : `${color}10`}
-        stroke={color}
-        strokeWidth={active ? 2.5 : 1.5}
+        cx={node.x} cy={node.y} r={active ? r * 1.1 : r}
+        fill={active ? `${sColor}30` : `${sColor}20`}
+        stroke={sColor}
+        strokeWidth={active ? 2 : 1.5}
         filter={active ? 'url(#node-glow)' : 'url(#node-shadow)'}
         style={{
-          transition: 'all 0.25s ease',
-          transform: active ? 'scale(1.12)' : 'scale(1)',
-          transformOrigin: `${node.x}px ${node.y}px`,
+          transition: 'r 0.15s ease, stroke-width 0.15s ease',
         }}
       />
 
@@ -414,8 +417,8 @@ function SceneNode({
       <text
         x={node.x} y={node.y + 1}
         textAnchor="middle" dominantBaseline="central"
-        fill={color}
-        fontSize="12" fontWeight="700"
+        fill={sColor}
+        fontSize="11" fontWeight="700"
         fontFamily="'Plus Jakarta Sans', sans-serif"
         style={{ pointerEvents: 'none' }}
       >
@@ -425,10 +428,10 @@ function SceneNode({
       {/* Status indicator dot */}
       <circle
         cx={node.x + r * 0.7} cy={node.y - r * 0.7}
-        r={5}
+        r={3}
         fill={sColor}
-        stroke="#FEFCF8"
-        strokeWidth={1.5}
+        stroke="#F4F1EA"
+        strokeWidth={1}
         className="animate-pulse"
       >
         <title>{STATUS_LABELS[node.status ?? ''] ?? 'Not evaluated'}</title>
@@ -436,7 +439,7 @@ function SceneNode({
 
       {/* Label below */}
       <text
-        x={node.x} y={node.y + r + 16}
+        x={node.x} y={node.y + r + 14}
         textAnchor="middle"
         fill="#4A4439"
         fontSize="10" fontWeight="600"
@@ -457,23 +460,25 @@ function ConceptNode({
   node,
   isHovered,
   onHover,
+  onMouseDown,
   index,
 }: {
   node: GraphNode;
   isHovered: boolean;
   onHover: (id: string | null) => void;
+  onMouseDown: (e: React.MouseEvent, nodeId: string) => void;
   index: number;
 }) {
   const color = '#C4A245';
   const active = isHovered;
   const labelLen = node.label.length;
-  const padX = 16;
-  const rectW = Math.min(Math.max(labelLen * 7 + padX * 2, 80), 200);
-  const rectH = 32;
+  const padX = 14;
+  const rectW = Math.min(Math.max(labelLen * 6.5 + padX * 2, 80), 180);
+  const rectH = 30;
 
   return (
     <g
-      className="animate-node-in cursor-default"
+      className="animate-node-in cursor-move"
       style={{
         animationDelay: `${index * 60 + 200}ms`,
         transformOrigin: `${node.x}px ${node.y}px`,
@@ -482,6 +487,7 @@ function ConceptNode({
       aria-label={node.label}
       onMouseEnter={() => onHover(node.id)}
       onMouseLeave={() => onHover(null)}
+      onMouseDown={(e) => onMouseDown(e, node.id)}
     >
       {/* Rounded rect */}
       <rect
@@ -493,9 +499,7 @@ function ConceptNode({
         strokeWidth={active ? 2 : 1}
         filter={active ? 'url(#node-glow)' : 'url(#node-shadow)'}
         style={{
-          transition: 'all 0.25s ease',
-          transform: active ? 'scale(1.06)' : 'scale(1)',
-          transformOrigin: `${node.x}px ${node.y}px`,
+          transition: 'stroke-width 0.25s ease',
         }}
       />
 
@@ -524,26 +528,26 @@ function ConceptNode({
 
 function SvgTooltip({ node }: { node: GraphNode }) {
   const isScene = node.type === 'scene';
-  const excerpt = node.trace?.conversation_history?.[0]?.content?.slice(0, 120);
-  const tooltipW = 220;
-  const tooltipH = isScene ? 90 : 40;
+  const excerpt = node.trace?.conversation_history?.[0]?.content?.slice(0, 80);
+  const tooltipW = 160; // Smaller width
+  const tooltipH = isScene ? 65 : 30; // Smaller height
   const tx = node.x - tooltipW / 2;
-  const ty = node.y - (isScene ? tooltipH + 30 : tooltipH + 24);
+  const ty = node.y - (isScene ? tooltipH + 20 : tooltipH + 18);
 
   return (
     <foreignObject
       x={tx} y={ty} width={tooltipW} height={tooltipH + 20}
       style={{ pointerEvents: 'none', overflow: 'visible' }}
     >
-      <div className="bg-warm-white border border-warm-grey rounded-lg shadow-lg px-3 py-2.5">
+      <div className="bg-warm-white border border-warm-grey rounded-lg shadow-lg px-2 py-1.5">
         {isScene ? (
           <>
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-tertiary mb-1">
+            <p className="text-[8px] font-extrabold uppercase tracking-[0.15em] text-tertiary mb-0.5">
               {node.label}
             </p>
             {node.status && (
               <span
-                className="inline-block text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded mb-1.5"
+                className="inline-block text-[7px] font-bold uppercase tracking-wider px-1 py-0.5 rounded mb-1"
                 style={{
                   color: statusColor(node.status),
                   backgroundColor: `${statusColor(node.status)}15`,
@@ -553,14 +557,14 @@ function SvgTooltip({ node }: { node: GraphNode }) {
               </span>
             )}
             {excerpt && (
-              <p className="text-[11px] text-body leading-relaxed line-clamp-2">
+              <p className="text-[9px] text-body leading-snug line-clamp-2">
                 &ldquo;{excerpt}...&rdquo;
               </p>
             )}
-            <p className="text-[9px] text-tertiary mt-1">Click to view conversation</p>
+            <p className="text-[7px] text-tertiary mt-0.5">Click to view</p>
           </>
         ) : (
-          <p className="text-[11px] font-semibold text-wheat-gold">{node.label}</p>
+          <p className="text-[9px] font-semibold text-wheat-gold">{node.label}</p>
         )}
       </div>
     </foreignObject>
@@ -574,14 +578,42 @@ function SvgTooltip({ node }: { node: GraphNode }) {
 export function ReasoningGraph({ traces, scenes, className, onSelectTrace }: ReasoningGraphProps) {
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
+  const [draggedNode, setDraggedNode] = useState<string | null>(null);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [dragStartPos, setDragStartPos] = useState({ x: 0, y: 0 });
+  const [hasDragged, setHasDragged] = useState(false);
+  const [viewTransform, setViewTransform] = useState({ x: 0, y: 0, scale: 1 });
+  const [isPanning, setIsPanning] = useState(false);
+  const [panStart, setPanStart] = useState({ x: 0, y: 0 });
+  const svgRef = useState<SVGSVGElement | null>(null)[0];
 
-  // Build and layout graph
-  const { nodes, edges } = useMemo(() => {
+  // Build and layout graph (keep initial positions)
+  const initialLayout = useMemo(() => {
     if (traces.length === 0) return { nodes: [], edges: [] };
     const raw = buildGraph(traces, scenes);
     const laidOut = runForceLayout(raw.nodes, raw.edges, 60);
     return { nodes: laidOut, edges: raw.edges };
   }, [traces, scenes]);
+
+  // Track node positions (mutable for drag performance)
+  const [nodePositions, setNodePositions] = useState<Map<string, { x: number; y: number }>>(new Map());
+
+  // Initialize positions when layout changes
+  useState(() => {
+    const positions = new Map<string, { x: number; y: number }>();
+    initialLayout.nodes.forEach(n => positions.set(n.id, { x: n.x, y: n.y }));
+    setNodePositions(positions);
+  });
+
+  // Merge positions with node data
+  const nodes = useMemo(() => {
+    return initialLayout.nodes.map(n => {
+      const pos = nodePositions.get(n.id) || { x: n.x, y: n.y };
+      return { ...n, x: pos.x, y: pos.y };
+    });
+  }, [initialLayout.nodes, nodePositions]);
+
+  const edges = initialLayout.edges;
 
   // Compute SVG viewBox to fit all nodes with padding
   const viewBox = useMemo(() => {
@@ -600,13 +632,168 @@ export function ReasoningGraph({ traces, scenes, className, onSelectTrace }: Rea
 
   const handleNodeClick = useCallback(
     (node: GraphNode) => {
+      // Only trigger click if we didn't drag
+      if (hasDragged) return;
       if (node.type !== 'scene') return;
       const newId = selectedNode === node.id ? null : node.id;
       setSelectedNode(newId);
       onSelectTrace?.(newId ? node.trace ?? null : null);
     },
-    [selectedNode, onSelectTrace]
+    [selectedNode, onSelectTrace, hasDragged]
   );
+
+  // Drag handlers
+  const handleNodeMouseDown = useCallback((e: React.MouseEvent, nodeId: string) => {
+    e.stopPropagation();
+    const node = nodes.find(n => n.id === nodeId);
+    if (!node) return;
+
+    // Get SVG coordinate space
+    const svg = (e.target as SVGElement).ownerSVGElement;
+    if (!svg) return;
+
+    const pt = svg.createSVGPoint();
+    pt.x = e.clientX;
+    pt.y = e.clientY;
+    const svgP = pt.matrixTransform(svg.getScreenCTM()?.inverse());
+
+    setDraggedNode(nodeId);
+    setDragStartPos({ x: e.clientX, y: e.clientY });
+    setHasDragged(false);
+    setDragOffset({
+      x: svgP.x - node.x,
+      y: svgP.y - node.y
+    });
+  }, [nodes]);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
+    if (draggedNode) {
+      // Check if mouse has moved enough to be considered a drag (5px threshold)
+      const dragDistance = Math.sqrt(
+        Math.pow(e.clientX - dragStartPos.x, 2) +
+        Math.pow(e.clientY - dragStartPos.y, 2)
+      );
+
+      if (dragDistance > 5) {
+        setHasDragged(true);
+      }
+
+      const svg = e.currentTarget;
+      const pt = svg.createSVGPoint();
+      pt.x = e.clientX;
+      pt.y = e.clientY;
+      const svgP = pt.matrixTransform(svg.getScreenCTM()?.inverse());
+
+      const newX = svgP.x - dragOffset.x;
+      const newY = svgP.y - dragOffset.y;
+
+      setNodePositions(prev => {
+        const newMap = new Map(prev);
+        const oldPos = prev.get(draggedNode);
+        if (!oldPos) return prev;
+
+        // Calculate movement delta from last frame
+        const dx = newX - oldPos.x;
+        const dy = newY - oldPos.y;
+
+        // Update dragged node
+        newMap.set(draggedNode, { x: newX, y: newY });
+
+        // Build adjacency map for quick lookup
+        const adjacencyMap = new Map<string, string[]>();
+        edges.forEach(edge => {
+          if (!adjacencyMap.has(edge.source)) adjacencyMap.set(edge.source, []);
+          if (!adjacencyMap.has(edge.target)) adjacencyMap.set(edge.target, []);
+          adjacencyMap.get(edge.source)!.push(edge.target);
+          adjacencyMap.get(edge.target)!.push(edge.source);
+        });
+
+        // Visited set to prevent infinite loops
+        const visited = new Set<string>();
+        visited.add(draggedNode);
+
+        // Queue for BFS traversal - pass along the actual movement delta
+        const queue: Array<{ nodeId: string; depth: number; pullDx: number; pullDy: number; strength: number }> = [];
+
+        // Add direct connections to queue with higher initial strength
+        const directConnections = adjacencyMap.get(draggedNode) || [];
+        directConnections.forEach(connectedId => {
+          queue.push({ nodeId: connectedId, depth: 1, pullDx: dx, pullDy: dy, strength: 0.5 });
+        });
+
+        // Process queue with diminishing force
+        while (queue.length > 0) {
+          const { nodeId, depth, pullDx, pullDy, strength } = queue.shift()!;
+
+          if (visited.has(nodeId)) continue;
+          visited.add(nodeId);
+
+          // Get current position from prev map
+          const currentNodePos = prev.get(nodeId);
+          if (!currentNodePos) continue;
+
+          // Calculate movement for this node (inherit movement from parent with strength)
+          const nodeDx = pullDx * strength;
+          const nodeDy = pullDy * strength;
+
+          // Update this node's position
+          const newNodePos = {
+            x: currentNodePos.x + nodeDx,
+            y: currentNodePos.y + nodeDy
+          };
+          newMap.set(nodeId, newNodePos);
+
+          // Calculate actual movement distance
+          const movementDistance = Math.sqrt(nodeDx * nodeDx + nodeDy * nodeDy);
+
+          // If node moved more than threshold (5px), pull its connections too
+          // Maximum depth of 4 levels for better propagation
+          if (movementDistance > 5 && depth < 4) {
+            const nextStrength = strength * 0.7; // Higher retention (70% of previous level)
+            const nextConnections = adjacencyMap.get(nodeId) || [];
+
+            nextConnections.forEach(nextNodeId => {
+              if (!visited.has(nextNodeId)) {
+                queue.push({
+                  nodeId: nextNodeId,
+                  depth: depth + 1,
+                  pullDx: nodeDx, // Pass this node's actual movement
+                  pullDy: nodeDy,
+                  strength: nextStrength
+                });
+              }
+            });
+          }
+        }
+
+        return newMap;
+      });
+    } else if (isPanning) {
+      const dx = e.clientX - panStart.x;
+      const dy = e.clientY - panStart.y;
+      setViewTransform(prev => ({
+        ...prev,
+        x: prev.x + dx / prev.scale,
+        y: prev.y + dy / prev.scale
+      }));
+      setPanStart({ x: e.clientX, y: e.clientY });
+    }
+  }, [draggedNode, dragOffset, isPanning, panStart, edges, dragStartPos]);
+
+  const handleMouseUp = useCallback(() => {
+    setDraggedNode(null);
+    setIsPanning(false);
+    // Reset hasDragged after a short delay to allow click handler to check it
+    setTimeout(() => setHasDragged(false), 0);
+  }, []);
+
+  const handleSvgMouseDown = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
+    if (e.button !== 0) return; // Left click only
+    if ((e.target as SVGElement).tagName === 'svg') {
+      setIsPanning(true);
+      setPanStart({ x: e.clientX, y: e.clientY });
+    }
+  }, []);
 
   const nodeMap = useMemo(() => {
     const m = new Map<string, GraphNode>();
@@ -657,10 +844,14 @@ export function ReasoningGraph({ traces, scenes, className, onSelectTrace }: Rea
       {/* SVG Graph */}
       <svg
         viewBox={viewBox}
-        className="w-full"
-        style={{ minHeight: 400 }}
+        className="w-full cursor-grab active:cursor-grabbing"
+        style={{ height: 400, maxHeight: 400 }}
         role="img"
         aria-label="Reasoning trace graph showing student progression through assessment scenes"
+        onMouseDown={handleSvgMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
       >
         <SvgDefs />
 
@@ -693,6 +884,7 @@ export function ReasoningGraph({ traces, scenes, className, onSelectTrace }: Rea
               node={node}
               isHovered={hoveredNode === node.id}
               onHover={setHoveredNode}
+              onMouseDown={handleNodeMouseDown}
               index={i}
             />
           ))}
@@ -708,6 +900,7 @@ export function ReasoningGraph({ traces, scenes, className, onSelectTrace }: Rea
               isHovered={hoveredNode === node.id}
               onHover={setHoveredNode}
               onClick={handleNodeClick}
+              onMouseDown={handleNodeMouseDown}
               index={i}
             />
           ))}

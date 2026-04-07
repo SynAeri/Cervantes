@@ -178,7 +178,12 @@ export default function StudentsPage() {
                 filteredStudents.map((student, index) => (
                   <tr
                     key={`${student.student_id}-${student.class_id}`}
-                    className="border-b border-warm-grey hover:bg-parchment/50 transition-colors"
+                    className="border-b border-warm-grey hover:bg-parchment/50 transition-all duration-300 animate-fade-in"
+                    style={{
+                      animationDelay: `${index * 30}ms`,
+                      opacity: 0,
+                      animation: `fadeIn 0.3s ease-out ${index * 30}ms forwards`
+                    }}
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
@@ -233,6 +238,18 @@ export default function StudentsPage() {
           </table>
         </div>
       </main>
+      <style jsx>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </div>
   );
 }

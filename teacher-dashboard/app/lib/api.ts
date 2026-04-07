@@ -143,4 +143,9 @@ export const api = {
       `/api/scene/progress/class/${classId}/arc/${arcId}`
     ),
   },
+  reasoningTraces: {
+    getByStudent: (studentId: string) => apiFetch<any[]>(`/api/reasoning-trace/student/${studentId}`),
+    getByStudentScene: (studentId: string, sceneId: string) => apiFetch<any[]>(`/api/reasoning-trace/student/${studentId}/scene/${sceneId}`),
+    getById: (traceId: string) => apiFetch<any>(`/api/reasoning-trace/${traceId}`),
+  },
 };

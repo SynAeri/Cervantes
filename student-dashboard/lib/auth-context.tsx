@@ -79,7 +79,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (loading) return;
     const isAuthenticated = user || studentProfile;
-    if (!isAuthenticated && pathname !== '/login') {
+
+    // Public paths that don't require authentication
+    const publicPaths = ['/login', '/'];
+    const isPublicPath = publicPaths.includes(pathname) || pathname.match(/^\/[a-f0-9-]{36}$/); // Match /{arcId} pattern
+
+    if (!isAuthenticated && !isPublicPath) {
       router.replace('/login');
     }
     if (isAuthenticated && pathname === '/login') {
