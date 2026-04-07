@@ -109,7 +109,8 @@ export const api = {
     getByClass: (classId: string) => apiFetch<any[]>(`/api/students/class/${classId}`),
   },
   student: {
-    getReasoningTraces: (studentId: string) => apiFetch<any[]>(`/api/student/${studentId}/reasoning-traces`),
+    getReasoningTraces: (studentId: string) => apiFetch<any[]>(`/api/students/${studentId}/reasoning-traces`),
+    getArcJournals: (studentId: string) => apiFetch<any[]>(`/api/students/${studentId}/arc-journals`),
   },
   signals: {
     extract: (traceId: string) => apiFetch<any>(`/api/signals/extract/${traceId}`, {
