@@ -22,19 +22,17 @@ export function NarrationBox({ content, onNext }: NarrationBoxProps) {
   return (
     <div
       className={`
-        bg-near-black/80 p-6 rounded-xl border border-wheat-gold/20 cursor-pointer
-        transition-all duration-500 hover:border-wheat-gold/40
+        relative px-6 md:px-8 pt-14 mb-4 cursor-pointer
+        transition-all duration-500
         ${isVisible ? 'opacity-100' : 'opacity-0'}
       `}
       onClick={onNext}
     >
-      <p className="text-parchment/90 italic leading-relaxed text-center text-sm">
+      <p className="text-parchment/70 italic leading-relaxed text-xs md:text-sm font-light">
         {content}
       </p>
-      <div className="flex justify-center mt-4">
-        <div className="text-xs text-tertiary/30 flex items-center gap-2">
-          Click to continue
-        </div>
+      <div className="absolute right-6 md:right-8 bottom-0">
+        <span className="material-symbols-outlined text-[10px] text-parchment/30 animate-pulse">keyboard_double_arrow_right</span>
       </div>
     </div>
   );

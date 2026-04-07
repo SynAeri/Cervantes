@@ -14,7 +14,7 @@ import { ArcStatusBox } from '../../components/ArcStatusBox';
 import { ArcReviewModal } from '../../components/features/arc-generator/ArcReviewModal';
 import { useClass } from '../../hooks/useClasses';
 import { useArcs } from '../../hooks/useArcs';
-import { useClassStudents } from '../../hooks/useStudents';
+import { useClassStudents, useClassArcProgress } from '../../hooks/useStudents';
 import { useApproveArc } from '../../hooks/useArcMutations';
 import { api } from '../../lib/api';
 import type { Arc } from '../../lib/types';
@@ -32,6 +32,43 @@ export default function ClassDetailPage({ params }: { params: Promise<{ classId:
 
   const isLoading = classLoading || arcsLoading;
   const currentArc = arcs?.[0];
+
+  // Poll for real-time student progress if arc is published
+  const { data: progressData } = useClassArcProgress(
+    currentArc?.status === 'published' ? classId : null,
+    currentArc?.status === 'published' ? currentArc.arc_id : null
+  );
+
+  // Merge progress data with student data for real-time status updates
+  const studentsWithProgress = students?.map(student => {
+    if (!progressData) return student;
+
+    const studentProgress = progressData.students.find(
+      s => s.student_id === student.student_id
+    );
+
+    if (!studentProgress) return student;
+
+    // Calculate scenes completed and status
+    const scenesCompleted = studentProgress.assignments.filter(a => a.status === 'completed').length;
+    const totalScenes = studentProgress.assignments.length;
+    const hasStarted = studentProgress.assignments.some(a => a.status === 'started' || a.status === 'completed');
+    const allCompleted = studentProgress.assignments.every(a => a.status === 'completed');
+
+    let arc_status: 'complete' | 'in_progress' | 'not_started' = 'not_started';
+    if (allCompleted) {
+      arc_status = 'complete';
+    } else if (hasStarted) {
+      arc_status = 'in_progress';
+    }
+
+    return {
+      ...student,
+      arc_status,
+      scenes_completed: scenesCompleted,
+      total_scenes: totalScenes,
+    };
+  }) || students;
 
   const handleArcGenerated = (arc: Arc) => {
     // Don't auto-show modal, just refresh to show the draft arc
@@ -223,6 +260,7 @@ export default function ClassDetailPage({ params }: { params: Promise<{ classId:
                 onPublish={handlePublish}
                 onDelete={handleDelete}
                 onReviewClick={handleReviewClick}
+                progressData={progressData}
               />
             </div>
 
@@ -236,9 +274,9 @@ export default function ClassDetailPage({ params }: { params: Promise<{ classId:
                     <div className="h-8 bg-warm-grey rounded animate-pulse"></div>
                   </div>
                 </div>
-              ) : students && students.length > 0 ? (
+              ) : studentsWithProgress && studentsWithProgress.length > 0 ? (
                 <StudentProgressTable
-                  students={students}
+                  students={studentsWithProgress}
                   dimensionNames={dimensionNames}
                 />
               ) : (

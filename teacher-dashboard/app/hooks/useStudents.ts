@@ -75,3 +75,31 @@ export function useClassStudents(classId: string | null): UseQueryResult<Student
     staleTime: 2 * 60 * 1000, // 2 minutes (more frequent for progress data)
   });
 }
+
+interface SceneAssignment {
+  scene_order: number;
+  status: 'not_started' | 'started' | 'completed';
+  started_at?: string;
+  completed_at?: string;
+  assigned_variant?: string;
+}
+
+interface ClassProgressData {
+  class_id: string;
+  arc_id: string;
+  total_students: number;
+  students: Array<{
+    student_id: string;
+    assignments: SceneAssignment[];
+  }>;
+}
+
+export function useClassArcProgress(classId: string | null, arcId: string | null): UseQueryResult<ClassProgressData, Error> {
+  return useQuery({
+    queryKey: ['scene-progress', 'class', classId, 'arc', arcId],
+    queryFn: () => api.scenes.getClassProgress(classId!, arcId!),
+    enabled: !!classId && !!arcId,
+    refetchInterval: 10000, // Poll every 10 seconds for real-time updates
+    staleTime: 0, // Always consider data stale to enable refetching
+  });
+}

@@ -519,6 +519,7 @@ async def generate_scene_content(scene_id: str, db: AsyncClient) -> str:
     """
     Phase 2 of arc system: Scene generation
     Takes one planned scene and generates full interactive VN content
+    Uses V2 prompt with enhanced bridge pushback and climax structure
     """
     scene_doc = await db.collection("scenes").document(scene_id).get()
     if not scene_doc.exists:
@@ -541,38 +542,90 @@ async def generate_scene_content(scene_id: str, db: AsyncClient) -> str:
     if not scene_plan:
         raise ValueError(f"Scene plan not found in arc narrative: {scene_id}")
 
-    scene_gen_system = load_system_prompt("scene_generation")
+    # Use V2 scene generation prompt
+    scene_gen_system = load_system_prompt("scene_generation_v2")
     bridge_example = load_example_prompt("bridge_scene_example")
     deep_example = load_example_prompt("deep_scene_example")
 
-    # Build full scene generation context
+    # Gather prior concepts and scenes for arc cohesion
+    prior_scenes = [s for s in narrative_arc["scenes"] if s["scene_order"] < scene_plan["scene_order"]]
+    prior_concepts = [s.get("concept_target") for s in prior_scenes if s.get("concept_target")]
+
+    # Check if this is climax scene - if so, identify callback character
+    is_climax = scene_plan.get("arc_position") == "climax" or scene_plan["scene_order"] == narrative_arc["total_scenes"]
+    callback_character = None
+    if is_climax and len(prior_scenes) > 0:
+        # Use character from scene 1 for callback
+        callback_character = prior_scenes[0]["character"]
+
+    # Extract rubric dimensions from curriculum data
+    curriculum_data = arc.get("curriculum_data", {})
+    rubric_dimensions = []
+
+    # Add key concepts as rubric dimensions
+    for concept in curriculum_data.get("key_concepts", []):
+        rubric_dimensions.append(f"Demonstrate understanding of {concept}")
+
+    # Add misconception-based dimensions
+    if scene_plan.get("misconception_target"):
+        rubric_dimensions.append(f"Identify and correct the misconception: {scene_plan['misconception_target']}")
+
+    # Add transfer/application dimension
+    rubric_dimensions.append(f"Apply {scene_plan['concept_target']} to real-world scenarios")
+
+    # Build enhanced scene generation context
     user_prompt = f"""Generate the complete interactive VN scene for this scene plan.
 
 ## Scene Plan
 {json.dumps(scene_plan, indent=2)}
 
+## Arc Context
+- Arc name: {narrative_arc.get("arc_name", "Unnamed Arc")}
+- Total scenes in arc: {narrative_arc["total_scenes"]}
+- Current scene position: {scene_plan["scene_order"]} of {narrative_arc["total_scenes"]}
+- Arc position: {scene_plan.get("arc_position", "mid")}
+- Prior concepts covered: {json.dumps(prior_concepts)}
+
+## Rubric Dimensions to Assess
+{json.dumps(rubric_dimensions, indent=2)}
+
+IMPORTANT: Your freeform questions must directly test these rubric dimensions.
+
+{'## Callback Character for Climax' if is_climax else ''}
+{f'''This is the climax scene. Bring back this character from scene 1:
+{json.dumps(callback_character, indent=2)}
+
+Open with narration establishing their return, then have them reference the earlier encounter.
+Example: "You again. Last time you were watching from the sidelines. This time, I need your reasoning on every layer."
+''' if is_climax and callback_character else ''}
+
 ## Style Examples (for reference only)
 Bridge scene example:
-{bridge_example[:1000]}
+{bridge_example[:1500]}
 
 Deep scene example:
-{deep_example[:1000]}
+{deep_example[:1500]}
 
 ## Output Requirements
-Return the full scene with proper formatting tags:
-- [narration] for atmosphere and scene description
-- [character:{scene_plan["character"]["name"]}] for dialogue (start each line with *emotion_tag*)
-- [player_prompt] for student response points (include multi-choice options)
 
-Follow the scene type rules from your system prompt:
-- Bridge scenes: Introduce concept, light assessment, 1 player_prompt
-- Deep scenes: Expose misconception, Socratic pushback, freeform high-mark question"""
+CRITICAL FORMAT RULES:
+1. Every dialogue line MUST use bracket emotion format: `[character:Name] [emotion] Dialogue text`
+2. ONLY use these 5 emotions (matching sprite_set): neutral, encouraging, concerned, challenging, surprised
+3. Use `**bold**` for emphasis on key terms only
+4. Multi-choice options: `**A. Option text** – Brief rationale.`
+5. Branch headers: `## Expected output — if student picks A`
+
+Follow the V2 scene rules from your system prompt:
+- Bridge scenes: Now include conditional pushback - weak choices get follow-up questions
+- Deep scenes: Multiple freeform questions aligned with rubric dimensions
+- Climax scenes: Synthesize prior concepts, bring back callback character, highest stakes"""
 
     scene_content = await llm_client.generate_with_retry(
         system=scene_gen_system,
         user=user_prompt,
         response_format="text",
         temperature=0.85,
+        max_output_tokens=8192,  # Longer scenes need more tokens
     )
 
     # Update scene with generated content

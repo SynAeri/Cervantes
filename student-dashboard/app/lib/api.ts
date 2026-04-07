@@ -61,7 +61,25 @@ export const api = {
       }),
   },
   scene: {
-    getById: (sceneId: string) => apiFetch<any>(`/api/scene/${sceneId}`),
+    getByOrder: (arcId: string, sceneOrder: number, studentId?: string) => {
+      const params = new URLSearchParams();
+      if (studentId) params.set('student_id', studentId);
+      const query = params.toString() ? `?${params.toString()}` : '';
+      return apiFetch<any>(`/api/scene/${arcId}/${sceneOrder}${query}`);
+    },
+    markStarted: (arcId: string, sceneOrder: number, studentId: string) => {
+      // Normalize student_id (remove student_ prefix if present, backend will add it)
+      const normalizedId = studentId.replace('student_', '');
+      return apiFetch<any>(`/api/scene/progress/student/${normalizedId}/arc/${arcId}/scene/${sceneOrder}/start`, {
+        method: 'POST',
+      });
+    },
+    markCompleted: (arcId: string, sceneOrder: number, studentId: string) => {
+      const normalizedId = studentId.replace('student_', '');
+      return apiFetch<any>(`/api/scene/progress/student/${normalizedId}/arc/${arcId}/scene/${sceneOrder}/complete`, {
+        method: 'POST',
+      });
+    },
   },
   dialogue: {
     submitTurn: (data: any) => apiFetch<any>('/api/dialogue/turn', {

@@ -3,18 +3,107 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 from google.cloud import firestore
+from google.cloud.firestore_v1.base_query import FieldFilter
 from app.backend.core.firebase import get_firestore_db
 from app.backend.core.auth import get_current_user
 
-router = APIRouter(prefix="/api/scenes", tags=["scenes"])
+router = APIRouter(prefix="/api/scene", tags=["scenes"])
 
 
-@router.post("/student/{student_id}/arc/{arc_id}/scene/{scene_order}/start")
+@router.get("/{arc_id}/{scene_order}")
+async def get_scene_by_order(
+    arc_id: str,
+    scene_order: int,
+    student_id: str = None,
+    db=Depends(get_firestore_db),
+):
+    """Get scene data by arc_id and scene_order.
+
+    If student_id is provided, also fetches the student's assignment data
+    including their assigned character variant.
+
+    Returns the scene document with character pool information.
+    Used by student dashboard to display scene content.
+    """
+    try:
+        # Query scenes by arc_id and scene_order
+        scenes_ref = db.collection("scenes")
+        scenes_query = scenes_ref.where(filter=FieldFilter("arc_id", "==", arc_id)).where(filter=FieldFilter("scene_order", "==", scene_order))
+        scenes_docs = scenes_query.stream()
+
+        scene_data = None
+        scene_id = None
+        async for doc in scenes_docs:
+            if doc.exists:
+                scene_id = doc.id
+                scene_data = doc.to_dict()
+                break
+
+        if not scene_data:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Scene not found for arc {arc_id}, scene_order {scene_order}"
+            )
+
+        # If student_id provided, get their assignment and character variant
+        if student_id:
+            # Normalize student_id
+            normalized_student_id = student_id if student_id.startswith("student_") else f"student_{student_id}"
+
+            # Get student's assignment
+            assignments_ref = db.collection("student_scene_assignments")
+            assignments_query = assignments_ref.where(filter=FieldFilter("arc_id", "==", arc_id)).where(filter=FieldFilter("student_id", "==", normalized_student_id)).where(filter=FieldFilter("scene_order", "==", scene_order))
+            assignments_docs = assignments_query.stream()
+
+            assignment_data = None
+            async for doc in assignments_docs:
+                if doc.exists:
+                    assignment_data = doc.to_dict()
+                    break
+
+            if assignment_data:
+                # Get character pool for this assignment
+                character_pool_id = assignment_data.get("character_pool_id")
+                assigned_variant = assignment_data.get("assigned_variant")
+
+                if character_pool_id:
+                    pool_doc = await db.collection("character_pools").document(character_pool_id).get()
+                    if pool_doc.exists:
+                        pool_data = pool_doc.to_dict()
+
+                        # Find the name variant that matches the assigned variant
+                        name_variants = pool_data.get("name_variants", [])
+                        selected_variant = next((v for v in name_variants if v.get("variant_id") == assigned_variant), None)
+
+                        # Add character pool info to scene data
+                        scene_data["assigned_character"] = {
+                            "name": selected_variant.get("name") if selected_variant else pool_data.get("name_variants", [{}])[0].get("name"),
+                            "gender": selected_variant.get("gender") if selected_variant else pool_data.get("name_variants", [{}])[0].get("gender"),
+                            "role": pool_data.get("role"),
+                            "archetype": pool_data.get("archetype"),
+                            "personality_prompt": pool_data.get("personality_prompt"),
+                            "voice_register": pool_data.get("voice_register"),
+                            "sprite_set": pool_data.get("sprite_set", []),
+                            "assigned_variant": assigned_variant
+                        }
+
+        return {
+            "scene_id": scene_id,
+            "arc_id": arc_id,
+            "scene_order": scene_order,
+            **scene_data
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch scene: {str(e)}")
+
+
+@router.post("/progress/student/{student_id}/arc/{arc_id}/scene/{scene_order}/start")
 async def start_scene(
     student_id: str,
     arc_id: str,
     scene_order: int,
-    user: Annotated[dict, Depends(get_current_user)],
     db=Depends(get_firestore_db),
 ):
     """Mark scene as started when student clicks it.
@@ -26,7 +115,9 @@ async def start_scene(
     Frontend should call this when the student opens a scene.
     """
     try:
-        assignment_id = f"{student_id}_{arc_id}_scene{scene_order}"
+        # Normalize student_id
+        normalized_student_id = student_id if student_id.startswith("student_") else f"student_{student_id}"
+        assignment_id = f"{normalized_student_id}_{arc_id}_scene{scene_order}"
 
         # Check if assignment exists
         assignment_doc = await db.collection("student_scene_assignments").document(assignment_id).get()
@@ -44,7 +135,7 @@ async def start_scene(
         })
 
         return {
-            "student_id": student_id,
+            "student_id": normalized_student_id,
             "arc_id": arc_id,
             "scene_order": scene_order,
             "status": "started",
@@ -56,12 +147,11 @@ async def start_scene(
         raise HTTPException(status_code=500, detail=f"Failed to start scene: {str(e)}")
 
 
-@router.post("/student/{student_id}/arc/{arc_id}/scene/{scene_order}/complete")
+@router.post("/progress/student/{student_id}/arc/{arc_id}/scene/{scene_order}/complete")
 async def complete_scene(
     student_id: str,
     arc_id: str,
     scene_order: int,
-    user: Annotated[dict, Depends(get_current_user)],
     db=Depends(get_firestore_db),
 ):
     """Mark scene as completed when student finishes it.
@@ -73,7 +163,9 @@ async def complete_scene(
     Frontend should call this when the student submits their final response.
     """
     try:
-        assignment_id = f"{student_id}_{arc_id}_scene{scene_order}"
+        # Normalize student_id
+        normalized_student_id = student_id if student_id.startswith("student_") else f"student_{student_id}"
+        assignment_id = f"{normalized_student_id}_{arc_id}_scene{scene_order}"
 
         # Check if assignment exists
         assignment_doc = await db.collection("student_scene_assignments").document(assignment_id).get()
@@ -91,7 +183,7 @@ async def complete_scene(
         })
 
         return {
-            "student_id": student_id,
+            "student_id": normalized_student_id,
             "arc_id": arc_id,
             "scene_order": scene_order,
             "status": "completed",
@@ -103,7 +195,7 @@ async def complete_scene(
         raise HTTPException(status_code=500, detail=f"Failed to complete scene: {str(e)}")
 
 
-@router.get("/student/{student_id}/arc/{arc_id}/progress")
+@router.get("/progress/student/{student_id}/arc/{arc_id}")
 async def get_student_arc_progress(
     student_id: str,
     arc_id: str,
@@ -145,7 +237,7 @@ async def get_student_arc_progress(
         raise HTTPException(status_code=500, detail=f"Failed to get progress: {str(e)}")
 
 
-@router.get("/class/{class_id}/arc/{arc_id}/progress")
+@router.get("/progress/class/{class_id}/arc/{arc_id}")
 async def get_class_arc_progress(
     class_id: str,
     arc_id: str,

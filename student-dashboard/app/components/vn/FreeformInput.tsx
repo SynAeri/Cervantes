@@ -22,8 +22,8 @@ export function FreeformInput({ prompt, onSubmit, isLoading }: FreeformInputProp
   };
 
   return (
-    <div className="bg-near-black/95 p-8 rounded-xl">
-      <p className="text-parchment font-bold mb-6 text-lg">{prompt}</p>
+    <div className="px-6 md:px-8 pb-6">
+      <p className="text-parchment/95 leading-relaxed font-light text-xs md:text-sm mb-6">{prompt}</p>
 
       <textarea
         value={response}
@@ -31,24 +31,24 @@ export function FreeformInput({ prompt, onSubmit, isLoading }: FreeformInputProp
         placeholder="Type your response here..."
         disabled={isLoading}
         className="
-          w-full h-32 p-4 rounded-lg bg-warm-white/5 border border-warm-grey/30
-          text-parchment placeholder-tertiary/50 resize-none
-          focus:outline-none focus:border-terracotta focus:ring-2 focus:ring-terracotta/20
+          w-full h-32 p-4 bg-near-black/40 border border-parchment/20
+          text-parchment/90 placeholder-parchment/30 resize-none font-light text-xs md:text-sm
+          focus:outline-none focus:border-terracotta
           disabled:opacity-50 disabled:cursor-not-allowed
-          transition-all
+          transition-all backdrop-blur-sm
         "
       />
 
       <div className="flex justify-between items-center mt-4">
-        <span className="text-xs text-tertiary/50">
-          {response.length} characters
+        <span className="text-[10px] text-parchment/40 uppercase tracking-widest">
+          {response.length} chars
         </span>
         <button
           onClick={handleSubmit}
           disabled={!response.trim() || isLoading}
           className="
-            px-8 py-3 bg-terracotta text-parchment rounded-lg
-            font-bold text-sm uppercase tracking-wider
+            px-6 py-2 bg-terracotta text-parchment
+            font-bold text-[10px] uppercase tracking-widest
             hover:bg-terracotta/90 transition-all
             disabled:opacity-50 disabled:cursor-not-allowed
             flex items-center gap-2
@@ -56,13 +56,13 @@ export function FreeformInput({ prompt, onSubmit, isLoading }: FreeformInputProp
         >
           {isLoading ? (
             <>
-              <span className="material-symbols-outlined text-lg animate-spin">autorenew</span>
-              Processing...
+              <span className="material-symbols-outlined text-sm animate-spin">autorenew</span>
+              Processing
             </>
           ) : (
             <>
               Submit
-              <span className="material-symbols-outlined text-lg">send</span>
+              <span className="material-symbols-outlined text-sm">send</span>
             </>
           )}
         </button>

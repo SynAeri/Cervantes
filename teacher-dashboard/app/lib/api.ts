@@ -128,18 +128,18 @@ export const api = {
   },
   scenes: {
     start: (studentId: string, arcId: string, sceneOrder: number) => apiFetch<any>(
-      `/api/scenes/student/${studentId}/arc/${arcId}/scene/${sceneOrder}/start`,
+      `/api/scene/progress/student/${studentId}/arc/${arcId}/scene/${sceneOrder}/start`,
       { method: 'POST' }
     ),
     complete: (studentId: string, arcId: string, sceneOrder: number) => apiFetch<any>(
-      `/api/scenes/student/${studentId}/arc/${arcId}/scene/${sceneOrder}/complete`,
+      `/api/scene/progress/student/${studentId}/arc/${arcId}/scene/${sceneOrder}/complete`,
       { method: 'POST' }
     ),
     getStudentProgress: (studentId: string, arcId: string) => apiFetch<any>(
-      `/api/scenes/student/${studentId}/arc/${arcId}/progress`
+      `/api/scene/progress/student/${studentId}/arc/${arcId}`
     ),
     getClassProgress: (classId: string, arcId: string) => apiFetch<any>(
-      `/api/scenes/class/${classId}/arc/${arcId}/progress`
+      `/api/scene/progress/class/${classId}/arc/${arcId}`
     ),
   },
 };

@@ -46,23 +46,27 @@ export default function HomePage() {
         <div className="w-full px-6 pt-12 pb-6 bg-gradient-to-t from-near-black via-near-black/95 to-transparent backdrop-blur-sm">
           <div className="max-w-md mx-auto">
             <div className="text-center mb-8">
-              <div className="inline-flex items-center justify-center mb-3">
-                <div className="w-12 h-12 bg-terracotta flex items-center justify-center text-parchment font-extrabold text-xl">
-                  C
+              <div className="inline-flex items-center justify-center mb-4">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-terracotta/30 rounded-xl blur-xl"></div>
+                  <div className="relative w-16 h-16 bg-terracotta rounded-xl flex items-center justify-center text-parchment font-extrabold text-2xl shadow-lg">
+                    C
+                  </div>
                 </div>
               </div>
-              <h1 className="text-xl font-extrabold tracking-tighter text-parchment uppercase mb-1">Access Assessment</h1>
-              <p className="text-parchment/60 text-[10px] uppercase tracking-[0.2em]">La Mancha Learning System</p>
+              <h1 className="text-2xl font-extrabold tracking-tight text-parchment uppercase mb-2">Access Assessment</h1>
+              <p className="text-parchment/50 text-[11px] uppercase tracking-[0.15em] font-medium">La Mancha Learning System</p>
             </div>
 
             <form className="space-y-6" onSubmit={handleSubmit}>
-              <div className="space-y-2">
-                <label className="block text-[9px] font-bold uppercase tracking-[0.15em] text-parchment/70">Arc ID</label>
-                <div className="relative">
-                  <div className="flex items-center border-b border-parchment/20 focus-within:border-terracotta w-full py-3">
-                    <span className="material-symbols-outlined text-parchment/60 mr-3 text-base">assignment</span>
+              <div className="space-y-3">
+                <label className="block text-[10px] font-extrabold uppercase tracking-[0.15em] text-parchment/70">Arc ID</label>
+                <div className="relative group">
+                  <div className="absolute inset-0 bg-gradient-to-r from-terracotta/10 to-wheat-gold/10 rounded-lg opacity-0 group-focus-within:opacity-100 transition-opacity blur-sm"></div>
+                  <div className="relative flex items-center bg-near-black/40 border border-parchment/20 focus-within:border-terracotta rounded-lg px-4 py-3 transition-all backdrop-blur-sm">
+                    <span className="material-symbols-outlined text-parchment/60 mr-3 text-lg">assignment</span>
                     <input
-                      className="bg-transparent border-none p-0 focus:ring-0 w-full text-parchment placeholder:text-parchment/30 font-medium outline-none"
+                      className="bg-transparent border-none p-0 focus:ring-0 w-full text-parchment placeholder:text-parchment/30 font-medium outline-none text-base"
                       placeholder="e.g., asdnkjsanrkare"
                       type="text"
                       value={arcId}
@@ -76,31 +80,35 @@ export default function HomePage() {
 
               <div className="pt-6">
                 <button
-                  className="w-full bg-terracotta text-parchment font-bold py-3.5 flex items-center justify-center gap-2 group transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="relative w-full bg-terracotta text-parchment font-bold py-4 flex items-center justify-center gap-2 group transition-all hover:bg-terracotta/90 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_4px_20px_rgba(200,90,50,0.3)] hover:shadow-[0_8px_30px_rgba(200,90,50,0.4)] rounded-lg overflow-hidden"
                   type="submit"
                   disabled={loading}
                 >
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-parchment/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
                   {loading ? (
                     <div className="w-5 h-5 border-2 border-parchment border-t-transparent rounded-full animate-spin"></div>
                   ) : (
                     <>
-                      <span className="text-sm tracking-wide">CONTINUE</span>
-                      <span className="material-symbols-outlined text-base">arrow_forward</span>
+                      <span className="text-sm tracking-wide font-extrabold uppercase">Continue</span>
+                      <span className="material-symbols-outlined text-base group-hover:translate-x-1 transition-transform">arrow_forward</span>
                     </>
                   )}
                 </button>
               </div>
             </form>
 
-            <div className="mt-8 pt-6 border-t border-parchment/20">
-              <p className="text-xs text-parchment/60 text-center">
-                Don't have an arc ID? Contact your professor.
-              </p>
+            <div className="mt-8 pt-6 border-t border-parchment/10">
+              <div className="flex items-center justify-center gap-2 text-parchment/50 text-xs">
+                <span className="material-symbols-outlined text-sm">help</span>
+                <p>Don't have an arc ID? Contact your professor.</p>
+              </div>
             </div>
 
-            <p className="text-center mt-8 text-parchment/40 text-[8px] uppercase tracking-[0.25em] font-medium">
-              Secure Student Access v1.0
-            </p>
+            <div className="text-center mt-8 flex items-center justify-center gap-3">
+              <div className="h-px flex-1 bg-gradient-to-r from-transparent to-parchment/20"></div>
+              <p className="text-parchment/30 text-[9px] uppercase tracking-[0.2em] font-bold">Secure Access v1.0</p>
+              <div className="h-px flex-1 bg-gradient-to-l from-transparent to-parchment/20"></div>
+            </div>
           </div>
         </div>
       </main>
