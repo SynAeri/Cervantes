@@ -28,8 +28,8 @@ export function SceneRenderer({ sceneId, sceneData, onComplete }: SceneRendererP
   return (
     <VNPlayer
       sceneContent={sceneData.content || sceneData.generated_scene_content || ''}
-      characterName={sceneData.character?.name || 'Character'}
-      characterRole={sceneData.character?.role || 'Unknown'}
+      characterName={sceneData.assigned_character?.name || sceneData.character?.name || 'Character'}
+      characterRole={sceneData.assigned_character?.role || sceneData.character?.role || 'Unknown'}
       sceneId={sceneId}
       onSceneComplete={onComplete}
     />

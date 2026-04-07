@@ -16,6 +16,16 @@ interface ArcStatusBoxProps {
   onPublish: () => void;
   onDelete: () => void;
   onReviewClick?: () => void;
+  progressData?: {
+    total_students: number;
+    students: Array<{
+      student_id: string;
+      assignments: Array<{
+        scene_order: number;
+        status: 'not_started' | 'started' | 'completed';
+      }>;
+    }>;
+  };
 }
 
 export function ArcStatusBox({
@@ -26,7 +36,8 @@ export function ArcStatusBox({
   onArcGenerated,
   onPublish,
   onDelete,
-  onReviewClick
+  onReviewClick,
+  progressData
 }: ArcStatusBoxProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -187,18 +198,47 @@ export function ArcStatusBox({
                 <p className="text-[13px] font-bold text-primary">{currentArc.scenes?.length || 0} scenes</p>
               </div>
               {currentArc.status === 'published' && (
-                <div className="min-w-0">
-                  <p className="text-[11px] text-tertiary font-bold uppercase mb-1">Student Link</p>
-                  <a
-                    href={`https://cervantes-backend-prod--cervantes-caebc.asia-southeast1.hosted.app/${currentArc.arc_id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[13px] font-bold text-[#2563eb] hover:text-[#1d4ed8] transition-colors flex items-center gap-1 group min-w-0"
-                  >
-                    <span className="truncate min-w-0">cervantes-student.com/{currentArc.arc_id}</span>
-                    <span className="material-symbols-outlined text-xs flex-shrink-0 group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
-                  </a>
-                </div>
+                <>
+                  <div className="min-w-0">
+                    <p className="text-[11px] text-tertiary font-bold uppercase mb-1">Student Link</p>
+                    <a
+                      href={`https://cervantes-backend-prod--cervantes-caebc.asia-southeast1.hosted.app/${currentArc.arc_id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[13px] font-bold text-[#2563eb] hover:text-[#1d4ed8] transition-colors flex items-center gap-1 group min-w-0"
+                    >
+                      <span className="truncate min-w-0">cervantes-student.com/{currentArc.arc_id}</span>
+                      <span className="material-symbols-outlined text-xs flex-shrink-0 group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+                    </a>
+                  </div>
+                  {progressData && (
+                    <div>
+                      <p className="text-[11px] text-tertiary font-bold uppercase mb-1">Active Students</p>
+                      <div className="flex items-center gap-2">
+                        {(() => {
+                          const activeCount = progressData.students.filter(s =>
+                            s.assignments.some(a => a.status === 'started' || a.status === 'completed')
+                          ).length;
+                          const completedCount = progressData.students.filter(s =>
+                            s.assignments.every(a => a.status === 'completed')
+                          ).length;
+
+                          return (
+                            <>
+                              <span className="text-[13px] font-bold text-primary">{activeCount} active</span>
+                              {completedCount > 0 && (
+                                <>
+                                  <span className="text-tertiary">•</span>
+                                  <span className="text-[13px] font-bold text-mastery">{completedCount} completed</span>
+                                </>
+                              )}
+                            </>
+                          );
+                        })()}
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 

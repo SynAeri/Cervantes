@@ -21,10 +21,19 @@ This is NOT a narrative role. You are in analytical mode. No character voice, no
     {
       "role": "narration | character | student",
       "content": "string",
-      "type": "multi_choice | freeform | null",
+      "type": "multi_choice | freeform | multipart_freeform | null",
       "emotion": "string or null"
     }
-  ]
+  ],
+  "multipart_structure": {
+    "sub_questions": [
+      {
+        "part_number": 1,
+        "sub_question_text": "string",
+        "rubric_dimension": "string — which rubric dimension this sub-question tests"
+      }
+    ]
+  }
 }
 ```
 
@@ -41,9 +50,19 @@ Return ONLY valid JSON matching this schema exactly:
   "concept": "string — from input",
   "character": "string — from input",
   "initial_response": {
-    "type": "multi_choice | freeform",
+    "type": "multi_choice | freeform | multipart_freeform",
     "selected": "string — what the student chose or wrote first",
-    "misconception_exposed": "string describing what the response revealed about their thinking, or null if no misconception was present"
+    "misconception_exposed": "string describing what the response revealed about their thinking, or null if no misconception was present",
+    "multipart_responses": [
+      {
+        "part_number": 1,
+        "sub_question_text": "string",
+        "student_answer": "string",
+        "rubric_dimension": "string",
+        "performance": "strong | partial | weak",
+        "evidence": "string — specific quote or reasoning from student's answer"
+      }
+    ]
   },
   "pushback_sequence": [
     {
@@ -54,7 +73,11 @@ Return ONLY valid JSON matching this schema exactly:
   ],
   "revised_understanding": "string — the student's final position in their own words, or null if they never reached one",
   "rubric_alignment": {
-    "dimension_name": "string — brief assessment of student performance on this dimension"
+    "dimension_name": {
+      "performance": "strong | partial | weak",
+      "evidence": "string — specific quote or reasoning from student's answer",
+      "part_number": "int or null — which sub-question tested this dimension (for multipart only)"
+    }
   },
   "reflection": "string — 1-2 sentence summary of the student's reasoning journey, written from an educator's perspective",
   "status": "mastery | revised_with_scaffolding | critical_gap",
@@ -96,6 +119,53 @@ Assign when the student:
 - `rubric_alignment` — map the student's performance to each rubric dimension provided. Be specific: "demonstrated transfer by applying the concept to a new scenario" not just "good."
 - `reflection` — write as an educator would for a student report. Factual, specific, no praise inflation. "Initially confused X with Y. After challenge on Z, revised to a clear distinction. Freeform response showed emerging but incomplete transfer."
 - `scaffolding_needed` — true if the character had to do more than probe (i.e., had to restate, simplify, offer examples, or partially explain)
+
+---
+
+## Multi-part freeform extraction
+
+When the transcript contains a multi-part freeform response (structured high-mark question with numbered sub-points):
+
+**Per-dimension analysis:**
+- Each sub-question maps to a rubric dimension
+- Extract the student's answer for each part separately
+- Assess performance (strong/partial/weak) per dimension
+- Pull direct quotes as evidence for each assessment
+
+**Performance criteria:**
+- **Strong**: Student demonstrates clear understanding, provides justification, connects to context
+- **Partial**: Student shows some understanding but lacks depth, justification is incomplete
+- **Weak**: Student misunderstands the concept, provides no justification, or gives vague/empty response
+
+**Rubric alignment structure:**
+For multi-part responses, the `rubric_alignment` object should contain:
+```json
+{
+  "Conceptual understanding": {
+    "performance": "strong",
+    "evidence": "Student correctly explained X with justification: 'quote from their answer'",
+    "part_number": 1
+  },
+  "Application to context": {
+    "performance": "partial",
+    "evidence": "Applied the concept but missed key connection to Y",
+    "part_number": 2
+  },
+  "Reasoning quality": {
+    "performance": "weak",
+    "evidence": "No justification provided for their claim about Z",
+    "part_number": 3
+  }
+}
+```
+
+**Status classification for multi-part:**
+- **mastery**: Strong performance on all or most dimensions (2+ strong, 0 weak)
+- **revised_with_scaffolding**: Mixed performance (1-2 strong, 1 partial/weak) OR improved after pushback
+- **critical_gap**: Weak performance on multiple dimensions (2+ weak) with no improvement
+
+**Multipart_responses array:**
+Populate the `initial_response.multipart_responses` array with structured data for each sub-question. This allows granular tracking of which specific dimensions need attention.
 
 ---
 

@@ -15,6 +15,8 @@ from app.backend.features.dialogue.routes import router as dialogue_router
 from app.backend.features.signal_extraction.routes import router as signals_router
 from app.backend.features.character_pools.routes import router as character_pools_router
 from app.backend.features.scenes.routes import router as scenes_router
+from app.backend.features.reasoning_trace.routes import router as reasoning_trace_router
+from app.backend.features.arc_endings.routes import router as arc_endings_router
 
 
 @asynccontextmanager
@@ -55,6 +57,8 @@ app.include_router(dialogue_router)
 app.include_router(signals_router)
 app.include_router(character_pools_router)
 app.include_router(scenes_router)
+app.include_router(reasoning_trace_router, prefix="/api/reasoning-trace", tags=["reasoning-trace"])
+app.include_router(arc_endings_router, prefix="/api/arc-endings", tags=["arc-endings"])
 
 
 @app.get("/")
@@ -69,7 +73,7 @@ async def root():
             "auth": "Firebase Auth",
             "database": "Firestore",
         },
-        "features": ["auth", "classes", "students", "arc", "dialogue", "signal_extraction", "character_pools", "scenes"],
+        "features": ["auth", "classes", "students", "arc", "dialogue", "signal_extraction", "character_pools", "scenes", "reasoning_trace", "arc_endings"],
     }
 
 

@@ -49,20 +49,33 @@ async def generate_structured(
         try:
             return json.loads(text)
         except json.JSONDecodeError as e:
-            # Try to fix common JSON truncation issues
+            # Try to fix common JSON issues
+            original_text = text
+
+            # Fix unescaped newlines in string values (common LLM mistake)
+            # Replace actual newlines within quoted strings with \n
+            import re
+            def escape_newlines_in_strings(match):
+                string_content = match.group(1)
+                # Escape any unescaped newlines
+                escaped = string_content.replace('\n', '\\n').replace('\r', '\\r')
+                return f'"{escaped}"'
+
+            # Match quoted strings and escape newlines within them
+            text = re.sub(r'"((?:[^"\\]|\\.)*)"+', escape_newlines_in_strings, text, flags=re.DOTALL)
+
+            # Fix truncation issues
             if text.endswith('"') and not text.endswith('"}'):
-                # Truncated in the middle of a string value
                 text = text + '"]}'
             elif not text.endswith('}'):
-                # Missing closing braces
                 open_braces = text.count('{') - text.count('}')
                 text = text + ('}' * open_braces)
 
             # Try again
             try:
                 return json.loads(text)
-            except:
-                raise ValueError(f"Failed to parse LLM JSON response: {e}\nResponse: {text[:1000]}")
+            except Exception as retry_error:
+                raise ValueError(f"Failed to parse LLM JSON response: {e}\nRetry error: {retry_error}\nOriginal response: {original_text[:1000]}")
 
     return text
 

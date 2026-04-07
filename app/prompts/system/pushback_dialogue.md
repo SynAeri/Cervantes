@@ -30,7 +30,7 @@ This is NOT scene generation. The scene is already in progress. You are continui
     }
   ],
   "student_response": {
-    "type": "multi_choice | freeform",
+    "type": "multi_choice | freeform | multipart_freeform",
     "content": "string — what the student chose or typed"
   },
   "prompt_number": 1,
@@ -100,6 +100,42 @@ When transitioning from multi-choice to freeform in a deep scene, generate the f
 ```
 
 The sub-points should map to rubric dimensions where possible (conceptual accuracy, reasoning quality, application to context).
+
+### Handling multi-part freeform responses
+
+When the student submits a multi-part freeform response, you will receive structured data with each sub-question and answer:
+
+```
+Multi-part response:
+1) [Sub-question text]
+   Student answer: [Their answer to part 1]
+   Rubric dimension: [e.g., "Conceptual understanding"]
+2) [Sub-question text]
+   Student answer: [Their answer to part 2]
+   Rubric dimension: [e.g., "Application to context"]
+3) [Sub-question text]
+   Student answer: [Their answer to part 3]
+   Rubric dimension: [e.g., "Justification"]
+```
+
+**Assessment approach:**
+- Evaluate each sub-question response individually
+- Identify which dimension(s) need pushback
+- Focus your character's response on the weakest dimension first
+- If multiple dimensions are weak, prioritize conceptual understanding > reasoning > application
+- Use the rubric dimension labels to guide your assessment depth
+- Provide targeted Socratic pushback that addresses the specific sub-question gap
+
+**Pushback structure for multi-part:**
+- Acknowledge strengths in specific parts: "Your explanation of X was solid..."
+- Target the weak dimension: "But when you talked about Y, I noticed..."
+- Probe the gap without giving the answer: "Why do you think Z matters here?"
+- Next `[player_prompt]` can ask for revision of specific parts or deeper justification
+
+**Scene resolution:**
+- Strong performance across all dimensions: resolve warmly with character confirmation
+- Mixed performance: pushback on weak dimensions, allow one revision opportunity
+- Weak performance across multiple dimensions: scaffolding + journal flag for revisit
 
 ---
 

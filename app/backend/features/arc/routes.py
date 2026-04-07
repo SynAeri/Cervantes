@@ -326,20 +326,36 @@ async def check_student_access(
             first_incomplete = assignments[-1]  # Show last scene
 
         # Step 7: Get the scene content
-        scene_id = first_incomplete["scene_id"] if "scene_id" in first_incomplete else None
-        scene_data = None
+        scene_id = first_incomplete.get("scene_id")
 
+        print(f"DEBUG: first_incomplete keys: {first_incomplete.keys()}")
+        print(f"DEBUG: scene_id from assignment: {scene_id}")
+
+        # If scene_id is missing, try to extract it from assignment_id
+        if not scene_id and "assignment_id" in first_incomplete:
+            # assignment_id format: "student_10234567_78b92de0-f599-4d47-8d04-005c48c2e823_scene1"
+            assignment_id = first_incomplete["assignment_id"]
+            parts = assignment_id.split("_")
+            if len(parts) >= 4:
+                # Last part should be the scene_id (e.g., "scene1")
+                scene_id = parts[-1]
+                print(f"DEBUG: Extracted scene_id from assignment_id: {scene_id}")
+
+        scene_data = None
         if scene_id:
             scene_doc = await db.collection("scenes").document(scene_id).get()
             if scene_doc.exists:
                 scene_data = scene_doc.to_dict()
+                print(f"DEBUG: Found scene data for {scene_id}")
+            else:
+                print(f"DEBUG: Scene document {scene_id} not found")
 
         return {
             "status": "ready",
             "arc_id": arc_id,
             "class_id": class_id,
             "student_id": normalized_student_id,
-            "first_assignment": first_incomplete,
+            "first_assignment": {**first_incomplete, "scene_id": scene_id},  # Ensure scene_id is included
             "scene_data": scene_data,
             "total_scenes": len(assignments)
         }
