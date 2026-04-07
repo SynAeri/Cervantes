@@ -34,3 +34,22 @@ async def extract_signals_endpoint(
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Signal extraction failed: {str(e)}")
+
+
+@router.post("/{trace_id}")
+async def extract_signals_by_id(
+    trace_id: str,
+    db=Depends(get_firestore_db),
+):
+    """
+    Extract reasoning signals from trace ID (student-accessible).
+    Used after scene completion for arc ending assessment.
+    """
+    try:
+        result = await service.extract_reasoning_signals(
+            trace_id=trace_id,
+            db=db,
+        )
+        return result.model_dump()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Signal extraction failed: {str(e)}")

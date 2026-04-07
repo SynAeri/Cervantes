@@ -23,6 +23,14 @@ export function ScenePageClient({ params }: { params: Promise<{ sceneId: string 
   const studentId = searchParams.get('studentId');
   const arcId = searchParams.get('arcId');
 
+  // Store in localStorage for journal access
+  useEffect(() => {
+    if (studentId && arcId) {
+      localStorage.setItem('currentStudentId', studentId);
+      localStorage.setItem('currentArcId', arcId);
+    }
+  }, [studentId, arcId]);
+
   useEffect(() => {
     const fetchSceneData = async () => {
       if (!studentId || !arcId) {
@@ -70,19 +78,58 @@ export function ScenePageClient({ params }: { params: Promise<{ sceneId: string 
       const sceneOrderMatch = sceneId.match(/scene(\d+)/);
       const sceneOrder = sceneOrderMatch ? parseInt(sceneOrderMatch[1], 10) : 1;
 
-      // For deep scenes with Socratic dialogue, save reasoning trace
+      // Append conversation history to arc journal
+      if (conversationHistory.length > 0) {
+        console.log(`Appending ${conversationHistory.length} entries to arc journal`);
+        try {
+          await api.arcJournal.append({
+            student_id: studentId,
+            arc_id: arcId,
+            scene_id: sceneId,
+            scene_order: sceneOrder,
+            new_entries: conversationHistory,
+          });
+          console.log('Arc journal updated successfully');
+        } catch (journalError) {
+          console.error('Failed to append to arc journal:', journalError);
+          // Non-critical - continue even if journal update fails
+        }
+      }
+
+      // For deep scenes with Socratic dialogue, save reasoning trace and run signal extraction
       // For bridge scenes (simple choice), skip reasoning trace
       const hasDialogue = conversationHistory.some(entry => entry.role === 'character');
+      let signalExtractionResult = null;
+
       if (hasDialogue && conversationHistory.length > 1) {
         console.log('Saving reasoning trace for deep scene');
         try {
-          await saveTraceMutation.mutateAsync({
+          const traceResponse = await saveTraceMutation.mutateAsync({
             student_id: studentId,
             scene_id: sceneId,
             conversation_history: conversationHistory,
             initial_answer: conversationHistory[0]?.content || '',
             revised_answer: conversationHistory[conversationHistory.length - 1]?.content || '',
           });
+
+          // Run signal extraction on the saved trace
+          if (traceResponse && traceResponse.trace_id) {
+            console.log('Running signal extraction on trace:', traceResponse.trace_id);
+            try {
+              const extractionResponse = await fetch(`http://localhost:8080/api/signal-extraction/${traceResponse.trace_id}`, {
+                method: 'POST',
+              });
+
+              if (extractionResponse.ok) {
+                signalExtractionResult = await extractionResponse.json();
+                console.log('Signal extraction result:', signalExtractionResult);
+              } else {
+                console.warn('Signal extraction failed, will use fallback heuristic');
+              }
+            } catch (extractionError) {
+              console.error('Failed to run signal extraction:', extractionError);
+            }
+          }
         } catch (traceError) {
           // Non-critical - reasoning trace save failed but continue
           console.error('Failed to save reasoning trace:', traceError);
@@ -112,13 +159,42 @@ export function ScenePageClient({ params }: { params: Promise<{ sceneId: string 
         console.log('No more scenes, this is the climax scene. Generating arc ending...');
 
         try {
-          // Determine performance level based on conversation quality
-          // For now, use simple heuristic: if conversation has multiple turns with character pushback, likely mastery
-          // TODO: Get actual performance from signal extraction
-          const hasMultipleTurns = conversationHistory.filter(entry => entry.role === 'character').length >= 2;
-          const performanceLevel = hasMultipleTurns ? 'mastery' : 'needs_improvement';
+          // Determine performance level from signal extraction (if available) or fallback to heuristics
+          let performanceLevel = 'mastery';
 
-          console.log('Generating arc ending with performance:', performanceLevel);
+          if (signalExtractionResult && signalExtractionResult.status) {
+            // Use actual assessment from signal extraction
+            const status = signalExtractionResult.status;
+            if (status === 'mastery') {
+              performanceLevel = 'mastery';
+            } else if (status === 'revised_with_scaffolding') {
+              performanceLevel = 'iffy';
+            } else if (status === 'critical_gap') {
+              performanceLevel = 'needs_improvement';
+            }
+            console.log('Using signal extraction status:', status, '→ performance:', performanceLevel);
+          } else {
+            // Fallback heuristic if signal extraction unavailable
+            const studentResponses = conversationHistory.filter(entry => entry.role === 'student');
+            const weakResponses = studentResponses.filter(response => {
+              const content = response.content.toLowerCase();
+              return content.includes('not sure') ||
+                     content.includes('don\'t know') ||
+                     content.includes('no idea') ||
+                     content.length < 20;
+            });
+
+            const characterTurns = conversationHistory.filter(entry => entry.role === 'character').length;
+
+            if (weakResponses.length >= studentResponses.length * 0.6) {
+              performanceLevel = 'needs_improvement';
+            } else if (weakResponses.length >= studentResponses.length * 0.3 || characterTurns >= 4) {
+              performanceLevel = 'iffy';
+            }
+
+            console.log('Fallback heuristic performance:', performanceLevel,
+                       `(${weakResponses.length}/${studentResponses.length} weak responses, ${characterTurns} character turns)`);
+          }
 
           // Generate arc ending
           const endingResponse = await fetch('http://localhost:8080/api/arc-endings/generate', {
@@ -138,6 +214,14 @@ export function ScenePageClient({ params }: { params: Promise<{ sceneId: string 
 
           const endingData = await endingResponse.json();
           console.log('Arc ending generated:', endingData.ending_type);
+
+          // Mark arc journal as complete
+          try {
+            await api.arcJournal.markComplete(studentId, arcId);
+            console.log('Arc journal marked as complete');
+          } catch (journalError) {
+            console.error('Failed to mark journal complete:', journalError);
+          }
 
           // Navigate to ending display page
           router.push(`/arc-ending/${endingData.ending_id}?studentId=${studentId}&arcId=${arcId}`);

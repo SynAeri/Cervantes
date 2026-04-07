@@ -6,6 +6,7 @@ from google.cloud import firestore
 from google.cloud.firestore_v1.base_query import FieldFilter
 from app.backend.core.firebase import get_firestore_db
 from app.backend.core.auth import get_current_user
+from app.backend.features.character_mappings import service as character_mapping_service
 
 router = APIRouter(prefix="/api/scene", tags=["scenes"])
 
@@ -86,6 +87,41 @@ async def get_scene_by_order(
                             "sprite_set": pool_data.get("sprite_set", []),
                             "assigned_variant": assigned_variant
                         }
+
+            # Apply character mapping to scene content (handles multiple characters + returning characters)
+            if scene_data.get("generated_scene_content"):
+                print(f"DEBUG: Applying character mapping for student {normalized_student_id}, arc {arc_id}, scene {scene_order}")
+
+                original_content = scene_data["generated_scene_content"]
+
+                # Show first 500 chars of original content
+                print(f"DEBUG: Original scene content (first 500 chars):")
+                print(original_content[:500])
+
+                # Find and show the "Indeed" line specifically
+                for line in original_content.split('\n'):
+                    if 'Indeed' in line or 'quarterly' in line:
+                        print(f"DEBUG: Line with 'Indeed/quarterly': {line}")
+
+                # Get or create character mappings for this student+arc
+                mappings = await character_mapping_service.get_or_create_character_mapping(
+                    student_id=normalized_student_id,
+                    arc_id=arc_id,
+                    scene_content=original_content,
+                    current_scene_order=scene_order,
+                    db=db
+                )
+
+                # Apply character name replacements to scene content
+                modified_content = character_mapping_service.apply_character_mapping(
+                    original_content,
+                    mappings
+                )
+                scene_data["generated_scene_content"] = modified_content
+
+                print(f"DEBUG: Character mapping applied. {len(mappings)} characters mapped.")
+                print(f"DEBUG: Modified scene content (first 500 chars):")
+                print(modified_content[:500])
 
         return {
             "scene_id": scene_id,

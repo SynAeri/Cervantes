@@ -6,7 +6,7 @@ import re
 import uuid
 from datetime import datetime
 from typing import Optional
-from google.cloud.firestore import AsyncClient
+from google.cloud.firestore import AsyncClient, FieldFilter
 from app.backend.core import llm_client
 from app.backend.core.prompt_loader import load_system_prompt
 from app.backend.features.arc_endings.schemas import ArcEndingResponse
@@ -45,35 +45,58 @@ async def generate_arc_ending(
         raise ValueError(f"Invalid climax_scene_id format: {climax_scene_id}")
     climax_scene_order = int(scene_order_match.group(1))
 
-    # Query for climax scene by arc_id and scene_order
+    # Query for climax scene by arc_id, then filter by scene_order in Python
+    # (Workaround for composite index requirement)
     climax_scenes_query = db.collection("scenes")\
-        .where("arc_id", "==", arc_id)\
-        .where("scene_order", "==", climax_scene_order)
-    climax_scenes_docs = await climax_scenes_query.get()
+        .where(filter=FieldFilter("arc_id", "==", arc_id))
+    climax_scenes_docs = climax_scenes_query.stream()
 
     climax_scene = None
     async for doc in climax_scenes_docs:
         if doc.exists:
-            climax_scene = doc.to_dict()
-            break
+            scene_data = doc.to_dict()
+            if scene_data.get("scene_order") == climax_scene_order:
+                climax_scene = scene_data
+                break
 
     if not climax_scene:
         raise ValueError(f"Climax scene not found: {climax_scene_id}")
 
     # Fetch all scenes in arc to get scene 1 character
-    scenes_query = db.collection("scenes").where("arc_id", "==", arc_id).order_by("scene_order")
-    scenes_docs = await scenes_query.get()
+    scenes_query = db.collection("scenes").where(filter=FieldFilter("arc_id", "==", arc_id))
+    scenes_docs = scenes_query.stream()
     scenes = [doc.to_dict() async for doc in scenes_docs if doc.exists]
+    # Sort in Python instead of Firestore
+    scenes.sort(key=lambda s: s.get("scene_order", 0))
     scene_1_character = scenes[0].get("character_id") if scenes else "Unknown"
 
     # Fetch reasoning traces for this student on the climax scene
+    # Query by student_id first, filter scene_id in Python
     traces_query = db.collection("reasoning_traces")\
-        .where("student_id", "==", student_id)\
-        .where("scene_id", "==", climax_scene_id)\
-        .order_by("created_at", direction="DESCENDING")\
-        .limit(1)
+        .where(filter=FieldFilter("student_id", "==", student_id))\
+        .limit(10)
 
-    traces = await traces_query.get()
+    traces_docs = traces_query.stream()
+    traces = []
+    async for doc in traces_docs:
+        if doc.exists:
+            trace_data = doc.to_dict()
+            if trace_data.get("scene_id") == climax_scene_id:
+                traces.append(trace_data)
+
+    # Sort by created_at descending in Python
+    # Handle both datetime objects and ISO strings
+    def get_sort_key(trace):
+        created_at = trace.get("created_at")
+        if created_at is None:
+            return ""
+        # If it's a Firestore datetime, convert to ISO string
+        if hasattr(created_at, 'isoformat'):
+            return created_at.isoformat()
+        # If it's already a string, return as is
+        return str(created_at)
+
+    traces.sort(key=get_sort_key, reverse=True)
 
     # Build reasoning trace summary
     reasoning_summary = {
@@ -84,7 +107,7 @@ async def generate_arc_ending(
     }
 
     if traces:
-        trace = traces[0].to_dict()
+        trace = traces[0]  # Already a dict
         if trace.get("rubric_alignment"):
             # Extract dimensions from signal extraction
             for dimension, data in trace["rubric_alignment"].items():
