@@ -73,8 +73,6 @@ app/backend/_legacy_*/
 # dev notes & reference (local only)
 dev/*
 !dev/research/
-dev/research/*
-!dev/research/.gitkeep
 !dev/slides/
 !dev/chat-summary.md
 screenshots/
