@@ -32,8 +32,16 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# python env
+venv/
+.venv/
+env/
+
+# python compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
 
 # vercel
 .vercel
@@ -75,3 +83,12 @@ dev/*
 !dev/research/
 dev/research/*
 !dev/research/.gitkeep
+
+# comfyui
+character-generation/ComfyUI/**
+
+!character-generation/ComfyUI/
+!character-generation/ComfyUI/custom_nodes/
+!character-generation/ComfyUI/custom_nodes/**
+!character-generation/ComfyUI/models/
+!character-generation/ComfyUI/models/**
