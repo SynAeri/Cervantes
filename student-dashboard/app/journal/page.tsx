@@ -3,11 +3,11 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { api } from '../lib/api';
 
-export default function JournalPage() {
+function JournalContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [journalData, setJournalData] = useState<any>(null);
@@ -133,5 +133,17 @@ export default function JournalPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function JournalPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-near-black p-8 flex items-center justify-center">
+        <div className="w-16 h-16 border-4 border-terracotta border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    }>
+      <JournalContent />
+    </Suspense>
   );
 }
