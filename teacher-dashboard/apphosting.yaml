@@ -1,0 +1,15 @@
+# Firebase App Hosting configuration for Next.js teacher dashboard
+
+runConfig:
+  runtime: nodejs20
+  concurrency: 80
+  cpu: 1
+  memoryMiB: 512
+  minInstances: 0
+  maxInstances: 4
+
+env:
+  - variable: NODE_ENV
+    value: production
+  - variable: NEXT_PUBLIC_API_URL
+    value: https://cervantes-api-878325801565.asia-southeast1.run.app
