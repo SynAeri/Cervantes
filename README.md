@@ -6,8 +6,16 @@
 <p align="center"><strong>AI-Powered Narrative Formative Assessment</strong></p>
 
 <p align="center">
-  <a href="https://cambridge-edtech-society.org/edux/edux-2026.html"><img src="https://img.shields.io/badge/Cambridge_EduX-Hackathon_2026-C85A32?style=for-the-badge&labelColor=1E1C18" alt="Hackathon"/></a>
+  <a href="https://cervantes-teacher--cervantes-caebc.asia-southeast1.hosted.app"><img src="https://img.shields.io/badge/Live_Demo-Teacher_Dashboard-C85A32?style=for-the-badge&labelColor=1E1C18&logo=firebase&logoColor=fff" alt="Teacher Demo"/></a>
+  &nbsp;
+  <a href="https://cervantes-caebc.web.app"><img src="https://img.shields.io/badge/Live_Demo-Student_PWA-C4A245?style=for-the-badge&labelColor=1E1C18&logo=firebase&logoColor=fff" alt="Student Demo"/></a>
+  &nbsp;
   <a href="https://synaeri.github.io/Cervantes/"><img src="https://img.shields.io/badge/Docs-Tutorial_Site-3B827E?style=for-the-badge&labelColor=1E1C18" alt="Docs"/></a>
+</p>
+<p align="center">
+  <a href="https://cervantes-api-878325801565.asia-southeast1.run.app/health"><img src="https://img.shields.io/badge/API-Health_Check-009688?style=flat-square&logo=fastapi&logoColor=fff" alt="API"/></a>
+  &nbsp;
+  <a href="https://cambridge-edtech-society.org/edux/edux-2026.html"><img src="https://img.shields.io/badge/Cambridge_EduX-Hackathon_2026-6b655a?style=flat-square" alt="Hackathon"/></a>
 </p>
 
 <p align="center">

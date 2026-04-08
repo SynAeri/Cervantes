@@ -1,78 +1,74 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" font-family="'Segoe UI',system-ui,sans-serif">
-  <defs>
-    <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#C85A32"/><stop offset="100%" stop-color="#D4A347"/></linearGradient>
-    <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#3B827E"/><stop offset="100%" stop-color="#4A9E9A"/></linearGradient>
-    <linearGradient id="g3" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#C4A245"/><stop offset="100%" stop-color="#D4B86A"/></linearGradient>
-    <linearGradient id="g4" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2A2720"/><stop offset="100%" stop-color="#1E1C18"/></linearGradient>
-    <filter id="shadow"><feDropShadow dx="0" dy="2" stdDeviation="4" flood-opacity="0.15"/></filter>
-  </defs>
-
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 380" font-family="Segoe UI,system-ui,sans-serif">
   <!-- Background -->
-  <rect width="900" height="420" rx="12" fill="#F4F1EA"/>
+  <rect width="880" height="380" rx="12" fill="#F4F1EA"/>
 
   <!-- Title -->
-  <text x="450" y="36" text-anchor="middle" font-size="15" font-weight="700" fill="#1E1C18" letter-spacing="3">SYSTEM ARCHITECTURE</text>
-  <line x1="370" y1="44" x2="530" y2="44" stroke="#C85A32" stroke-width="2.5" stroke-linecap="round"/>
+  <text x="440" y="32" text-anchor="middle" font-size="14" font-weight="700" fill="#1E1C18" letter-spacing="3">SYSTEM ARCHITECTURE</text>
+  <rect x="350" y="38" width="180" height="3" rx="1.5" fill="#C85A32"/>
 
-  <!-- Student PWA -->
-  <rect x="40" y="70" width="200" height="100" rx="10" fill="url(#g1)" filter="url(#shadow)"/>
-  <text x="140" y="100" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" opacity="0.8" letter-spacing="1.5">STUDENT</text>
-  <text x="140" y="122" text-anchor="middle" font-size="16" font-weight="700" fill="#fff">PWA Client</text>
-  <text x="140" y="142" text-anchor="middle" font-size="10" fill="#fff" opacity="0.8">Next.js 16 &middot; React 19 &middot; Serwist</text>
-  <text x="140" y="158" text-anchor="middle" font-size="10" fill="#fff" opacity="0.7">:3000</text>
+  <!-- Student PWA box -->
+  <rect x="30" y="65" width="195" height="95" rx="10" fill="#C85A32"/>
+  <text x="127" y="92" text-anchor="middle" font-size="10" font-weight="700" fill="#fff" opacity=".75" letter-spacing="1.5">STUDENT</text>
+  <text x="127" y="112" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">PWA Client</text>
+  <text x="127" y="130" text-anchor="middle" font-size="9" fill="#fff" opacity=".7">Next.js 16 · React 19 · Serwist</text>
+  <text x="127" y="148" text-anchor="middle" font-size="9" fill="#fff" opacity=".55">:3000</text>
 
-  <!-- Teacher Dashboard -->
-  <rect x="40" y="200" width="200" height="100" rx="10" fill="url(#g3)" filter="url(#shadow)"/>
-  <text x="140" y="230" text-anchor="middle" font-size="11" font-weight="700" fill="#1E1C18" opacity="0.7" letter-spacing="1.5">TEACHER</text>
-  <text x="140" y="252" text-anchor="middle" font-size="16" font-weight="700" fill="#1E1C18">Dashboard</text>
-  <text x="140" y="272" text-anchor="middle" font-size="10" fill="#1E1C18" opacity="0.7">Next.js 16 &middot; React Query</text>
-  <text x="140" y="288" text-anchor="middle" font-size="10" fill="#1E1C18" opacity="0.6">:3001</text>
+  <!-- Teacher Dashboard box -->
+  <rect x="30" y="185" width="195" height="95" rx="10" fill="#C4A245"/>
+  <text x="127" y="212" text-anchor="middle" font-size="10" font-weight="700" fill="#1E1C18" opacity=".65" letter-spacing="1.5">TEACHER</text>
+  <text x="127" y="232" text-anchor="middle" font-size="15" font-weight="700" fill="#1E1C18">Dashboard</text>
+  <text x="127" y="250" text-anchor="middle" font-size="9" fill="#1E1C18" opacity=".65">Next.js 16 · React Query</text>
+  <text x="127" y="268" text-anchor="middle" font-size="9" fill="#1E1C18" opacity=".5">:3001</text>
 
-  <!-- Arrows: Frontends → Backend -->
-  <path d="M 240 120 Q 290 120 310 170 Q 330 210 340 210" stroke="#C85A32" stroke-width="2" fill="none" marker-end="url(#arrowT)"/>
-  <path d="M 240 250 Q 290 250 310 230 Q 330 210 340 210" stroke="#C4A245" stroke-width="2" fill="none" marker-end="url(#arrowT)"/>
-  <defs><marker id="arrowT" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#1E1C18"/></marker></defs>
-  <text x="290" y="178" text-anchor="middle" font-size="9" fill="#6b655a" font-weight="600">REST API</text>
+  <!-- Arrows frontend -> backend -->
+  <line x1="225" y1="112" x2="320" y2="180" stroke="#C85A32" stroke-width="2"/>
+  <polygon points="320,180 310,174 312,183" fill="#C85A32"/>
+  <line x1="225" y1="232" x2="320" y2="200" stroke="#C4A245" stroke-width="2"/>
+  <polygon points="320,200 310,197 312,206" fill="#C4A245"/>
+  <text x="265" y="175" text-anchor="middle" font-size="9" fill="#6b655a" font-weight="600">REST</text>
 
-  <!-- FastAPI Backend -->
-  <rect x="340" y="150" width="220" height="120" rx="10" fill="url(#g4)" filter="url(#shadow)"/>
-  <text x="450" y="178" text-anchor="middle" font-size="11" font-weight="700" fill="#C85A32" letter-spacing="1.5">BACKEND</text>
-  <text x="450" y="200" text-anchor="middle" font-size="16" font-weight="700" fill="#F4F1EA">FastAPI</text>
-  <text x="450" y="220" text-anchor="middle" font-size="10" fill="#F4F1EA" opacity="0.7">Python 3.12 &middot; Uvicorn</text>
-  <text x="450" y="240" text-anchor="middle" font-size="10" fill="#F4F1EA" opacity="0.6">13 Feature Modules</text>
-  <text x="450" y="256" text-anchor="middle" font-size="10" fill="#F4F1EA" opacity="0.5">Cloud Run :8080</text>
+  <!-- FastAPI Backend box -->
+  <rect x="330" y="140" width="210" height="110" rx="10" fill="#1E1C18"/>
+  <text x="435" y="167" text-anchor="middle" font-size="10" font-weight="700" fill="#C85A32" letter-spacing="1.5">BACKEND</text>
+  <text x="435" y="188" text-anchor="middle" font-size="15" font-weight="700" fill="#F4F1EA">FastAPI</text>
+  <text x="435" y="206" text-anchor="middle" font-size="9" fill="#F4F1EA" opacity=".65">Python 3.12 · Uvicorn</text>
+  <text x="435" y="222" text-anchor="middle" font-size="9" fill="#F4F1EA" opacity=".5">13 Feature Modules</text>
+  <text x="435" y="238" text-anchor="middle" font-size="9" fill="#F4F1EA" opacity=".4">Cloud Run :8080</text>
 
-  <!-- Arrows: Backend → Services -->
-  <path d="M 560 180 L 640 110" stroke="#3B827E" stroke-width="2" fill="none" marker-end="url(#arrowT)"/>
-  <path d="M 560 210 L 640 210" stroke="#C85A32" stroke-width="2" fill="none" marker-end="url(#arrowT)"/>
-  <path d="M 560 240 L 640 310" stroke="#C4A245" stroke-width="2" fill="none" marker-end="url(#arrowT)"/>
+  <!-- Arrows backend -> services -->
+  <line x1="540" y1="170" x2="630" y2="105" stroke="#3B827E" stroke-width="2"/>
+  <polygon points="630,105 620,105 624,114" fill="#3B827E"/>
+  <line x1="540" y1="195" x2="630" y2="195" stroke="#C85A32" stroke-width="2"/>
+  <polygon points="630,195 621,190 621,200" fill="#C85A32"/>
+  <line x1="540" y1="220" x2="630" y2="280" stroke="#C4A245" stroke-width="2"/>
+  <polygon points="630,280 621,273 625,282" fill="#C4A245"/>
 
-  <!-- Firestore -->
-  <rect x="650" y="70" width="210" height="80" rx="10" fill="url(#g2)" filter="url(#shadow)"/>
-  <text x="755" y="98" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" opacity="0.8" letter-spacing="1.5">DATABASE</text>
-  <text x="755" y="118" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">Firebase</text>
-  <text x="755" y="136" text-anchor="middle" font-size="10" fill="#fff" opacity="0.8">Firestore &middot; Auth</text>
+  <!-- Firestore box -->
+  <rect x="640" y="65" width="210" height="75" rx="10" fill="#3B827E"/>
+  <text x="745" y="90" text-anchor="middle" font-size="10" font-weight="700" fill="#fff" opacity=".75" letter-spacing="1.5">DATABASE</text>
+  <text x="745" y="110" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">Firebase</text>
+  <text x="745" y="127" text-anchor="middle" font-size="9" fill="#fff" opacity=".75">Firestore · Auth</text>
 
-  <!-- Gemini -->
-  <rect x="650" y="175" width="210" height="70" rx="10" fill="url(#g1)" filter="url(#shadow)"/>
-  <text x="755" y="200" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" opacity="0.8" letter-spacing="1.5">AI ENGINE</text>
-  <text x="755" y="220" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">Gemini 2.5 Flash</text>
-  <text x="755" y="236" text-anchor="middle" font-size="10" fill="#fff" opacity="0.8">Dialogue &middot; Scenes &middot; Signals</text>
+  <!-- Gemini box -->
+  <rect x="640" y="160" width="210" height="65" rx="10" fill="#C85A32"/>
+  <text x="745" y="183" text-anchor="middle" font-size="10" font-weight="700" fill="#fff" opacity=".75" letter-spacing="1.5">AI ENGINE</text>
+  <text x="745" y="203" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">Gemini 2.5 Flash</text>
+  <text x="745" y="218" text-anchor="middle" font-size="9" fill="#fff" opacity=".75">Dialogue · Scenes · Signals</text>
 
-  <!-- CurricuLLM -->
-  <rect x="650" y="275" width="210" height="70" rx="10" fill="url(#g3)" filter="url(#shadow)"/>
-  <text x="755" y="300" text-anchor="middle" font-size="11" font-weight="700" fill="#1E1C18" opacity="0.7" letter-spacing="1.5">CURRICULUM</text>
-  <text x="755" y="320" text-anchor="middle" font-size="14" font-weight="700" fill="#1E1C18">CurricuLLM-AU</text>
-  <text x="755" y="336" text-anchor="middle" font-size="10" fill="#1E1C18" opacity="0.7">Rubric Parsing &middot; Standards</text>
+  <!-- CurricuLLM box -->
+  <rect x="640" y="248" width="210" height="65" rx="10" fill="#C4A245"/>
+  <text x="745" y="271" text-anchor="middle" font-size="10" font-weight="700" fill="#1E1C18" opacity=".65" letter-spacing="1.5">CURRICULUM</text>
+  <text x="745" y="291" text-anchor="middle" font-size="13" font-weight="700" fill="#1E1C18">CurricuLLM-AU</text>
+  <text x="745" y="306" text-anchor="middle" font-size="9" fill="#1E1C18" opacity=".65">Rubric Parsing · Standards</text>
 
   <!-- Deploy labels -->
-  <rect x="40" y="330" width="120" height="28" rx="6" fill="#3B827E"/>
-  <text x="100" y="349" text-anchor="middle" font-size="10" font-weight="600" fill="#fff">Firebase Hosting</text>
-  <rect x="180" y="330" width="120" height="28" rx="6" fill="#2A2720"/>
-  <text x="240" y="349" text-anchor="middle" font-size="10" font-weight="600" fill="#F4F1EA">Docker Compose</text>
-  <rect x="320" y="330" width="120" height="28" rx="6" fill="#C85A32"/>
-  <text x="380" y="349" text-anchor="middle" font-size="10" font-weight="600" fill="#fff">GCP Cloud Run</text>
+  <rect x="35" y="310" width="115" height="26" rx="6" fill="#3B827E"/>
+  <text x="92" y="328" text-anchor="middle" font-size="9" font-weight="600" fill="#fff">Firebase Hosting</text>
+  <rect x="165" y="310" width="115" height="26" rx="6" fill="#1E1C18"/>
+  <text x="222" y="328" text-anchor="middle" font-size="9" font-weight="600" fill="#F4F1EA">Docker Compose</text>
+  <rect x="295" y="310" width="115" height="26" rx="6" fill="#C85A32"/>
+  <text x="352" y="328" text-anchor="middle" font-size="9" font-weight="600" fill="#fff">GCP Cloud Run</text>
 
   <!-- Footer -->
-  <text x="450" y="400" text-anchor="middle" font-size="10" fill="#6b655a">Cambridge EduX Hackathon 2026</text>
+  <text x="440" y="365" text-anchor="middle" font-size="9" fill="#6b655a">Cambridge EduX Hackathon 2026</text>
 </svg>
