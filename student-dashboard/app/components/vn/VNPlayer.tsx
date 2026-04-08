@@ -43,6 +43,21 @@ export function VNPlayer({
   const [characterEmotions, setCharacterEmotions] = useState<Map<string, string>>(new Map()); // Track last emotion per character
   const [characterMappings, setCharacterMappings] = useState<any>(null); // Character sprite mappings
   const [nameToMappingIndex, setNameToMappingIndex] = useState<Map<string, any>>(new Map()); // Reverse lookup: assigned_name -> mapping
+  const [isMobile, setIsMobile] = useState(false); // Track mobile viewport
+
+  // Detect mobile viewport and handle resize
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    // Initial check
+    checkMobile();
+
+    // Listen for resize events
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Load character mappings and arc journal on mount
   useEffect(() => {
@@ -246,7 +261,10 @@ export function VNPlayer({
         return;
       }
 
-      // Call dialogue API with multi-part response
+      // Call dialogue API with multi-part response with 90 second timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 90000);
+
       const dialogueResponse = await fetch(`${BASE_URL}/api/dialogue/turn`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -257,7 +275,10 @@ export function VNPlayer({
           student_multipart_response: responses,
           conversation_history: newHistory,
         }),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       if (!dialogueResponse.ok) {
         throw new Error('Dialogue API failed');
@@ -297,10 +318,23 @@ export function VNPlayer({
         // Advance to the first inserted block (the AI's dialogue)
         setCurrentBlockIndex(currentBlockIndex + 1);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Multi-part Socratic pushback failed:', error);
+
+      // If timeout, show a fallback response instead of just skipping
+      if (error.name === 'AbortError') {
+        console.log('Multi-part dialogue timed out, showing fallback response');
+        const fallbackBlocks = parseVNScene('[player_prompt] Continue your response:');
+        const newBlocks = [...blocks];
+        newBlocks.splice(currentBlockIndex + 1, 0, ...fallbackBlocks);
+        setBlocks(newBlocks);
+        setCurrentBlockIndex(currentBlockIndex + 1);
+      } else {
+        // Other error - just continue
+        handleNext();
+      }
+
       setIsWaitingForResponse(false);
-      handleNext();
     }
   };
 
@@ -326,7 +360,10 @@ export function VNPlayer({
         return;
       }
 
-      // Call dialogue API for Socratic pushback
+      // Call dialogue API for Socratic pushback with 90 second timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 90000); // 90 second timeout
+
       const dialogueResponse = await fetch(`${BASE_URL}/api/dialogue/turn`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -337,7 +374,10 @@ export function VNPlayer({
           student_response: response,
           conversation_history: newHistory,
         }),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       if (!dialogueResponse.ok) {
         throw new Error('Dialogue API failed');
@@ -378,10 +418,24 @@ export function VNPlayer({
       if (data.should_end_scene) {
         console.log('Scene will end after displaying final blocks');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Socratic pushback failed:', error);
+
+      // If timeout, show a fallback response instead of just skipping
+      if (error.name === 'AbortError') {
+        console.log('Dialogue timed out, showing fallback response');
+        // Insert a simple continuation prompt
+        const fallbackBlocks = parseVNScene('[player_prompt] Continue your response:');
+        const newBlocks = [...blocks];
+        newBlocks.splice(currentBlockIndex + 1, 0, ...fallbackBlocks);
+        setBlocks(newBlocks);
+        setCurrentBlockIndex(currentBlockIndex + 1);
+      } else {
+        // Other error - just continue
+        handleNext();
+      }
+
       setIsWaitingForResponse(false);
-      handleNext();
     }
   };
 
@@ -544,10 +598,15 @@ export function VNPlayer({
             // Use character's last emotion state (preserved when inactive)
             const lastEmotion = characterEmotions.get(characterName) || 'neutral';
 
+            // On mobile with 2+ characters, only show the active character
+            if (isMobile && totalCharacters >= 2 && !isActive) {
+              return null;
+            }
+
             // Calculate position based on number of characters (VN standard positioning)
             let translateX = '-50%'; // Default: center the sprite
-            if (totalCharacters === 1) {
-              translateX = '-50%'; // Single character: perfectly centered
+            if (totalCharacters === 1 || isMobile) {
+              translateX = '-50%'; // Single character or mobile: perfectly centered
             } else if (totalCharacters === 2) {
               // Two characters: left (-25%) and right (-75%) with spacing
               translateX = index === 0 ? 'calc(-50% - 200px)' : 'calc(-50% + 200px)';

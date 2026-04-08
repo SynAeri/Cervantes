@@ -139,9 +139,10 @@ async def get_or_create_character_mapping(
 
             # Assign random name and sprite
             assigned_name, gender, sprite_index = assign_random_name(used_names, used_sprite_indices)
-            used_names.append(assigned_name)
 
-            # Track this sprite as used
+            # IMPORTANT: Update tracking IMMEDIATELY after assignment to prevent
+            # sprite/name collisions when processing multiple characters in same scene
+            used_names.append(assigned_name)
             if gender not in used_sprite_indices:
                 used_sprite_indices[gender] = []
             used_sprite_indices[gender].append(sprite_index)
@@ -155,7 +156,7 @@ async def get_or_create_character_mapping(
             )
 
             new_mappings_created = True
-            print(f"DEBUG: Created mapping for {char_id}: {original_name} -> {assigned_name} ({gender})")
+            print(f"DEBUG: Created mapping for {char_id}: {original_name} -> {assigned_name} ({gender}, sprite {sprite_index})")
 
     # Save to Firestore if new mappings were created
     if new_mappings_created or not mapping_doc.exists:

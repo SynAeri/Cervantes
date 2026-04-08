@@ -14,21 +14,24 @@ import type { ReasoningTrace, Scene } from '../lib/types';
 interface ReasoningGraphProps {
   traces: ReasoningTrace[];
   scenes?: Scene[];
+  arcEndings?: Array<{ arc_id: string; ending_type: string; ending_title?: string }>;
   className?: string;
   onSelectTrace?: (trace: ReasoningTrace | null) => void;
 }
 
 interface GraphNode {
   id: string;
-  type: 'scene' | 'concept';
+  type: 'scene' | 'concept' | 'ending';
   label: string;
   status?: 'mastery' | 'revised_with_scaffolding' | 'critical_gap';
+  endingType?: 'good_end' | 'iffy_end' | 'bad_end';
   x: number;
   y: number;
   vx: number;
   vy: number;
   trace?: ReasoningTrace;
   sceneNumber?: number;
+  arcId?: string;
 }
 
 interface GraphEdge {
@@ -62,7 +65,11 @@ function statusColor(status?: string): string {
 // Force-directed layout (simple spring simulation)
 // ---------------------------------------------------------------------------
 
-function buildGraph(traces: ReasoningTrace[], scenes?: Scene[]) {
+function buildGraph(
+  traces: ReasoningTrace[],
+  scenes?: Scene[],
+  arcEndings?: Array<{ arc_id: string; ending_type: string; ending_title?: string }>
+) {
   const nodes: GraphNode[] = [];
   const edges: GraphEdge[] = [];
   const seenConcepts = new Map<string, string>(); // concept_target -> nodeId
@@ -76,20 +83,41 @@ function buildGraph(traces: ReasoningTrace[], scenes?: Scene[]) {
   const sceneMap = new Map<string, Scene>();
   scenes?.forEach((s) => sceneMap.set(s.scene_id, s));
 
-  // Deduplicate by scene_id — keep latest trace per scene
+  // Deduplicate by arc_id + scene_id — keep latest trace per scene per arc
+  // This allows showing traces from multiple arcs (e.g., after arc deletion and new arc creation)
   const seenScenes = new Set<string>();
   const dedupedTraces: typeof sorted = [];
   for (const trace of sorted) {
-    if (!seenScenes.has(trace.scene_id)) {
-      seenScenes.add(trace.scene_id);
+    const sceneKey = `${trace.arc_id || 'unknown'}_${trace.scene_id}`;
+    if (!seenScenes.has(sceneKey)) {
+      seenScenes.add(sceneKey);
       dedupedTraces.push(trace);
     }
   }
 
+  // Group traces by arc for better labeling
+  const arcGroups = new Map<string, number>();
+  let arcCounter = 1;
+  dedupedTraces.forEach(trace => {
+    if (!arcGroups.has(trace.arc_id || 'unknown')) {
+      arcGroups.set(trace.arc_id || 'unknown', arcCounter++);
+    }
+  });
+
   dedupedTraces.forEach((trace, idx) => {
     const sceneNodeId = `scene-${trace.trace_id}`;
     const scene = sceneMap.get(trace.scene_id);
-    const sceneNumber = scene?.scene_number ?? idx + 1;
+    // Use scene_order from Firestore schema, fallback to extracting from scene_id (e.g., "scene1" -> 1)
+    const sceneNumber = (scene as any)?.scene_order ??
+                       scene?.scene_number ??
+                       (trace.scene_id ? parseInt(trace.scene_id.replace(/\D/g, '')) : null) ??
+                       idx + 1;
+    const arcNumber = arcGroups.get(trace.arc_id || 'unknown') || 1;
+
+    // Add arc number to label if there are multiple arcs
+    const label = arcGroups.size > 1
+      ? `Arc ${arcNumber} - Scene ${sceneNumber}`
+      : `Scene ${sceneNumber}`;
 
     // Scene node — scatter in circular/organic pattern (Obsidian-style)
     const angle = (idx / dedupedTraces.length) * Math.PI * 2;
@@ -98,7 +126,7 @@ function buildGraph(traces: ReasoningTrace[], scenes?: Scene[]) {
     nodes.push({
       id: sceneNodeId,
       type: 'scene',
-      label: `Scene ${sceneNumber}`,
+      label,
       status: trace.status,
       x: 300 + Math.cos(angle) * radius + jitter,
       y: 250 + Math.sin(angle) * radius + jitter * 0.7,
@@ -108,10 +136,14 @@ function buildGraph(traces: ReasoningTrace[], scenes?: Scene[]) {
       sceneNumber,
     });
 
-    // Scene-to-scene progression edges
+    // Scene-to-scene progression edges (only within same arc)
     if (idx > 0) {
-      const prevId = nodes.filter(n => n.type === 'scene')[idx - 1]?.id;
-      if (prevId) edges.push({ source: prevId, target: sceneNodeId, type: 'progression' });
+      const prevTrace = dedupedTraces[idx - 1];
+      // Only connect if both scenes are from the same arc
+      if (prevTrace.arc_id === trace.arc_id) {
+        const prevId = nodes.filter(n => n.type === 'scene')[idx - 1]?.id;
+        if (prevId) edges.push({ source: prevId, target: sceneNodeId, type: 'progression' });
+      }
     }
 
     // Concept node — scatter around the scene organically
@@ -137,6 +169,51 @@ function buildGraph(traces: ReasoningTrace[], scenes?: Scene[]) {
       edges.push({ source: sceneNodeId, target: conceptNodeId, type: 'concept' });
     }
   });
+
+  // Add arc ending nodes as large central "sun" nodes
+  if (arcEndings && arcEndings.length > 0) {
+    // Group scene nodes by arc_id
+    const scenesByArc = new Map<string, GraphNode[]>();
+    nodes.filter(n => n.type === 'scene').forEach(node => {
+      const arcId = node.trace?.arc_id || 'unknown';
+      if (!scenesByArc.has(arcId)) {
+        scenesByArc.set(arcId, []);
+      }
+      scenesByArc.get(arcId)!.push(node);
+    });
+
+    // Create ending node for each arc that has an ending
+    arcEndings.forEach((ending, endingIdx) => {
+      const arcScenes = scenesByArc.get(ending.arc_id) || [];
+      if (arcScenes.length === 0) return; // No scenes for this arc
+
+      // Position ending in center of its arc's scenes
+      const centerX = arcScenes.reduce((sum, n) => sum + n.x, 0) / arcScenes.length;
+      const centerY = arcScenes.reduce((sum, n) => sum + n.y, 0) / arcScenes.length;
+
+      const endingNodeId = `ending-${ending.arc_id}`;
+      const endingLabel = ending.ending_title ||
+                         (ending.ending_type === 'good_end' ? 'Complete' :
+                          ending.ending_type === 'iffy_end' ? 'Partial' : 'Needs Work');
+
+      nodes.push({
+        id: endingNodeId,
+        type: 'ending',
+        label: endingLabel,
+        endingType: ending.ending_type as any,
+        x: centerX,
+        y: centerY,
+        vx: 0,
+        vy: 0,
+        arcId: ending.arc_id,
+      });
+
+      // Connect all scene nodes in this arc to the ending
+      arcScenes.forEach(sceneNode => {
+        edges.push({ source: sceneNode.id, target: endingNodeId, type: 'progression' });
+      });
+    });
+  }
 
   return { nodes, edges };
 }
@@ -575,7 +652,7 @@ function SvgTooltip({ node }: { node: GraphNode }) {
 // Main ReasoningGraph component
 // ---------------------------------------------------------------------------
 
-export function ReasoningGraph({ traces, scenes, className, onSelectTrace }: ReasoningGraphProps) {
+export function ReasoningGraph({ traces, scenes, arcEndings, className, onSelectTrace }: ReasoningGraphProps) {
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [draggedNode, setDraggedNode] = useState<string | null>(null);
@@ -590,10 +667,10 @@ export function ReasoningGraph({ traces, scenes, className, onSelectTrace }: Rea
   // Build and layout graph (keep initial positions)
   const initialLayout = useMemo(() => {
     if (traces.length === 0) return { nodes: [], edges: [] };
-    const raw = buildGraph(traces, scenes);
+    const raw = buildGraph(traces, scenes, arcEndings);
     const laidOut = runForceLayout(raw.nodes, raw.edges, 60);
     return { nodes: laidOut, edges: raw.edges };
-  }, [traces, scenes]);
+  }, [traces, scenes, arcEndings]);
 
   // Track node positions (mutable for drag performance)
   const [nodePositions, setNodePositions] = useState<Map<string, { x: number; y: number }>>(new Map());

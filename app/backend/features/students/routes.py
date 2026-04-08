@@ -287,3 +287,82 @@ async def get_student_arc_journals(student_id: str, current_user: dict = Depends
             status_code=500,
             detail=f"Failed to get arc journals: {str(e)}"
         )
+
+
+@router.get("/recent-activity")
+async def get_recent_activity(current_user: dict = Depends(get_current_user), limit: int = 10):
+    """Get recent student activity across all professor's classes"""
+    db = get_firestore_db()
+    professor_id = current_user.get("uid")
+
+    try:
+        from google.cloud.firestore import FieldFilter
+
+        # Get all classes for this professor
+        classes_ref = db.collection("classes")
+        classes_query = classes_ref.where(filter=FieldFilter("professor_id", "==", professor_id))
+        classes_docs = classes_query.stream()
+
+        class_ids = []
+        async for doc in classes_docs:
+            if doc.exists:
+                class_ids.append(doc.id)
+
+        if not class_ids:
+            return []
+
+        # Collect recent completions from student_scene_assignments
+        activities = []
+
+        for class_id in class_ids:
+            # Get enrollments for this class
+            enrollments_ref = db.collection("enrollments")
+            enrollments_query = enrollments_ref.where(filter=FieldFilter("class_id", "==", class_id))
+            enrollments_docs = enrollments_query.stream()
+
+            student_ids = []
+            async for doc in enrollments_docs:
+                if doc.exists:
+                    student_ids.append(doc.to_dict().get("student_id"))
+
+            # Get recent scene completions for each student
+            for student_id in student_ids:
+                assignments_ref = db.collection("student_scene_assignments")
+                assignments_query = (
+                    assignments_ref
+                    .where(filter=FieldFilter("student_id", "==", student_id))
+                    .where(filter=FieldFilter("status", "==", "completed"))
+                    .order_by("completed_at", direction="DESCENDING")
+                    .limit(5)
+                )
+                assignments_docs = assignments_query.stream()
+
+                async for doc in assignments_docs:
+                    if doc.exists:
+                        assignment_data = doc.to_dict()
+                        completed_at = assignment_data.get("completed_at")
+
+                        # Get student name
+                        student_doc = await db.collection("users").document(student_id).get()
+                        student_name = student_doc.to_dict().get("full_name", "Unknown") if student_doc.exists else "Unknown"
+
+                        activities.append({
+                            "type": "scene_completed",
+                            "student_id": student_id,
+                            "student_name": student_name,
+                            "class_id": class_id,
+                            "scene_order": assignment_data.get("scene_order"),
+                            "arc_id": assignment_data.get("arc_id"),
+                            "timestamp": completed_at,
+                        })
+
+        # Sort by timestamp descending and limit
+        activities.sort(key=lambda x: x.get("timestamp") or "", reverse=True)
+        return activities[:limit]
+
+    except Exception as e:
+        logger.error(f"Failed to get recent activity: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to get recent activity: {str(e)}"
+        )

@@ -19,6 +19,7 @@ export function ScenePageClient({ params }: { params: Promise<{ sceneId: string 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isCompleting, setIsCompleting] = useState(false);
+  const [processingMessage, setProcessingMessage] = useState('');
 
   // Get studentId and arcId from URL params
   const studentId = searchParams.get('studentId');
@@ -107,10 +108,14 @@ export function ScenePageClient({ params }: { params: Promise<{ sceneId: string 
 
       if (hasDialogue && conversationHistory.length > 1) {
         console.log('Saving reasoning trace for deep scene');
+        setProcessingMessage('Analyzing your reasoning...');
+
         try {
           const traceResponse = await saveTraceMutation.mutateAsync({
             student_id: studentId,
             scene_id: sceneId,
+            arc_id: arcId,
+            scene_order: sceneOrder,
             conversation_history: conversationHistory,
             initial_answer: conversationHistory[0]?.content || '',
             revised_answer: conversationHistory[conversationHistory.length - 1]?.content || '',
@@ -120,7 +125,7 @@ export function ScenePageClient({ params }: { params: Promise<{ sceneId: string 
           if (traceResponse && traceResponse.trace_id) {
             console.log('Running signal extraction on trace:', traceResponse.trace_id);
             try {
-              const extractionResponse = await fetch(`${BASE_URL}/api/signal-extraction/${traceResponse.trace_id}`, {
+              const extractionResponse = await fetch(`${BASE_URL}/api/signals/${traceResponse.trace_id}`, {
                 method: 'POST',
               });
 
@@ -143,6 +148,7 @@ export function ScenePageClient({ params }: { params: Promise<{ sceneId: string 
       }
 
       // Mark scene as completed
+      setProcessingMessage('Completing scene...');
       await api.scene.markCompleted(arcId, sceneOrder, studentId);
 
       // Check if there's a next scene
@@ -190,10 +196,17 @@ export function ScenePageClient({ params }: { params: Promise<{ sceneId: string 
 
             const characterTurns = conversationHistory.filter(entry => entry.role === 'character').length;
 
-            if (weakResponses.length >= studentResponses.length * 0.6) {
+            // Performance determination based on weak response ratio only
+            // Don't penalize for number of character turns (Socratic dialogue is expected)
+            if (weakResponses.length >= studentResponses.length * 0.5) {
+              // 50%+ weak responses = critical gap
               performanceLevel = 'needs_improvement';
-            } else if (weakResponses.length >= studentResponses.length * 0.3 || characterTurns >= 4) {
+            } else if (weakResponses.length >= studentResponses.length * 0.2) {
+              // 20-50% weak responses = some struggle
               performanceLevel = 'iffy';
+            } else {
+              // <20% weak responses = mastery
+              performanceLevel = 'mastery';
             }
 
             console.log('Fallback heuristic performance:', performanceLevel,
@@ -201,6 +214,7 @@ export function ScenePageClient({ params }: { params: Promise<{ sceneId: string 
           }
 
           // Generate arc ending
+          setProcessingMessage('Generating your personalized ending...');
           const endingResponse = await fetch(`${BASE_URL}/api/arc-endings/generate`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -241,6 +255,8 @@ export function ScenePageClient({ params }: { params: Promise<{ sceneId: string 
       router.push('/journal');
     } catch (error) {
       console.error('Failed to complete scene:', error);
+      setProcessingMessage('');
+      setIsCompleting(false);
     }
   };
 
@@ -274,10 +290,23 @@ export function ScenePageClient({ params }: { params: Promise<{ sceneId: string 
   }
 
   return (
-    <SceneRenderer
-      sceneId={sceneId}
-      sceneData={sceneData}
-      onComplete={handleSceneComplete}
-    />
+    <>
+      <SceneRenderer
+        sceneId={sceneId}
+        sceneData={sceneData}
+        onComplete={handleSceneComplete}
+      />
+
+      {processingMessage && (
+        <div className="fixed inset-0 bg-[#1E1C18]/90 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-[#1E1C18] border border-[#F4F1EA]/20 rounded-lg p-8 max-w-md text-center">
+            <div className="mb-4">
+              <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[#C85A32] border-r-transparent"></div>
+            </div>
+            <p className="text-[#F4F1EA] text-lg">{processingMessage}</p>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

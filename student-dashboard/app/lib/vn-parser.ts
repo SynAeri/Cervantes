@@ -121,9 +121,10 @@ export function parseVNScene(sceneContent: string): VNBlock[] {
           continue;
         }
 
-        // Match simpler formats: "A. option", "1. option", "- option"
-        if (optionLine.match(/^[A-Za-z\d-]+[\.\)]\s+/) || optionLine.startsWith('-')) {
-          let option = optionLine.replace(/^[A-Za-z\d-]+[\.\)]\s+/, '').trim();
+        // Match simpler formats: "A. option" or "A) option"
+        // NOTE: Only match letters, NOT numbers (numbers are for sub-questions)
+        if (optionLine.match(/^[A-Za-z][\.\)]\s+/)) {
+          let option = optionLine.replace(/^[A-Za-z][\.\)]\s+/, '').trim();
           console.log('Found simple option:', option);
           options.push(option);
           j++;

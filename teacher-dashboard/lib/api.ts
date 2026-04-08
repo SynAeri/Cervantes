@@ -3,7 +3,7 @@
 
 import { auth } from './firebase';
 
-const BASE_URL = 'http://localhost:8000';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
 export async function apiFetch(path: string, options: RequestInit = {}) {
   const user = auth.currentUser;

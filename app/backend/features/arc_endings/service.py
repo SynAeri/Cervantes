@@ -132,6 +132,16 @@ async def generate_arc_ending(
     # Load ending generation prompt
     ending_prompt = load_system_prompt("arc_ending")
 
+    # Fetch character mappings for this student
+    character_mappings_doc = await db.collection("student_character_mappings").document(
+        f"{student_id}_{arc_id}"
+    ).get()
+
+    character_mappings = {}
+    if character_mappings_doc.exists:
+        mappings_data = character_mappings_doc.to_dict()
+        character_mappings = mappings_data.get("character_mappings", {})
+
     # Build runtime context
     runtime_context = {
         "arc_context": {
@@ -144,22 +154,31 @@ async def generate_arc_ending(
                 "student_performance": performance_level
             }
         },
+        "character_mappings": character_mappings,
         "reasoning_trace_summary": reasoning_summary,
         "student_id": student_id
     }
+
+    # Build character mapping hint for the LLM
+    char_mapping_hint = ""
+    if character_mappings:
+        char_mapping_hint = "\n\nIMPORTANT: Use these student-specific character names in your narrative:\n"
+        for orig_name, mapping in character_mappings.items():
+            char_mapping_hint += f"- Use '{mapping['assigned_name']}' (not '{orig_name}')\n"
 
     user_prompt = f"""Generate arc ending for completed arc.
 
 Runtime context:
 {json.dumps(runtime_context, indent=2)}
+{char_mapping_hint}
 
 Generate the ending narrative based on the student's performance. Follow the ending type decision logic from your system prompt.
 
 Return JSON with:
 {{
   "ending_type": "good_end | bad_end | iffy_end",
-  "narrative_text": "VN-formatted narrative with [character:Name] and emotion tags",
-  "character_callback": "Brief callback to {scene_1_character}",
+  "narrative_text": "VN-formatted narrative with [character:Name] and emotion tags using the MAPPED character names above",
+  "character_callback": "Brief callback using the mapped character name from scene 1",
   "reflection_prompt": "Journal-style reflection question",
   "ending_title": "Short title for this ending"
 }}"""

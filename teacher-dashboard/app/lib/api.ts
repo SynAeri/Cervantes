@@ -18,12 +18,13 @@ export class APIError extends Error {
 
 export async function apiFetch<T>(
   path: string,
-  options: RequestInit = {}
+  options: RequestInit & { timeout?: number } = {}
 ): Promise<T> {
+  const { timeout, ...fetchOptions } = options;
   const user = auth.currentUser;
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...(options.headers as Record<string, string>),
+    ...(fetchOptions.headers as Record<string, string>),
   };
 
   if (user) {
@@ -31,19 +32,34 @@ export async function apiFetch<T>(
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${BASE_URL}${path}`, {
-    ...options,
-    headers,
-  });
+  // Create abort controller for timeout
+  const controller = new AbortController();
+  const timeoutId = timeout ? setTimeout(() => controller.abort(), timeout) : null;
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({
-      detail: response.statusText
-    }));
-    throw new APIError(response.status, response.statusText, error.detail || 'Unknown error');
+  try {
+    const response = await fetch(`${BASE_URL}${path}`, {
+      ...fetchOptions,
+      headers,
+      signal: controller.signal,
+    });
+
+    if (timeoutId) clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({
+        detail: response.statusText
+      }));
+      throw new APIError(response.status, response.statusText, error.detail || 'Unknown error');
+    }
+
+    return response.json();
+  } catch (error: any) {
+    if (timeoutId) clearTimeout(timeoutId);
+    if (error.name === 'AbortError') {
+      throw new Error('Request timeout - operation is still processing in the background');
+    }
+    throw error;
   }
-
-  return response.json();
 }
 
 export const api = {
@@ -85,12 +101,14 @@ export const api = {
     generate: (data: any) => apiFetch<any>('/api/arc/generate', {
       method: 'POST',
       body: JSON.stringify(data),
+      timeout: 60000, // 60 second timeout for arc generation (multiple LLM calls)
     }),
     approve: (arcId: string) => apiFetch<any>(`/api/arc/${arcId}/approve`, {
       method: 'POST',
     }),
     publish: (arcId: string) => apiFetch<any>(`/api/arc/${arcId}/publish`, {
       method: 'POST',
+      timeout: 120000, // 120 second timeout for publish (generates all scenes)
     }),
     delete: (arcId: string) => apiFetch<any>(`/api/arc/${arcId}`, {
       method: 'DELETE',
@@ -107,6 +125,7 @@ export const api = {
     getAll: () => apiFetch<any[]>('/api/students'),
     getById: (studentId: string) => apiFetch<any>(`/api/students/${studentId}`),
     getByClass: (classId: string) => apiFetch<any[]>(`/api/students/class/${classId}`),
+    getRecentActivity: (limit: number = 10) => apiFetch<any[]>(`/api/students/recent-activity?limit=${limit}`),
   },
   student: {
     getReasoningTraces: (studentId: string) => apiFetch<any[]>(`/api/students/${studentId}/reasoning-traces`),
@@ -147,5 +166,9 @@ export const api = {
     getByStudent: (studentId: string) => apiFetch<any[]>(`/api/reasoning-trace/student/${studentId}`),
     getByStudentScene: (studentId: string, sceneId: string) => apiFetch<any[]>(`/api/reasoning-trace/student/${studentId}/scene/${sceneId}`),
     getById: (traceId: string) => apiFetch<any>(`/api/reasoning-trace/${traceId}`),
+  },
+  arcEndings: {
+    getByStudent: (studentId: string, arcId: string) => apiFetch<any>(`/api/arc-endings/student/${studentId}/arc/${arcId}`),
+    getById: (endingId: string) => apiFetch<any>(`/api/arc-endings/${endingId}`),
   },
 };

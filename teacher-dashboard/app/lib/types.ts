@@ -73,14 +73,22 @@ export interface Enrollment {
   enrolled_at: string;
 }
 
+export interface RubricDimension {
+  performance: 'strong' | 'weak' | 'adequate';
+  evidence: string;
+  reasoning: string;
+}
+
 export interface ReasoningTrace {
   trace_id: string;
   student_id: string;
   scene_id: string;
+  arc_id?: string;
   conversation_history: ConversationTurn[];
   initial_answer: string;
   revised_answer: string;
   status: 'mastery' | 'revised_with_scaffolding' | 'critical_gap';
+  rubric_alignment?: Record<string, RubricDimension>;
   created_at: string;
 }
 
@@ -88,6 +96,21 @@ export interface ConversationTurn {
   role: 'student' | 'character';
   content: string;
   emotion?: string;
+}
+
+export interface ArcEnding {
+  ending_id: string;
+  arc_id: string;
+  student_id: string;
+  climax_scene_id: string;
+  ending_type: 'good_end' | 'bad_end' | 'iffy_end';
+  narrative_text: string;
+  character_callback?: string;
+  reflection_prompt: string;
+  ending_title: string;
+  performance_level: string;
+  created_at: string;
+  status: 'generated';
 }
 
 export interface ClassProgress {

@@ -18,6 +18,8 @@ class ReasoningTraceRequest(BaseModel):
     """Request to save reasoning trace after scene completion"""
     student_id: str
     scene_id: str
+    arc_id: Optional[str] = None
+    scene_order: Optional[int] = None
     conversation_history: List[Dict]
     initial_answer: str
     revised_answer: str

@@ -46,6 +46,46 @@ async def get_scene_by_order(
                 detail=f"Scene not found for arc {arc_id}, scene_order {scene_order}"
             )
 
+        # Fetch arc document to get location from scenes array
+        print(f"DEBUG: Fetching arc document with ID: {arc_id}")
+        arc_doc = await db.collection("arcs").document(arc_id).get()
+        print(f"DEBUG: Arc document exists: {arc_doc.exists}")
+
+        if arc_doc.exists:
+            arc_data = arc_doc.to_dict()
+            print(f"DEBUG: Arc data keys: {list(arc_data.keys())}")
+
+            # Check if scenes is in narrative_arc instead of root level
+            narrative_arc = arc_data.get("narrative_arc", {})
+            print(f"DEBUG: narrative_arc keys: {list(narrative_arc.keys()) if isinstance(narrative_arc, dict) else 'not a dict'}")
+
+            # Try to get scenes from narrative_arc first, fallback to root level
+            scenes_array = narrative_arc.get("scenes", []) if isinstance(narrative_arc, dict) else arc_data.get("scenes", [])
+            print(f"DEBUG: Type of scenes field: {type(scenes_array)}")
+            print(f"DEBUG: Arc has {len(scenes_array)} scenes in array")
+            print(f"DEBUG: Looking for scene_order={scene_order}")
+
+            # Show all scene orders in the array
+            for idx, s in enumerate(scenes_array):
+                print(f"DEBUG: Scene[{idx}] - order={s.get('scene_order')}, location={s.get('location')}, scene_id={s.get('scene_id')}")
+
+            # Find the scene in the array by scene_order
+            matching_scene = next(
+                (s for s in scenes_array if s.get("scene_order") == scene_order),
+                None
+            )
+
+            print(f"DEBUG: Matching scene found: {matching_scene is not None}")
+            if matching_scene:
+                print(f"DEBUG: Matching scene location: {matching_scene.get('location')}")
+
+            # Add location from arc's scenes array to scene_data
+            if matching_scene and "location" in matching_scene:
+                scene_data["location"] = matching_scene["location"]
+                print(f"DEBUG: Added location to scene_data: {scene_data['location']}")
+        else:
+            print(f"DEBUG: Arc document {arc_id} not found")
+
         # If student_id provided, get their assignment and character variant
         if student_id:
             # Normalize student_id

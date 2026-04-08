@@ -80,21 +80,25 @@ async def get_ending_by_student_arc(
 ):
     """Get arc ending for a specific student and arc"""
     try:
+        # Query without order_by to avoid composite index requirement
+        # Filter and sort in Python instead
         endings_query = db.collection("arc_endings")\
             .where("student_id", "==", student_id)\
-            .where("arc_id", "==", arc_id)\
-            .order_by("created_at", direction="DESCENDING")\
-            .limit(1)
+            .where("arc_id", "==", arc_id)
 
-        endings = await endings_query.get()
+        endings_docs = await endings_query.get()
 
-        if not endings:
+        if not endings_docs:
             raise HTTPException(
                 status_code=404,
                 detail="No ending found for this student and arc"
             )
 
-        return endings[0].to_dict()
+        # Convert to list and sort by created_at descending in Python
+        endings = [doc.to_dict() for doc in endings_docs]
+        endings.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+
+        return endings[0]
 
     except HTTPException:
         raise

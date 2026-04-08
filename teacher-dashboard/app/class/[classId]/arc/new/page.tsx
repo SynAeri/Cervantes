@@ -26,6 +26,7 @@ export default function NewArcPage({ params }: { params: Promise<{ classId: stri
   const [rubricData, setRubricData] = useState<any>(null);
   const [generationStage, setGenerationStage] = useState<string>('Uploading rubric...');
   const [showReviewModal, setShowReviewModal] = useState(false);
+  const [isTimedOut, setIsTimedOut] = useState(false);
 
   const generateMutation = useGenerateArc();
   const approveMutation = useApproveArc();
@@ -67,10 +68,47 @@ export default function NewArcPage({ params }: { params: Promise<{ classId: stri
       setGeneratedArc(arc);
       setShowReviewModal(true);
       setStep('upload'); // Stay on upload page, show modal
-    } catch (error) {
-      clearInterval(stageInterval);
-      console.error('Arc generation failed:', error);
-      setStep('upload');
+    } catch (error: any) {
+      console.error('Arc generation error:', error);
+
+      // If it's a timeout, show timeout UI and start polling
+      if (error.message?.includes('timeout') || error.message?.includes('NetworkError')) {
+        setIsTimedOut(true);
+        setGenerationStage('Still generating in the background...');
+
+        // Poll for arc completion every 5 seconds
+        const pollInterval = setInterval(async () => {
+          try {
+            const arcs = await api.arc.getByClass(classId);
+            const draftArc = arcs.find((a: any) => a.status === 'draft');
+
+            if (draftArc) {
+              clearInterval(pollInterval);
+              clearInterval(stageInterval);
+              setGeneratedArc(draftArc);
+              setShowReviewModal(true);
+              setStep('upload');
+              setIsTimedOut(false);
+            }
+          } catch (pollError) {
+            console.error('Poll error:', pollError);
+          }
+        }, 5000);
+
+        // Stop polling after 5 minutes
+        setTimeout(() => {
+          clearInterval(pollInterval);
+          clearInterval(stageInterval);
+          if (isTimedOut) {
+            setGenerationStage('Generation timed out. Please refresh to check status.');
+          }
+        }, 300000);
+      } else {
+        // Real error - show error state
+        clearInterval(stageInterval);
+        setGenerationStage(`Error: ${error.message || 'Unknown error'}`);
+        setTimeout(() => setStep('upload'), 3000);
+      }
     }
   };
 
@@ -154,19 +192,42 @@ export default function NewArcPage({ params }: { params: Promise<{ classId: stri
 
             {step === 'generating' && (
               <div className="bg-warm-white rounded-xl border border-warm-grey p-16 text-center">
-                <div className="inline-block animate-spin mb-6">
-                  <span className="material-symbols-outlined text-6xl text-terracotta">autorenew</span>
-                </div>
-                <h3 className="text-lg font-bold text-primary mb-2">Generating Assessment Arc</h3>
-                <p className="text-[13px] text-wheat font-bold mb-4 animate-pulse">
-                  {generationStage}
-                </p>
-                <div className="max-w-md mx-auto bg-parchment rounded-full h-2 overflow-hidden">
-                  <div className="bg-terracotta h-full animate-pulse" style={{ width: '60%' }}></div>
-                </div>
-                <p className="text-[11px] text-tertiary mt-4 max-w-md mx-auto">
-                  This may take 30-60 seconds as we analyze your rubric and generate personalized content
-                </p>
+                {!isTimedOut ? (
+                  <>
+                    <div className="inline-block animate-spin mb-6">
+                      <span className="material-symbols-outlined text-6xl text-terracotta">autorenew</span>
+                    </div>
+                    <h3 className="text-lg font-bold text-primary mb-2">Generating Assessment Arc</h3>
+                    <p className="text-[13px] text-wheat font-bold mb-4 animate-pulse">
+                      {generationStage}
+                    </p>
+                    <div className="max-w-md mx-auto bg-parchment rounded-full h-2 overflow-hidden">
+                      <div className="bg-terracotta h-full animate-pulse" style={{ width: '60%' }}></div>
+                    </div>
+                    <p className="text-[11px] text-tertiary mt-4 max-w-md mx-auto">
+                      This may take 30-60 seconds as we analyze your rubric and generate personalized content
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <span className="material-symbols-outlined text-6xl text-wheat-gold mb-6 block">schedule</span>
+                    <h3 className="text-lg font-bold text-primary mb-2">Still Processing...</h3>
+                    <p className="text-[13px] text-wheat font-bold mb-4">
+                      {generationStage}
+                    </p>
+                    <div className="bg-wheat/10 border border-wheat/30 rounded-lg p-4 max-w-md mx-auto mb-6">
+                      <p className="text-[12px] text-tertiary leading-relaxed">
+                        Arc generation is taking longer than expected but is still running. We're checking every few seconds for completion.
+                      </p>
+                    </div>
+                    <div className="max-w-md mx-auto bg-parchment rounded-full h-2 overflow-hidden">
+                      <div className="bg-wheat-gold h-full animate-pulse" style={{ width: '80%' }}></div>
+                    </div>
+                    <p className="text-[11px] text-tertiary mt-4">
+                      This page will update automatically when generation completes
+                    </p>
+                  </>
+                )}
               </div>
             )}
 

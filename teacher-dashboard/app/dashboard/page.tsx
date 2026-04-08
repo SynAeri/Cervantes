@@ -7,9 +7,42 @@ import Link from 'next/link';
 import { Sidebar } from '../components/Sidebar';
 import { TopBar } from '../components/TopBar';
 import { useClasses } from '../hooks/useClasses';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '../lib/api';
+
+function formatTimestamp(timestamp: any): string {
+  if (!timestamp) return 'Just now';
+
+  let date: Date;
+  if (timestamp.toDate && typeof timestamp.toDate === 'function') {
+    date = timestamp.toDate();
+  } else if (timestamp instanceof Date) {
+    date = timestamp;
+  } else if (typeof timestamp === 'string') {
+    date = new Date(timestamp);
+  } else {
+    return 'Just now';
+  }
+
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  const mins = Math.floor(diff / 60000);
+
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `${days}d ago`;
+  return date.toLocaleDateString();
+}
 
 export default function DashboardPage() {
   const { data: classes, isLoading, error } = useClasses();
+  const { data: recentActivity, isLoading: activityLoading } = useQuery({
+    queryKey: ['recentActivity'],
+    queryFn: () => api.students.getRecentActivity(10),
+  });
 
   if (error) {
     return (
@@ -114,8 +147,45 @@ export default function DashboardPage() {
 
             <div className="pt-8">
               <h3 className="text-[11px] font-extrabold text-tertiary uppercase tracking-[0.2em] mb-6">Recent Activity</h3>
-              <div className="bg-warm-white rounded-xl border border-warm-grey p-6 space-y-4">
-                <p className="text-[12px] text-tertiary italic">Activity feed will be populated as students complete scenes</p>
+              <div className="bg-warm-white rounded-xl border border-warm-grey p-6">
+                {activityLoading ? (
+                  <div className="space-y-3">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="flex items-start gap-3 animate-pulse">
+                        <div className="w-8 h-8 bg-warm-grey rounded-full flex-shrink-0"></div>
+                        <div className="flex-1">
+                          <div className="h-3 bg-warm-grey rounded w-3/4 mb-2"></div>
+                          <div className="h-2 bg-warm-grey rounded w-1/2"></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : recentActivity && recentActivity.length > 0 ? (
+                  <div className="space-y-4">
+                    {recentActivity.map((activity, index) => {
+                      const timeAgo = activity.timestamp
+                        ? formatTimestamp(activity.timestamp)
+                        : 'Just now';
+
+                      return (
+                        <div key={index} className="flex items-start gap-3 pb-3 border-b border-warm-grey last:border-0 last:pb-0">
+                          <div className="w-8 h-8 bg-mastery/10 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span className="material-symbols-outlined text-mastery text-sm">check_circle</span>
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-[12px] text-primary font-bold">
+                              {activity.student_name}
+                              <span className="font-normal text-tertiary"> completed Scene {activity.scene_order}</span>
+                            </p>
+                            <p className="text-[11px] text-tertiary/70 mt-0.5">{timeAgo}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-[12px] text-tertiary italic">No recent activity yet</p>
+                )}
               </div>
             </div>
           </section>

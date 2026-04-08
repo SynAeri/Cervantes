@@ -32,6 +32,8 @@ async def save_reasoning_trace(
             "trace_id": trace_id,
             "student_id": request.student_id,
             "scene_id": request.scene_id,
+            "arc_id": request.arc_id,
+            "scene_order": request.scene_order,
             "conversation_history": request.conversation_history,
             "initial_answer": request.initial_answer,
             "revised_answer": request.revised_answer,

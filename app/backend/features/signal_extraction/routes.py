@@ -45,6 +45,7 @@ async def extract_signals_by_id(
     Extract reasoning signals from trace ID (student-accessible).
     Used after scene completion for arc ending assessment.
     """
+    import traceback
     try:
         result = await service.extract_reasoning_signals(
             trace_id=trace_id,
@@ -52,4 +53,6 @@ async def extract_signals_by_id(
         )
         return result.model_dump()
     except Exception as e:
+        print(f"ERROR in extract_signals_by_id: {str(e)}")
+        print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=f"Signal extraction failed: {str(e)}")

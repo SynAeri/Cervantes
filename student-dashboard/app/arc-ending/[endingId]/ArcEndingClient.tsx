@@ -6,7 +6,10 @@
 import { use, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { parseVNScene, type VNBlock } from '@/app/lib/vn-parser';
-import { BASE_URL } from '@/app/lib/api';
+import { BASE_URL, api } from '@/app/lib/api';
+import { DialogueBox } from '@/app/components/vn/DialogueBox';
+import { NarrationBox } from '@/app/components/vn/NarrationBox';
+import { CharacterSprite } from '@/app/components/vn/CharacterSprite';
 
 export function ArcEndingClient({ params }: { params: Promise<{ endingId: string }> }) {
   const { endingId } = use(params);
@@ -20,6 +23,7 @@ export function ArcEndingClient({ params }: { params: Promise<{ endingId: string
   const [currentBlockIndex, setCurrentBlockIndex] = useState(0);
   const [showReflection, setShowReflection] = useState(false);
   const [reflectionAnswer, setReflectionAnswer] = useState('');
+  const [characterMappings, setCharacterMappings] = useState<any>(null);
 
   const studentId = searchParams.get('studentId') || localStorage.getItem('currentStudentId') || '';
   const arcId = searchParams.get('arcId') || localStorage.getItem('currentArcId') || '';
@@ -44,7 +48,19 @@ export function ArcEndingClient({ params }: { params: Promise<{ endingId: string
         const data = await response.json();
         setEndingData(data);
 
-        // Parse the narrative text as VN content
+        // Fetch character mappings if we have studentId and arcId
+        let loadedMappings = null;
+        if (studentId && arcId) {
+          try {
+            loadedMappings = await api.characterMappings.get(studentId, arcId);
+            setCharacterMappings(loadedMappings.character_mappings);
+            console.log('Character mappings loaded:', loadedMappings.character_mappings);
+          } catch (err) {
+            console.warn('Failed to load character mappings:', err);
+          }
+        }
+
+        // Parse the narrative text as VN content (backend now uses mapped names)
         const parsedBlocks = parseVNScene(data.narrative_text);
         setBlocks(parsedBlocks);
         setCurrentBlockIndex(0);
@@ -57,10 +73,22 @@ export function ArcEndingClient({ params }: { params: Promise<{ endingId: string
     };
 
     fetchEnding();
-  }, [endingId]);
+  }, [endingId, studentId, arcId]);
 
   const currentBlock = blocks[currentBlockIndex];
   const isLastBlock = currentBlockIndex >= blocks.length - 1;
+
+  // Map character ID to assigned name
+  const getCharacterName = (charId: string): string => {
+    if (!characterMappings) return charId;
+
+    // Find mapping for this character ID
+    const mapping = Object.values(characterMappings).find(
+      (m: any) => m.original_name === charId || charId.includes(m.original_name)
+    );
+
+    return mapping ? (mapping as any).assigned_name : charId;
+  };
 
   const handleNext = () => {
     if (isLastBlock) {
@@ -155,16 +183,35 @@ export function ArcEndingClient({ params }: { params: Promise<{ endingId: string
     );
   }
 
+  // Get character sprite info if current block has a character
+  const getCharacterSpriteInfo = () => {
+    if (currentBlock?.type !== 'dialogue' || !currentBlock.character) return null;
+
+    const characterName = getCharacterName(currentBlock.character);
+    const mapping = characterMappings ? Object.values(characterMappings).find(
+      (m: any) => m.assigned_name === characterName
+    ) : null;
+
+    return {
+      name: characterName,
+      gender: mapping?.gender || 'female',
+      spriteIndex: mapping?.sprite_index || 1,
+      emotion: currentBlock.emotion || 'neutral'
+    };
+  };
+
+  const spriteInfo = getCharacterSpriteInfo();
+
   return (
     <div className="min-h-screen overflow-hidden relative bg-near-black">
-      {/* Background */}
+      {/* Background - city.jpeg like VNPlayer */}
       <div className="fixed inset-0 z-0 bg-near-black">
         <img
           alt=""
-          className="w-full h-full object-cover grayscale-[0.1] brightness-75"
-          src="/city.jpeg"
+          className="w-full h-full object-cover brightness-[0.85]"
+          src="/backgrounds/city/bg.jpg"
         />
-        <div className="absolute inset-0 bg-near-black/40"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-near-black/60 via-near-black/40 to-near-black/60"></div>
       </div>
 
       {/* Ending title overlay */}
@@ -178,11 +225,26 @@ export function ArcEndingClient({ params }: { params: Promise<{ endingId: string
         </div>
       </div>
 
-      {/* Main content - matching VNPlayer layout */}
+      {/* Main content - matching VNPlayer layout exactly */}
       <main className="fixed inset-0 z-10 flex flex-col justify-end">
-        {/* Character display area (sprites would go here) */}
+        {/* Character display area */}
         <div className="flex-1 flex items-end justify-center relative pt-15">
-          {/* TODO: Add character sprite based on currentBlock.character */}
+          {/* Character sprite - only show for dialogue blocks */}
+          {spriteInfo && (
+            <div
+              className="absolute bottom-0 left-1/2 transition-all duration-700 ease-out"
+              style={{ transform: 'translateX(-50%)' }}
+            >
+              <CharacterSprite
+                name={spriteInfo.name}
+                role="ending"
+                emotion={spriteInfo.emotion}
+                gender={spriteInfo.gender}
+                spriteIndex={spriteInfo.spriteIndex}
+                isActive={true}
+              />
+            </div>
+          )}
         </div>
 
         {/* Interaction area - VN standard 1/4 of page */}
@@ -190,56 +252,27 @@ export function ArcEndingClient({ params }: { params: Promise<{ endingId: string
           {/* Gradient overlay at top edge */}
           <div className="absolute -top-24 left-0 right-0 h-24 bg-gradient-to-b from-transparent via-transparent to-near-black/95 pointer-events-none z-20"></div>
 
-          {/* Dialogue/Narration content */}
-          <div className="relative w-full pt-2 flex-1 flex flex-col justify-between">
-            <div className="px-8 py-6 flex-1 flex flex-col justify-center">
-              {currentBlock && (
-                <>
-                  {currentBlock.type === 'narration' && (
-                    <div className="max-w-4xl mx-auto">
-                      <div className="bg-parchment/5 border-l-4 border-wheat-gold/40 px-6 py-4 rounded-r-lg">
-                        <p className="text-parchment/70 italic text-base leading-relaxed">
-                          {currentBlock.content}
-                        </p>
-                      </div>
-                    </div>
-                  )}
+          {/* Content area - using VN components */}
+          <div className="relative w-full pt-2 flex-1 overflow-y-auto">
+            {currentBlock && (
+              <>
+                {currentBlock.type === 'narration' && (
+                  <NarrationBox
+                    content={currentBlock.content}
+                    onNext={handleNext}
+                  />
+                )}
 
-                  {currentBlock.type === 'dialogue' && (
-                    <div className="max-w-4xl mx-auto">
-                      <div className="bg-near-black/50 border border-parchment/10 rounded-xl px-6 py-5">
-                        <div className="flex items-center gap-3 mb-3">
-                          <span className="text-wheat-gold font-semibold text-lg tracking-wide">
-                            {currentBlock.character}
-                          </span>
-                          {currentBlock.emotion && (
-                            <span className="text-xs px-2 py-1 bg-parchment/10 text-parchment/60 rounded-full">
-                              {currentBlock.emotion}
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-parchment text-base leading-relaxed">
-                          {currentBlock.content}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-
-            {/* Progress indicator and next button */}
-            <div className="flex items-center justify-between px-8 py-4 border-t border-parchment/10">
-              <div className="text-parchment/40 text-xs tracking-[0.2em] uppercase font-light">
-                {currentBlockIndex + 1}/{blocks.length}
-              </div>
-              <button
-                onClick={handleNext}
-                className="px-6 py-2.5 bg-terracotta text-near-black font-bold rounded-lg hover:bg-terracotta/90 transition-all hover:scale-105 active:scale-95"
-              >
-                {isLastBlock ? 'Reflect' : 'Continue'}
-              </button>
-            </div>
+                {currentBlock.type === 'dialogue' && (
+                  <DialogueBox
+                    character={getCharacterName(currentBlock.character)}
+                    text={currentBlock.content}
+                    emotion={currentBlock.emotion}
+                    onNext={handleNext}
+                  />
+                )}
+              </>
+            )}
           </div>
         </div>
       </main>
