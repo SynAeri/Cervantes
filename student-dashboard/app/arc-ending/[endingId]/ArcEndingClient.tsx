@@ -188,7 +188,7 @@ export function ArcEndingClient({ params }: { params: Promise<{ endingId: string
     if (currentBlock?.type !== 'dialogue' || !currentBlock.character) return null;
 
     const characterName = getCharacterName(currentBlock.character);
-    const mapping = characterMappings ? Object.values(characterMappings).find(
+    const mapping: any = characterMappings ? Object.values(characterMappings).find(
       (m: any) => m.assigned_name === characterName
     ) : null;
 

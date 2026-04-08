@@ -6,7 +6,7 @@
 import { useState } from 'react';
 import { WheatField } from '../components/WheatField';
 import { useAuth } from '../../lib/auth-context';
-import { apiFetch } from '../../lib/api';
+import { apiFetch } from '../lib/api';
 
 export default function LoginPage() {
   const { signIn, signUp, signInWithGoogle, signInWithMicrosoft, loading: authLoading } = useAuth();
