@@ -12,3 +12,5 @@ runConfig:
 env:
   - variable: NODE_ENV
     value: production
+  - variable: NEXT_PUBLIC_API_URL
+    value: https://cervantes-api-878325801565.asia-southeast1.run.app

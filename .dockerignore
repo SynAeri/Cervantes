@@ -11,5 +11,7 @@ dev
 assets
 scripts
 .env
+**/.env
 *-service-account.json
+**/*-service-account.json
 app/backend/sql
