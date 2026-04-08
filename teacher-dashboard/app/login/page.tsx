@@ -6,10 +6,11 @@
 import { useState } from 'react';
 import { WheatField } from '../components/WheatField';
 import { useAuth } from '../../lib/auth-context';
+import { auth } from '../../lib/firebase';
 import { apiFetch } from '../lib/api';
 
 export default function LoginPage() {
-  const { signIn, signUp, signInWithGoogle, signInWithMicrosoft, loading: authLoading } = useAuth();
+  const { signIn, signInWithGoogle, signInWithMicrosoft, loading: authLoading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
@@ -18,14 +19,17 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   const registerProfessor = async () => {
-    try {
-      await apiFetch('/api/auth/register', {
-        method: 'POST',
-        body: JSON.stringify({ role: 'professor' }),
-      });
-    } catch {
-      // Registration may fail if user already exists, that's fine
-    }
+    const displayName = email.split('@')[0] || 'Professor';
+    await apiFetch('/api/auth/register', {
+      method: 'POST',
+      body: JSON.stringify({
+        email,
+        password,
+        display_name: displayName,
+        role: 'professor',
+        institution: 'La Mancha',
+      }),
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -34,11 +38,12 @@ export default function LoginPage() {
     setLoading(true);
     try {
       if (isSignUp) {
-        await signUp(email, password);
+        await registerProfessor();
+        await signIn(email, password);
       } else {
         await signIn(email, password);
       }
-      await registerProfessor();
+      await auth.currentUser?.getIdToken(true);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Authentication failed';
       setError(message.replace('Firebase: ', '').replace(/\(auth\/.*\)/, '').trim());

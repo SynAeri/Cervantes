@@ -5,6 +5,33 @@ import { auth } from '../../lib/firebase';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
+function normalizeArcResponse<T>(data: T): T {
+  if (!data || typeof data !== 'object') {
+    return data;
+  }
+
+  const normalizeSingleArc = (arc: any) => {
+    if (!arc || typeof arc !== 'object') {
+      return arc;
+    }
+
+    if ((!Array.isArray(arc.scenes) || arc.scenes.length === 0) && Array.isArray(arc.narrative_arc?.scenes)) {
+      return {
+        ...arc,
+        scenes: arc.narrative_arc.scenes,
+      };
+    }
+
+    return arc;
+  };
+
+  if (Array.isArray(data)) {
+    return data.map(normalizeSingleArc) as T;
+  }
+
+  return normalizeSingleArc(data) as T;
+}
+
 export class APIError extends Error {
   constructor(
     public status: number,
@@ -16,17 +43,26 @@ export class APIError extends Error {
   }
 }
 
+async function waitForAuthState() {
+  const authWithReady = auth as typeof auth & { authStateReady?: () => Promise<void> };
+  if (typeof authWithReady.authStateReady === 'function') {
+    await authWithReady.authStateReady();
+  }
+}
+
 export async function apiFetch<T>(
   path: string,
   options: RequestInit & { timeout?: number } = {}
 ): Promise<T> {
   const { timeout, ...fetchOptions } = options;
-  const user = auth.currentUser;
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(fetchOptions.headers as Record<string, string>),
   };
 
+  await waitForAuthState();
+
+  const user = auth.currentUser;
   if (user) {
     const token = await user.getIdToken();
     headers['Authorization'] = `Bearer ${token}`;
@@ -52,7 +88,8 @@ export async function apiFetch<T>(
       throw new APIError(response.status, response.statusText, error.detail || 'Unknown error');
     }
 
-    return response.json();
+    const data = await response.json();
+    return normalizeArcResponse(data);
   } catch (error: any) {
     if (timeoutId) clearTimeout(timeoutId);
     if (error.name === 'AbortError') {
@@ -72,6 +109,8 @@ export const api = {
     getByClass: (classId: string) => apiFetch<any[]>(`/api/arc/class/${classId}`),
     getById: (arcId: string) => apiFetch<any>(`/api/arc/${arcId}`),
     uploadRubric: async (classId: string, file: File) => {
+      await waitForAuthState();
+
       const user = auth.currentUser;
       if (!user) {
         throw new Error('User not authenticated');
@@ -96,7 +135,8 @@ export const api = {
         throw new APIError(response.status, response.statusText, error.detail || 'Unknown error');
       }
 
-      return response.json();
+      const data = await response.json();
+      return normalizeArcResponse(data);
     },
     generate: (data: any) => apiFetch<any>('/api/arc/generate', {
       method: 'POST',

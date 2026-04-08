@@ -17,6 +17,62 @@ from app.backend.features.arc.character_generator import generate_character
 logger = logging.getLogger(__name__)
 
 
+def _default_learning_outcomes(subject: str) -> list[str]:
+    subject_name = subject or "the topic"
+    return [
+        f"Identify and explain core ideas in {subject_name}",
+        f"Apply {subject_name} concepts to realistic scenarios",
+        f"Evaluate evidence and justify decisions using {subject_name} knowledge",
+    ]
+
+
+def _default_key_concepts(subject: str) -> list[str]:
+    normalized = (subject or "").lower()
+    if "econom" in normalized:
+        return [
+            "GDP",
+            "Inflation",
+            "Unemployment",
+            "Government Intervention",
+            "Labour Management",
+        ]
+
+    return [
+        subject or "Core Concepts",
+        "Analysis",
+        "Evaluation",
+    ]
+
+
+def normalize_curriculum_data(curriculum_data_dict: dict) -> dict:
+    """Fill required curriculum fields when upstream parsing returns sparse output."""
+    subject = curriculum_data_dict.get("subject") or "Economics"
+
+    if not curriculum_data_dict.get("subject"):
+        curriculum_data_dict["subject"] = subject
+    if not curriculum_data_dict.get("module"):
+        curriculum_data_dict["module"] = "General Module"
+    if not curriculum_data_dict.get("year_level"):
+        curriculum_data_dict["year_level"] = "Year 10"
+    if not curriculum_data_dict.get("assessment_type"):
+        curriculum_data_dict["assessment_type"] = "Formative Assessment"
+    if not curriculum_data_dict.get("difficulty_level"):
+        curriculum_data_dict["difficulty_level"] = "intermediate"
+
+    learning_outcomes = curriculum_data_dict.get("learning_outcomes")
+    if not learning_outcomes:
+        curriculum_data_dict["learning_outcomes"] = _default_learning_outcomes(subject)
+
+    key_concepts = curriculum_data_dict.get("key_concepts")
+    if not key_concepts:
+        curriculum_data_dict["key_concepts"] = _default_key_concepts(subject)
+
+    if "common_misconceptions" not in curriculum_data_dict or curriculum_data_dict["common_misconceptions"] is None:
+        curriculum_data_dict["common_misconceptions"] = []
+
+    return curriculum_data_dict
+
+
 def validate_arc_characters(arc: dict) -> list[str]:
     """
     Validate character casting rules on a generated arc.
@@ -183,10 +239,7 @@ async def generate_arc(
             max_output_tokens=8192,
         )
 
-    # Handle null/missing common_misconceptions from LLM
-    if "common_misconceptions" not in curriculum_data_dict or curriculum_data_dict["common_misconceptions"] is None:
-        curriculum_data_dict["common_misconceptions"] = []
-
+    curriculum_data_dict = normalize_curriculum_data(curriculum_data_dict)
     curriculum_data = CurriculumData(**curriculum_data_dict)
 
     # ===== PHASE 2: Misconception coverage enforcement =====
@@ -487,6 +540,7 @@ IMPORTANT: Do NOT include "character" or "secondary_character" fields. Those are
         "professor_id": professor_id,
         "curriculum_data": curriculum_data.model_dump(),
         "narrative_arc": narrative_arc.model_dump(),
+        "scenes": narrative_arc.model_dump().get("scenes", []),
         "rubric_focus": curriculum_data.subject,
         "concept_targets": curriculum_data.key_concepts,
         "misconceptions": [m.model_dump() for m in curriculum_data.common_misconceptions],
