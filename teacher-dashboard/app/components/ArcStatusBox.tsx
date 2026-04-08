@@ -6,6 +6,7 @@
 import { useState, useCallback } from 'react';
 import Link from 'next/link';
 import { api } from '../lib/api';
+import { useAuth } from '../../lib/auth-context';
 
 interface ArcStatusBoxProps {
   classId: string;
@@ -39,6 +40,7 @@ export function ArcStatusBox({
   onReviewClick,
   progressData
 }: ArcStatusBoxProps) {
+  const { user } = useAuth();
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingStage, setProcessingStage] = useState('');
@@ -108,7 +110,7 @@ export function ArcStatusBox({
       const arc = await api.arc.generate({
         class_id: classId,
         rubric_text: uploadData.text,
-        professor_id: 'prof_demo',
+        professor_id: user?.uid || 'unknown',
         student_subjects: [],
         student_extracurriculars: [],
       });
@@ -202,12 +204,12 @@ export function ArcStatusBox({
                   <div className="min-w-0">
                     <p className="text-[11px] text-tertiary font-bold uppercase mb-1">Student Link</p>
                     <a
-                      href={`https://cervantes-backend-prod--cervantes-caebc.asia-southeast1.hosted.app/${currentArc.arc_id}`}
+                      href={`${process.env.NEXT_PUBLIC_STUDENT_URL || 'https://cervantes-backend-prod--cervantes-caebc.asia-southeast1.hosted.app'}/${currentArc.arc_id}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-[13px] font-bold text-[#2563eb] hover:text-[#1d4ed8] transition-colors flex items-center gap-1 group min-w-0"
                     >
-                      <span className="truncate min-w-0">cervantes-student.com/{currentArc.arc_id}</span>
+                      <span className="truncate min-w-0">student-portal/{currentArc.arc_id}</span>
                       <span className="material-symbols-outlined text-xs flex-shrink-0 group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
                     </a>
                   </div>

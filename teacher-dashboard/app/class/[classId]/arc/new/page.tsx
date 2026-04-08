@@ -12,12 +12,14 @@ import { ArcReviewModal } from '../../../../components/features/arc-generator/Ar
 import { useGenerateArc, useApproveArc } from '../../../../hooks/useArcMutations';
 import { useClass } from '../../../../hooks/useClasses';
 import { api } from '../../../../lib/api';
+import { useAuth } from '../../../../../lib/auth-context';
 import type { Arc } from '../../../../lib/types';
 
 type WorkflowStep = 'upload' | 'generating' | 'approved';
 
 export default function NewArcPage({ params }: { params: Promise<{ classId: string }> }) {
   const { classId } = use(params);
+  const { user } = useAuth();
   const { data: classData } = useClass(classId);
   const [step, setStep] = useState<WorkflowStep>('upload');
   const [generatedArc, setGeneratedArc] = useState<Arc | null>(null);
@@ -57,7 +59,7 @@ export default function NewArcPage({ params }: { params: Promise<{ classId: stri
       const arc = await generateMutation.mutateAsync({
         class_id: classId,
         rubric_text: parsedRubric.rubric_text || parsedRubric.text,
-        professor_id: 'prof_demo',
+        professor_id: user?.uid || 'unknown',
         student_subjects: [],
         student_extracurriculars: [],
       });

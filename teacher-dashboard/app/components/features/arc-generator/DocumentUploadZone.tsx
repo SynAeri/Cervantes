@@ -4,6 +4,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { auth } from '../../../../lib/firebase';
 
 interface DocumentUploadZoneProps {
   classId: string;
@@ -63,8 +64,16 @@ export function DocumentUploadZone({ classId, onUploadSuccess }: DocumentUploadZ
     formData.append('file', files[0]);
 
     try {
+      const headers: Record<string, string> = {};
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        const token = await currentUser.getIdToken();
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/arc/upload-rubric?class_id=${classId}`, {
         method: 'POST',
+        headers,
         body: formData,
       });
 
