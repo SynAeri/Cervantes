@@ -55,7 +55,15 @@ export default function LoginPage() {
       await registerProfessor();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Google sign-in failed';
-      setError(message.replace('Firebase: ', '').replace(/\(auth\/.*\)/, '').trim());
+      if (message.includes('auth/unauthorized-domain')) {
+        setError('This domain is not authorised for Google sign-in. Please use email/password or contact your administrator.');
+      } else if (message.includes('auth/popup-closed-by-user')) {
+        setError('Sign-in popup was closed. Please try again.');
+      } else if (message.includes('auth/popup-blocked')) {
+        setError('Popup blocked by browser. Please allow popups for this site.');
+      } else {
+        setError(message.replace('Firebase: ', '').replace(/\(auth\/.*\)\.?/, '').trim() || 'Google sign-in failed');
+      }
     } finally {
       setLoading(false);
     }
@@ -69,7 +77,15 @@ export default function LoginPage() {
       await registerProfessor();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Microsoft sign-in failed';
-      setError(message.replace('Firebase: ', '').replace(/\(auth\/.*\)/, '').trim());
+      if (message.includes('auth/unauthorized-domain')) {
+        setError('This domain is not authorised for Microsoft sign-in. Please use email/password or contact your administrator.');
+      } else if (message.includes('auth/popup-closed-by-user')) {
+        setError('Sign-in popup was closed. Please try again.');
+      } else if (message.includes('auth/popup-blocked')) {
+        setError('Popup blocked by browser. Please allow popups for this site.');
+      } else {
+        setError(message.replace('Firebase: ', '').replace(/\(auth\/.*\)\.?/, '').trim() || 'Microsoft sign-in failed');
+      }
     } finally {
       setLoading(false);
     }
