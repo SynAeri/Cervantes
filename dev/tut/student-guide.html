@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Journey Guide - Cervantes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --near-black: #1E1C18;
+  --parchment: #F4F1EA;
+  --terracotta: #C85A32;
+  --wheat-gold: #C4A245;
+  --mastery: #3B827E;
+  --critical: #9E3B3B;
+  --terracotta-light: #D97B58;
+  --terracotta-dark: #A84A28;
+  --gold-light: #D4B865;
+  --parchment-dark: #E8E3D6;
+  --parchment-muted: #A8A49A;
+  --panel: #2A2722;
+  --panel-light: #343029;
+  --glow-terracotta: rgba(200, 90, 50, 0.15);
+  --glow-gold: rgba(196, 162, 69, 0.12);
+  --glow-mastery: rgba(59, 130, 126, 0.12);
+}
+
+html {
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--terracotta) var(--near-black);
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  background: var(--near-black);
+  color: var(--parchment);
+  line-height: 1.7;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* -- Scrollbar -- */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--near-black); }
+::-webkit-scrollbar-thumb { background: var(--terracotta); border-radius: 3px; }
+
+/* -- Selection -- */
+::selection { background: var(--terracotta); color: var(--parchment); }
+
+/* -- Back link -- */
+.back-link {
+  position: fixed;
+  top: 1.25rem;
+  left: 1.25rem;
+  z-index: 100;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  background: rgba(30, 28, 24, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(244, 241, 234, 0.1);
+  border-radius: 8px;
+  color: var(--parchment);
+  text-decoration: none;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+}
+.back-link:hover {
+  border-color: var(--terracotta);
+  background: rgba(200, 90, 50, 0.12);
+  color: var(--terracotta-light);
+}
+.back-link .material-symbols-outlined { font-size: 16px; }
+
+/* -- Hero -- */
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 6rem 2rem 4rem;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 40%, var(--glow-terracotta) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 50% at 30% 70%, var(--glow-gold) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 80% 20%, var(--glow-mastery) 0%, transparent 50%);
+  animation: heroGlow 12s ease-in-out infinite alternate;
+}
+
+@keyframes heroGlow {
+  0% { opacity: 0.6; transform: scale(1); }
+  100% { opacity: 1; transform: scale(1.05); }
+}
+
+.hero-badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 1rem;
+  border: 1px solid rgba(200, 90, 50, 0.4);
+  border-radius: 100px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--terracotta-light);
+  margin-bottom: 2rem;
+  animation: fadeSlideUp 0.8s ease-out 0.2s both;
+}
+.hero-badge::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--terracotta);
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.4); }
+}
+
+.hero h1 {
+  position: relative;
+  font-size: clamp(2.4rem, 6vw, 4.2rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+  animation: fadeSlideUp 0.8s ease-out 0.4s both;
+}
+.hero h1 .accent { color: var(--terracotta); }
+
+.hero-sub {
+  position: relative;
+  font-size: clamp(0.95rem, 2vw, 1.15rem);
+  color: var(--parchment-muted);
+  max-width: 520px;
+  line-height: 1.7;
+  font-weight: 400;
+  animation: fadeSlideUp 0.8s ease-out 0.6s both;
+}
+
+.hero-scroll {
+  position: relative;
+  margin-top: 3.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  animation: fadeSlideUp 0.8s ease-out 0.8s both;
+}
+.hero-scroll span {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--parchment-muted);
+}
+.scroll-line {
+  width: 1px;
+  height: 48px;
+  background: linear-gradient(to bottom, var(--terracotta), transparent);
+  animation: scrollPulse 2s ease-in-out infinite;
+}
+@keyframes scrollPulse {
+  0%, 100% { opacity: 0.4; transform: scaleY(1); }
+  50% { opacity: 1; transform: scaleY(1.2); }
+}
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* -- Journey timeline -- */
+.journey {
+  position: relative;
+  max-width: 840px;
+  margin: 0 auto;
+  padding: 0 1.5rem 6rem;
+}
+
+/* Vertical spine */
+.journey::before {
+  content: '';
+  position: absolute;
+  left: 2.75rem;
+  top: 0;
+  bottom: 6rem;
+  width: 2px;
+  background: linear-gradient(
+    to bottom,
+    var(--terracotta),
+    var(--wheat-gold) 40%,
+    var(--mastery) 70%,
+    var(--parchment-muted) 100%
+  );
+  opacity: 0.3;
+}
+
+/* -- Step card -- */
+.step {
+  position: relative;
+  padding-left: 5rem;
+  margin-bottom: 3.5rem;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.step.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Step number node */
+.step-node {
+  position: absolute;
+  left: 1.25rem;
+  top: 0.25rem;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--near-black);
+  background: var(--terracotta);
+  box-shadow: 0 0 20px var(--glow-terracotta), 0 0 0 4px var(--near-black);
+  z-index: 2;
+}
+.step-node.gold { background: var(--wheat-gold); box-shadow: 0 0 20px var(--glow-gold), 0 0 0 4px var(--near-black); }
+.step-node.mastery { background: var(--mastery); box-shadow: 0 0 20px var(--glow-mastery), 0 0 0 4px var(--near-black); }
+.step-node.critical { background: var(--critical); box-shadow: 0 0 20px rgba(158, 59, 59, 0.15), 0 0 0 4px var(--near-black); }
+
+.step-card {
+  background: var(--panel);
+  border: 1px solid rgba(244, 241, 234, 0.06);
+  border-radius: 12px;
+  padding: 1.75rem 2rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.step-card:hover {
+  border-color: rgba(200, 90, 50, 0.2);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
+}
+
+.step-label {
+  display: inline-block;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--terracotta-light);
+  margin-bottom: 0.5rem;
+}
+.step-label.gold { color: var(--gold-light); }
+.step-label.mastery { color: var(--mastery); }
+
+.step-card h2 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 0.75rem;
+  line-height: 1.3;
+}
+
+.step-card p {
+  font-size: 0.88rem;
+  color: rgba(244, 241, 234, 0.7);
+  line-height: 1.75;
+  margin-bottom: 0.75rem;
+}
+.step-card p:last-child { margin-bottom: 0; }
+
+/* -- Route tag -- */
+.route {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  background: rgba(244, 241, 234, 0.04);
+  border: 1px solid rgba(244, 241, 234, 0.1);
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-family: 'SFMono-Regular', 'Consolas', 'Liberation Mono', monospace;
+  color: var(--parchment-muted);
+  margin-bottom: 1rem;
+}
+.route .material-symbols-outlined { font-size: 13px; color: var(--wheat-gold); }
+
+/* -- API tag -- */
+.api-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.7rem;
+  background: rgba(59, 130, 126, 0.08);
+  border: 1px solid rgba(59, 130, 126, 0.2);
+  border-radius: 6px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  font-family: 'SFMono-Regular', 'Consolas', 'Liberation Mono', monospace;
+  color: var(--mastery);
+  margin-top: 0.5rem;
+}
+.api-tag .method {
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+  background: var(--mastery);
+  color: var(--near-black);
+  font-size: 0.6rem;
+  font-weight: 800;
+}
+
+/* -- Visual Novel mockup blocks -- */
+.vn-mock {
+  background: var(--near-black);
+  border: 1px solid rgba(244, 241, 234, 0.08);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 1.25rem;
+}
+
+.vn-mock-header {
+  padding: 0.6rem 1rem;
+  background: rgba(244, 241, 234, 0.03);
+  border-bottom: 1px solid rgba(244, 241, 234, 0.06);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.vn-mock-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: rgba(244, 241, 234, 0.15);
+}
+.vn-mock-dot.active { background: var(--terracotta); }
+.vn-mock-title {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--parchment-muted);
+  letter-spacing: 0.05em;
+}
+
+.vn-mock-body {
+  padding: 1.25rem;
+}
+
+/* Narration line */
+.vn-narration {
+  font-style: italic;
+  color: rgba(244, 241, 234, 0.55);
+  font-size: 0.82rem;
+  padding: 0.75rem 1rem;
+  border-left: 2px solid rgba(244, 241, 234, 0.12);
+  margin-bottom: 0.75rem;
+  line-height: 1.7;
+}
+
+/* Character dialogue */
+.vn-dialogue {
+  padding: 0.75rem 1rem;
+  background: rgba(196, 162, 69, 0.06);
+  border-left: 3px solid var(--wheat-gold);
+  border-radius: 0 6px 6px 0;
+  margin-bottom: 0.75rem;
+}
+.vn-dialogue-name {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--wheat-gold);
+  margin-bottom: 0.25rem;
+}
+.vn-dialogue-emotion {
+  font-size: 0.6rem;
+  color: var(--gold-light);
+  opacity: 0.6;
+  font-style: italic;
+  margin-left: 0.5rem;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.vn-dialogue-text {
+  font-size: 0.82rem;
+  color: rgba(244, 241, 234, 0.85);
+  line-height: 1.65;
+}
+
+/* Player response */
+.vn-player {
+  padding: 0.75rem 1rem;
+  background: rgba(200, 90, 50, 0.06);
+  border-left: 3px solid var(--terracotta);
+  border-radius: 0 6px 6px 0;
+  margin-bottom: 0.75rem;
+}
+.vn-player-name {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--terracotta);
+  margin-bottom: 0.25rem;
+}
+.vn-player-text {
+  font-size: 0.82rem;
+  color: rgba(244, 241, 234, 0.85);
+  line-height: 1.65;
+}
+
+/* Choice options */
+.vn-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+.vn-choice {
+  padding: 0.65rem 1rem;
+  background: rgba(244, 241, 234, 0.03);
+  border: 1px solid rgba(244, 241, 234, 0.1);
+  border-radius: 8px;
+  font-size: 0.78rem;
+  color: var(--parchment);
+  cursor: default;
+  transition: all 0.2s ease;
+}
+.vn-choice:hover {
+  border-color: var(--terracotta);
+  background: rgba(200, 90, 50, 0.06);
+}
+.vn-choice .letter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px; height: 20px;
+  border-radius: 4px;
+  background: var(--terracotta);
+  color: var(--near-black);
+  font-size: 0.6rem;
+  font-weight: 800;
+  margin-right: 0.6rem;
+}
+
+/* Freeform textarea mockup */
+.vn-freeform {
+  margin-top: 0.75rem;
+  padding: 1rem;
+  background: rgba(244, 241, 234, 0.02);
+  border: 1px dashed rgba(244, 241, 234, 0.15);
+  border-radius: 8px;
+  min-height: 64px;
+}
+.vn-freeform-label {
+  font-size: 0.7rem;
+  color: var(--parchment-muted);
+  font-style: italic;
+}
+.vn-freeform-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 14px;
+  background: var(--terracotta);
+  animation: blink 1s step-end infinite;
+  vertical-align: middle;
+  margin-left: 2px;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* -- Sprite showcase -- */
+.sprite-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+.sprite-cell {
+  aspect-ratio: 1;
+  background: var(--panel-light);
+  border: 1px solid rgba(244, 241, 234, 0.06);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  gap: 0.35rem;
+  transition: all 0.2s ease;
+}
+.sprite-cell:hover {
+  border-color: var(--wheat-gold);
+  transform: translateY(-2px);
+}
+.sprite-cell .material-symbols-outlined {
+  font-size: 24px;
+  color: var(--wheat-gold);
+}
+.sprite-cell span:last-child {
+  font-size: 0.55rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--parchment-muted);
+}
+
+/* -- Signal badges -- */
+.signal-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+.signal-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 100px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.signal-badge.mastery-badge {
+  background: rgba(59, 130, 126, 0.12);
+  border: 1px solid rgba(59, 130, 126, 0.3);
+  color: var(--mastery);
+}
+.signal-badge.revised-badge {
+  background: rgba(196, 162, 69, 0.1);
+  border: 1px solid rgba(196, 162, 69, 0.25);
+  color: var(--wheat-gold);
+}
+.signal-badge.critical-badge {
+  background: rgba(158, 59, 59, 0.1);
+  border: 1px solid rgba(158, 59, 59, 0.25);
+  color: var(--critical);
+}
+.signal-badge .material-symbols-outlined { font-size: 14px; }
+
+/* -- Code block -- */
+.code-block {
+  background: var(--near-black);
+  border: 1px solid rgba(244, 241, 234, 0.08);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 1.25rem;
+  font-family: 'SFMono-Regular', 'Consolas', 'Liberation Mono', monospace;
+  font-size: 0.72rem;
+  line-height: 1.8;
+}
+.code-header {
+  padding: 0.5rem 1rem;
+  background: rgba(244, 241, 234, 0.03);
+  border-bottom: 1px solid rgba(244, 241, 234, 0.06);
+  color: var(--parchment-muted);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.code-body {
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+}
+.code-body .tag { color: var(--wheat-gold); }
+.code-body .char { color: var(--terracotta-light); }
+.code-body .emotion { color: var(--mastery); }
+.code-body .text { color: rgba(244, 241, 234, 0.7); }
+.code-body .prompt { color: var(--gold-light); }
+.code-body .option { color: var(--parchment); font-weight: 600; }
+.code-body .comment { color: rgba(244, 241, 234, 0.3); font-style: italic; }
+
+/* -- Multi-part mockup -- */
+.multipart-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+.multipart-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: rgba(244, 241, 234, 0.02);
+  border: 1px solid rgba(244, 241, 234, 0.08);
+  border-radius: 8px;
+}
+.multipart-num {
+  flex-shrink: 0;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: var(--terracotta);
+  color: var(--near-black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 800;
+}
+.multipart-text {
+  font-size: 0.8rem;
+  color: rgba(244, 241, 234, 0.7);
+  line-height: 1.5;
+}
+
+/* -- PWA feature cards -- */
+.pwa-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+.pwa-card {
+  padding: 1rem;
+  background: rgba(244, 241, 234, 0.02);
+  border: 1px solid rgba(244, 241, 234, 0.08);
+  border-radius: 8px;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+.pwa-card:hover {
+  border-color: var(--mastery);
+  transform: translateY(-2px);
+}
+.pwa-card .material-symbols-outlined {
+  font-size: 28px;
+  color: var(--mastery);
+  margin-bottom: 0.5rem;
+}
+.pwa-card h4 {
+  font-size: 0.78rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+.pwa-card p {
+  font-size: 0.68rem;
+  color: var(--parchment-muted);
+  line-height: 1.5;
+}
+
+/* -- Typewriter effect -- */
+.typewriter {
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 2px solid var(--wheat-gold);
+  animation:
+    typing 2.5s steps(40, end) forwards,
+    blinkCaret 0.75s step-end infinite;
+  max-width: fit-content;
+}
+@keyframes typing {
+  from { width: 0; }
+  to { width: 100%; }
+}
+@keyframes blinkCaret {
+  from, to { border-color: transparent; }
+  50% { border-color: var(--wheat-gold); }
+}
+
+/* -- Divider -- */
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 4rem 0 2rem;
+  padding-left: 5rem;
+}
+.section-divider .line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, rgba(200, 90, 50, 0.3), transparent);
+}
+.section-divider .label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--parchment-muted);
+  white-space: nowrap;
+}
+
+/* -- Footer -- */
+.footer {
+  text-align: center;
+  padding: 3rem 2rem;
+  border-top: 1px solid rgba(244, 241, 234, 0.06);
+}
+.footer p {
+  font-size: 0.7rem;
+  color: var(--parchment-muted);
+  letter-spacing: 0.08em;
+}
+.footer .mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--parchment);
+  letter-spacing: 0.02em;
+}
+.footer .mark .c-icon {
+  width: 22px; height: 22px;
+  border-radius: 5px;
+  background: var(--terracotta);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--parchment);
+  font-weight: 800;
+  font-size: 0.7rem;
+}
+
+/* -- Responsive -- */
+@media (max-width: 640px) {
+  .hero { padding: 5rem 1.25rem 3rem; }
+  .journey { padding: 0 1rem 4rem; }
+  .journey::before { left: 1.5rem; }
+  .step { padding-left: 3.5rem; }
+  .step-node { left: 0; width: 2.5rem; height: 2.5rem; font-size: 0.65rem; }
+  .step-card { padding: 1.25rem 1.25rem; }
+  .step-card h2 { font-size: 1.15rem; }
+  .sprite-grid { grid-template-columns: repeat(3, 1fr); }
+  .section-divider { padding-left: 3.5rem; }
+  .pwa-grid { grid-template-columns: 1fr; }
+  .back-link { top: 0.75rem; left: 0.75rem; padding: 0.4rem 0.75rem; font-size: 0.65rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- Back to Hub -->
+<a class="back-link" href="index.html">
+  <span class="material-symbols-outlined">arrow_back</span>
+  Back to Hub
+</a>
+
+<!-- ============================================================ -->
+<!-- HERO                                                          -->
+<!-- ============================================================ -->
+<section class="hero">
+  <div class="hero-badge">Student Experience</div>
+  <h1>Your <span class="accent">Journey</span><br>Through Cervantes</h1>
+  <p class="hero-sub">
+    A visual-novel assessment where AI characters guide you through Socratic dialogue.
+    No right answers given — only the path to discover them yourself.
+  </p>
+  <div class="hero-scroll">
+    <span>Scroll to begin</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- JOURNEY TIMELINE                                              -->
+<!-- ============================================================ -->
+<div class="journey">
+
+  <!-- ======== STEP 1 ======== -->
+  <div class="step" data-step>
+    <div class="step-node">01</div>
+    <div class="step-card">
+      <span class="step-label">Step 1</span>
+      <h2>Arc Entry</h2>
+      <div class="route">
+        <span class="material-symbols-outlined">route</span>
+        /
+      </div>
+      <p>
+        Your teacher shares an <strong>Arc ID</strong> &mdash; a short code that unlocks your
+        personalized assessment. Enter it on the landing page to begin.
+      </p>
+      <!-- Mini mockup -->
+      <div class="vn-mock">
+        <div class="vn-mock-header">
+          <div class="vn-mock-dot active"></div>
+          <div class="vn-mock-dot"></div>
+          <div class="vn-mock-dot"></div>
+          <span class="vn-mock-title">cervantes</span>
+        </div>
+        <div class="vn-mock-body" style="text-align:center; padding: 2rem 1.5rem;">
+          <div style="width:40px;height:40px;border-radius:8px;background:var(--terracotta);display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:1.1rem;margin-bottom:1rem;">C</div>
+          <div style="font-size:1.1rem;font-weight:700;margin-bottom:0.25rem;">Access Assessment</div>
+          <div style="font-size:0.6rem;color:var(--parchment-muted);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:1.25rem;">La Mancha Learning System</div>
+          <div style="max-width:260px;margin:0 auto;">
+            <div style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 0.75rem;border:1px solid rgba(244,241,234,0.15);border-radius:6px;margin-bottom:0.75rem;">
+              <span class="material-symbols-outlined" style="font-size:14px;color:var(--parchment-muted);">assignment</span>
+              <span style="font-size:0.75rem;color:var(--parchment-muted);">e.g., asdnkjsanrkare</span>
+            </div>
+            <div style="padding:0.6rem;background:var(--terracotta);border-radius:6px;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Continue</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== STEP 2 ======== -->
+  <div class="step" data-step>
+    <div class="step-node">02</div>
+    <div class="step-card">
+      <span class="step-label">Step 2</span>
+      <h2>Identity Verification</h2>
+      <div class="route">
+        <span class="material-symbols-outlined">route</span>
+        /{arcId}
+      </div>
+      <p>
+        Enter your <strong>Student ID</strong> (e.g., "10234567"). The backend validates
+        your access and checks your current status for this arc.
+      </p>
+      <p>
+        If your status is <strong>"ready"</strong>, you are redirected straight to
+        your first scene. Already started? You resume where you left off.
+      </p>
+      <div class="api-tag">
+        <span class="method">POST</span>
+        /api/arc/{arcId}/check-student-access
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== STEP 3 ======== -->
+  <div class="step" data-step>
+    <div class="step-node gold">03</div>
+    <div class="step-card">
+      <span class="step-label gold">Step 3</span>
+      <h2>Scene Loading</h2>
+      <div class="route">
+        <span class="material-symbols-outlined">route</span>
+        /scene/[sceneId]
+      </div>
+      <p>
+        Your scene loads with its narrative content, a location backdrop, and your
+        <strong>assigned character</strong> &mdash; unique to you. No two students
+        see the same character variant, preventing answer copying.
+      </p>
+      <p>
+        Character sprite mappings are fetched, and the background image for the
+        scene location (office, library, lab...) fills the screen.
+      </p>
+    </div>
+  </div>
+
+  <!-- SECTION: The Scene Experience -->
+  <div class="section-divider">
+    <span class="label">The Scene Experience</span>
+    <div class="line"></div>
+  </div>
+
+  <!-- ======== STEP 4 ======== -->
+  <div class="step" data-step>
+    <div class="step-node gold">04</div>
+    <div class="step-card">
+      <span class="step-label gold">Step 4</span>
+      <h2>Narration</h2>
+      <p>
+        Each scene opens with <em>narration blocks</em> that set the stage &mdash;
+        describing the scenario, establishing context, and framing the challenge
+        you are about to explore.
+      </p>
+      <!-- Narration mockup -->
+      <div class="vn-mock">
+        <div class="vn-mock-header">
+          <div class="vn-mock-dot active"></div>
+          <div class="vn-mock-dot"></div>
+          <div class="vn-mock-dot"></div>
+          <span class="vn-mock-title">Scene: The Market Puzzle</span>
+        </div>
+        <div class="vn-mock-body">
+          <div class="vn-narration">
+            The lecture hall is quiet save for the hum of the projector. A chart
+            glows on the wall &mdash; supply curves crossing demand in ways that
+            don't quite match the textbook.
+          </div>
+          <div class="vn-narration">
+            Professor Navarro glances at you from behind her desk, a knowing
+            look in her eyes.
+          </div>
+          <div style="text-align:center;margin-top:1rem;">
+            <span style="font-size:0.6rem;color:var(--parchment-muted);letter-spacing:0.15em;text-transform:uppercase;">Click to continue</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== STEP 5 ======== -->
+  <div class="step" data-step>
+    <div class="step-node gold">05</div>
+    <div class="step-card">
+      <span class="step-label gold">Step 5</span>
+      <h2>Character Dialogue</h2>
+      <p>
+        Your AI character speaks with a <strong>typewriter effect</strong>, their
+        sprite displayed with the current emotion state. Characters are expressive
+        &mdash; they shift between five distinct emotions as the conversation evolves.
+      </p>
+      <!-- Dialogue mockup with typewriter -->
+      <div class="vn-mock">
+        <div class="vn-mock-header">
+          <div class="vn-mock-dot active"></div>
+          <div class="vn-mock-dot"></div>
+          <div class="vn-mock-dot"></div>
+          <span class="vn-mock-title">Dialogue</span>
+        </div>
+        <div class="vn-mock-body">
+          <div class="vn-dialogue">
+            <div class="vn-dialogue-name">
+              Anya <span class="vn-dialogue-emotion">encouraging</span>
+            </div>
+            <div class="vn-dialogue-text typewriter">
+              Great thinking! But consider what happens when demand shifts...
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Emotion sprite grid -->
+      <div class="sprite-grid">
+        <div class="sprite-cell">
+          <span class="material-symbols-outlined">sentiment_neutral</span>
+          <span>Neutral</span>
+        </div>
+        <div class="sprite-cell">
+          <span class="material-symbols-outlined">sentiment_very_satisfied</span>
+          <span>Encouraging</span>
+        </div>
+        <div class="sprite-cell">
+          <span class="material-symbols-outlined">sentiment_worried</span>
+          <span>Concerned</span>
+        </div>
+        <div class="sprite-cell">
+          <span class="material-symbols-outlined">psychology</span>
+          <span>Challenging</span>
+        </div>
+        <div class="sprite-cell">
+          <span class="material-symbols-outlined">sentiment_excited</span>
+          <span>Surprised</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== STEP 6 ======== -->
+  <div class="step" data-step>
+    <div class="step-node">06</div>
+    <div class="step-card">
+      <span class="step-label">Step 6</span>
+      <h2>Student Response</h2>
+      <p>
+        When it is your turn, the system presents one of three prompt types
+        depending on the assessment design:
+      </p>
+
+      <!-- Multiple Choice -->
+      <div class="vn-mock" style="margin-top:1rem;">
+        <div class="vn-mock-header">
+          <div class="vn-mock-dot active"></div>
+          <div class="vn-mock-dot"></div>
+          <div class="vn-mock-dot"></div>
+          <span class="vn-mock-title">Multiple Choice</span>
+        </div>
+        <div class="vn-mock-body">
+          <div style="font-size:0.82rem;color:rgba(244,241,234,0.8);margin-bottom:0.75rem;">What explains the price increase?</div>
+          <div class="vn-choices">
+            <div class="vn-choice"><span class="letter">A</span> Increased consumer demand</div>
+            <div class="vn-choice"><span class="letter">B</span> Supply chain disruption</div>
+            <div class="vn-choice"><span class="letter">C</span> Government price regulation</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Freeform -->
+      <div class="vn-mock" style="margin-top:0.75rem;">
+        <div class="vn-mock-header">
+          <div class="vn-mock-dot active"></div>
+          <div class="vn-mock-dot"></div>
+          <div class="vn-mock-dot"></div>
+          <span class="vn-mock-title">Freeform Text</span>
+        </div>
+        <div class="vn-mock-body">
+          <div style="font-size:0.82rem;color:rgba(244,241,234,0.8);margin-bottom:0.75rem;">Explain your reasoning about elasticity:</div>
+          <div class="vn-freeform">
+            <span class="vn-freeform-label">Type your answer...</span>
+            <span class="vn-freeform-cursor"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Multi-Part -->
+      <div class="vn-mock" style="margin-top:0.75rem;">
+        <div class="vn-mock-header">
+          <div class="vn-mock-dot active"></div>
+          <div class="vn-mock-dot"></div>
+          <div class="vn-mock-dot"></div>
+          <span class="vn-mock-title">Multi-Part High-Mark</span>
+        </div>
+        <div class="vn-mock-body">
+          <div style="font-size:0.82rem;color:rgba(244,241,234,0.8);margin-bottom:0.5rem;">Analyze the market scenario:</div>
+          <div class="multipart-list">
+            <div class="multipart-item">
+              <div class="multipart-num">1</div>
+              <div class="multipart-text">Identify the type of market failure present.</div>
+            </div>
+            <div class="multipart-item">
+              <div class="multipart-num">2</div>
+              <div class="multipart-text">Explain why the equilibrium is inefficient.</div>
+            </div>
+            <div class="multipart-item">
+              <div class="multipart-num">3</div>
+              <div class="multipart-text">Propose a policy intervention and justify it.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== STEP 7 ======== -->
+  <div class="step" data-step>
+    <div class="step-node">07</div>
+    <div class="step-card">
+      <span class="step-label">Step 7</span>
+      <h2>Socratic Dialogue</h2>
+      <p>
+        After you answer, the AI character responds with <strong>Socratic pushback</strong>
+        powered by Gemini. This is not grading &mdash; it is guided discovery.
+        The character probes your reasoning, surfaces misconceptions, and asks
+        clarifying questions across up to <strong>5 dialogue turns</strong>.
+      </p>
+      <p>
+        The character's emotion shifts based on the quality of your reasoning &mdash;
+        <em>encouraging</em> when you show insight, <em>concerned</em> when gaps appear,
+        <em>challenging</em> when pushing you deeper.
+      </p>
+      <!-- Socratic exchange mockup -->
+      <div class="vn-mock">
+        <div class="vn-mock-header">
+          <div class="vn-mock-dot active"></div>
+          <div class="vn-mock-dot"></div>
+          <div class="vn-mock-dot"></div>
+          <span class="vn-mock-title">Socratic Exchange</span>
+        </div>
+        <div class="vn-mock-body">
+          <div class="vn-player">
+            <div class="vn-player-name">You</div>
+            <div class="vn-player-text">I think the price rose because demand increased when the new factory opened nearby.</div>
+          </div>
+          <div class="vn-dialogue">
+            <div class="vn-dialogue-name">
+              Anya <span class="vn-dialogue-emotion">challenging</span>
+            </div>
+            <div class="vn-dialogue-text">
+              Interesting. But does a new factory increase <em>demand</em>, or does it affect
+              the <em>supply</em> side? Think about what the factory produces and who buys it.
+            </div>
+          </div>
+          <div class="vn-player">
+            <div class="vn-player-name">You</div>
+            <div class="vn-player-text">Wait, the factory produces the good &mdash; so supply increases, which should lower the price, not raise it...</div>
+          </div>
+          <div class="vn-dialogue">
+            <div class="vn-dialogue-name">
+              Anya <span class="vn-dialogue-emotion">encouraging</span>
+            </div>
+            <div class="vn-dialogue-text">
+              Now you're on the right track! So if the price still rose, what else must have changed?
+            </div>
+          </div>
+        </div>
+      </div>
+      <p style="margin-top:1rem; font-size:0.78rem; color:var(--wheat-gold); font-style:italic;">
+        The character never gives you the answer. It guides you to discover it.
+      </p>
+    </div>
+  </div>
+
+  <!-- SECTION: Completion -->
+  <div class="section-divider">
+    <span class="label">Completion &amp; Progression</span>
+    <div class="line"></div>
+  </div>
+
+  <!-- ======== STEP 8 ======== -->
+  <div class="step" data-step>
+    <div class="step-node mastery">08</div>
+    <div class="step-card">
+      <span class="step-label mastery">Step 8</span>
+      <h2>Scene Completion</h2>
+      <p>
+        When all blocks in a scene have been played through, the system
+        saves your conversation history to the <strong>Arc Journal</strong> and
+        runs signal extraction on your reasoning quality.
+      </p>
+      <div class="api-tag">
+        <span class="method">POST</span>
+        /api/arc-journal/append
+      </div>
+      <p style="margin-top:1rem;">
+        Signal extraction classifies your demonstrated understanding into one
+        of three levels:
+      </p>
+      <div class="signal-row">
+        <span class="signal-badge mastery-badge">
+          <span class="material-symbols-outlined">verified</span>
+          mastery
+        </span>
+        <span class="signal-badge revised-badge">
+          <span class="material-symbols-outlined">auto_fix_high</span>
+          revised_with_scaffolding
+        </span>
+        <span class="signal-badge critical-badge">
+          <span class="material-symbols-outlined">warning</span>
+          critical_gap
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== STEP 9 ======== -->
+  <div class="step" data-step>
+    <div class="step-node mastery">09</div>
+    <div class="step-card">
+      <span class="step-label mastery">Step 9</span>
+      <h2>Next Scene &amp; Arc Ending</h2>
+      <div class="route">
+        <span class="material-symbols-outlined">route</span>
+        /arc-ending/[endingId]
+      </div>
+      <p>
+        After completing a scene, you automatically progress to the <strong>next scene</strong>
+        &mdash; a new character, a new concept, a new angle on the material.
+      </p>
+      <p>
+        Once all scenes are finished, you arrive at a <strong>personalized narrative ending</strong>
+        generated by Gemini based on your overall performance. Your ending is unique
+        to the reasoning journey you took.
+      </p>
+      <!-- Ending mockup -->
+      <div class="vn-mock">
+        <div class="vn-mock-header">
+          <div class="vn-mock-dot"></div>
+          <div class="vn-mock-dot"></div>
+          <div class="vn-mock-dot active"></div>
+          <span class="vn-mock-title">Arc Ending</span>
+        </div>
+        <div class="vn-mock-body" style="text-align:center; padding:2rem 1.5rem;">
+          <span class="material-symbols-outlined" style="font-size:36px;color:var(--wheat-gold);margin-bottom:0.75rem;display:block;">auto_stories</span>
+          <div style="font-size:0.85rem;font-style:italic;color:rgba(244,241,234,0.65);line-height:1.8;max-width:380px;margin:0 auto;">
+            "You walked into the economics department uncertain, but you leave with
+            something more valuable than answers &mdash; the ability to ask the right
+            questions. The market will always surprise you, but you now know how to
+            think through the surprise."
+          </div>
+          <div style="margin-top:1rem;font-size:0.6rem;color:var(--mastery);font-weight:700;letter-spacing:0.12em;text-transform:uppercase;">
+            Personalized based on your performance
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== STEP 10 ======== -->
+  <div class="step" data-step>
+    <div class="step-node gold">10</div>
+    <div class="step-card">
+      <span class="step-label gold">Step 10</span>
+      <h2>Journal Review</h2>
+      <div class="route">
+        <span class="material-symbols-outlined">route</span>
+        /journal
+      </div>
+      <p>
+        The journal page displays your <strong>complete conversation history</strong>
+        across every scene in the arc. Each entry is color-coded by speaker:
+      </p>
+      <!-- Journal mockup -->
+      <div class="vn-mock">
+        <div class="vn-mock-header">
+          <div class="vn-mock-dot active"></div>
+          <div class="vn-mock-dot"></div>
+          <div class="vn-mock-dot"></div>
+          <span class="vn-mock-title">Arc Journal</span>
+        </div>
+        <div class="vn-mock-body">
+          <div class="vn-narration" style="border-left-color:rgba(244,241,234,0.2);">
+            <div style="font-size:0.55rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--parchment-muted);margin-bottom:0.25rem;font-style:normal;">
+              Scene 1 &middot; Narration
+            </div>
+            The lecture hall is quiet. A chart glows on the wall...
+          </div>
+          <div class="vn-dialogue">
+            <div style="font-size:0.55rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--wheat-gold);margin-bottom:0.25rem;">
+              Scene 1 &middot; Anya
+            </div>
+            <div class="vn-dialogue-text">Let's start with supply and demand basics...</div>
+          </div>
+          <div class="vn-player">
+            <div style="font-size:0.55rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--terracotta);margin-bottom:0.25rem;">
+              Scene 1 &middot; You
+            </div>
+            <div class="vn-player-text">I think the price change is due to increased demand...</div>
+          </div>
+          <div class="vn-dialogue">
+            <div style="font-size:0.55rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--wheat-gold);margin-bottom:0.25rem;">
+              Scene 2 &middot; Marcus
+            </div>
+            <div class="vn-dialogue-text">Now let's look at this from a different angle...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION: Reference -->
+  <div class="section-divider">
+    <span class="label">Reference</span>
+    <div class="line"></div>
+  </div>
+
+  <!-- ======== VN SCRIPT FORMAT ======== -->
+  <div class="step" data-step>
+    <div class="step-node" style="background:var(--parchment-muted);box-shadow:0 0 20px rgba(168,164,154,0.1),0 0 0 4px var(--near-black);">
+      <span class="material-symbols-outlined" style="font-size:16px;">code</span>
+    </div>
+    <div class="step-card">
+      <span class="step-label" style="color:var(--parchment-muted);">Reference</span>
+      <h2>Visual Novel Script Format</h2>
+      <p>
+        Scenes are authored in a lightweight markup that the VN parser converts
+        into playable blocks:
+      </p>
+      <div class="code-block">
+        <div class="code-header">scene-script.vn</div>
+        <div class="code-body">
+          <div><span class="tag">[narration]</span> <span class="text">Scene description text</span></div>
+          <br>
+          <div><span class="tag">[character:</span><span class="char">Anya</span><span class="tag">]</span> <span class="tag">[</span><span class="emotion">encouraging</span><span class="tag">]</span> <span class="text">Great thinking! But consider...</span></div>
+          <br>
+          <div><span class="tag">[player_prompt]</span> <span class="prompt">What do you think about X?</span></div>
+          <div><span class="option">**A. Option one**</span> <span class="text">&ndash; explanation</span></div>
+          <div><span class="option">**B. Option two**</span> <span class="text">&ndash; explanation</span></div>
+          <br>
+          <div><span class="tag">[freeform]</span> <span class="comment">&lt;!-- open-ended response --&gt;</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== CHARACTER SYSTEM ======== -->
+  <div class="step" data-step>
+    <div class="step-node" style="background:var(--parchment-muted);box-shadow:0 0 20px rgba(168,164,154,0.1),0 0 0 4px var(--near-black);">
+      <span class="material-symbols-outlined" style="font-size:16px;">group</span>
+    </div>
+    <div class="step-card">
+      <span class="step-label" style="color:var(--parchment-muted);">Reference</span>
+      <h2>Character System</h2>
+      <p>
+        Characters are drawn from sprite pools with unique variant assignments
+        per student. This prevents students from comparing screens to copy answers.
+      </p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-top:1rem;">
+        <div style="padding:1rem;background:rgba(244,241,234,0.02);border:1px solid rgba(244,241,234,0.08);border-radius:8px;">
+          <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--wheat-gold);margin-bottom:0.5rem;">Female Pool</div>
+          <div style="font-size:2rem;font-weight:800;color:var(--parchment);margin-bottom:0.15rem;">5&ndash;7</div>
+          <div style="font-size:0.68rem;color:var(--parchment-muted);">sprite variants</div>
+        </div>
+        <div style="padding:1rem;background:rgba(244,241,234,0.02);border:1px solid rgba(244,241,234,0.08);border-radius:8px;">
+          <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--wheat-gold);margin-bottom:0.5rem;">Male Pool</div>
+          <div style="font-size:2rem;font-weight:800;color:var(--parchment);margin-bottom:0.15rem;">5&ndash;7</div>
+          <div style="font-size:0.68rem;color:var(--parchment-muted);">sprite variants</div>
+        </div>
+      </div>
+      <p style="margin-top:1rem;">
+        Each sprite sheet contains <strong>5 emotion frames</strong> displayed via
+        CSS background-position with pixelated rendering for a retro aesthetic.
+        Emotion transitions trigger short animations (bounce, shake, scale).
+      </p>
+    </div>
+  </div>
+
+  <!-- ======== PWA FEATURES ======== -->
+  <div class="step" data-step>
+    <div class="step-node" style="background:var(--parchment-muted);box-shadow:0 0 20px rgba(168,164,154,0.1),0 0 0 4px var(--near-black);">
+      <span class="material-symbols-outlined" style="font-size:16px;">smartphone</span>
+    </div>
+    <div class="step-card">
+      <span class="step-label" style="color:var(--parchment-muted);">Reference</span>
+      <h2>PWA Features</h2>
+      <p>
+        Cervantes is a Progressive Web App &mdash; installable on your phone and
+        designed for comfortable, extended reading sessions.
+      </p>
+      <div class="pwa-grid">
+        <div class="pwa-card">
+          <span class="material-symbols-outlined">install_mobile</span>
+          <h4>Installable</h4>
+          <p>Add to home screen in standalone mode &mdash; feels like a native app</p>
+        </div>
+        <div class="pwa-card">
+          <span class="material-symbols-outlined">cloud_off</span>
+          <h4>Offline Ready</h4>
+          <p>Serwist service worker caches assets for offline access</p>
+        </div>
+        <div class="pwa-card">
+          <span class="material-symbols-outlined">dark_mode</span>
+          <h4>Dark Theme</h4>
+          <p>La Mancha dark palette optimized for extended reading</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /journey -->
+
+<!-- ============================================================ -->
+<!-- FOOTER                                                        -->
+<!-- ============================================================ -->
+<footer class="footer">
+  <div class="mark">
+    <span class="c-icon">C</span>
+    CERVANTES
+  </div>
+  <p>Cambridge EdTech x Hack 2026 &middot; La Mancha Learning System</p>
+</footer>
+
+<!-- ============================================================ -->
+<!-- Scroll reveal observer                                        -->
+<!-- ============================================================ -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const steps = document.querySelectorAll('[data-step]');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, {
+    threshold: 0.15,
+    rootMargin: '0px 0px -60px 0px'
+  });
+  steps.forEach(step => observer.observe(step));
+});
+</script>
+
+</body>
+</html>

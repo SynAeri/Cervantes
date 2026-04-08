@@ -204,7 +204,7 @@ export function ArcStatusBox({
                   <div className="min-w-0">
                     <p className="text-[11px] text-tertiary font-bold uppercase mb-1">Student Link</p>
                     <a
-                      href={`${process.env.NEXT_PUBLIC_STUDENT_URL || 'https://cervantes-backend-prod--cervantes-caebc.asia-southeast1.hosted.app'}/${currentArc.arc_id}`}
+                      href={`${process.env.NEXT_PUBLIC_STUDENT_URL || 'https://cervantes-caebc.web.app'}/${currentArc.arc_id}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-[13px] font-bold text-[#2563eb] hover:text-[#1d4ed8] transition-colors flex items-center gap-1 group min-w-0"

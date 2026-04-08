@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Demo Playbook - Cervantes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+  <style>
+    /* ── La Mancha Design System ── */
+    :root {
+      --near-black: #1E1C18;
+      --parchment: #F4F1EA;
+      --terracotta: #C85A32;
+      --wheat-gold: #C4A245;
+      --mastery: #3B827E;
+      --critical: #9E3B3B;
+
+      --surface: #28261F;
+      --surface-raised: #322F27;
+      --border: #3D3A30;
+      --text-primary: #F4F1EA;
+      --text-secondary: #B8B3A6;
+      --text-muted: #7A7567;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--near-black);
+      color: var(--text-primary);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Layout ── */
+    .page-wrapper {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    /* ── Back Link ── */
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: var(--wheat-gold);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      margin-bottom: 2rem;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--terracotta); }
+    .back-link svg { width: 16px; height: 16px; }
+
+    /* ── Page Header ── */
+    .page-header {
+      margin-bottom: 3rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .page-header h1 {
+      font-size: 2.25rem;
+      font-weight: 800;
+      color: var(--parchment);
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+    }
+    .page-header .subtitle {
+      font-size: 1.05rem;
+      color: var(--text-secondary);
+      font-weight: 400;
+    }
+
+    /* ── Section ── */
+    section {
+      margin-bottom: 3.5rem;
+    }
+    section h2 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--wheat-gold);
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--border);
+      letter-spacing: -0.01em;
+    }
+    section h2 .section-num {
+      color: var(--terracotta);
+      font-weight: 800;
+      margin-right: 0.4rem;
+    }
+    section h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--terracotta);
+      margin-top: 1.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    /* ── Checklist ── */
+    .checklist {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .checklist li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.65rem 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      user-select: none;
+    }
+    .checklist li:hover {
+      border-color: var(--wheat-gold);
+      background: var(--surface-raised);
+    }
+    .checklist li.checked {
+      border-color: var(--mastery);
+      background: rgba(59, 130, 126, 0.08);
+    }
+    .checklist li.checked .check-box {
+      background: var(--mastery);
+      border-color: var(--mastery);
+    }
+    .checklist li.checked .check-box::after {
+      opacity: 1;
+    }
+    .checklist li.checked .check-text {
+      color: var(--text-muted);
+      text-decoration: line-through;
+      text-decoration-color: var(--text-muted);
+    }
+    .check-box {
+      width: 20px;
+      height: 20px;
+      min-width: 20px;
+      border-radius: 4px;
+      border: 2px solid var(--border);
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1px;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .check-box::after {
+      content: '';
+      width: 10px;
+      height: 6px;
+      border-left: 2px solid var(--near-black);
+      border-bottom: 2px solid var(--near-black);
+      transform: rotate(-45deg) translateY(-1px);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    /* ── Callout Box ── */
+    .callout {
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      border-left: 4px solid;
+    }
+    .callout-terracotta {
+      background: rgba(200, 90, 50, 0.08);
+      border-color: var(--terracotta);
+      color: var(--text-secondary);
+    }
+    .callout-terracotta strong { color: var(--terracotta); }
+    .callout-gold {
+      background: rgba(196, 162, 69, 0.08);
+      border-color: var(--wheat-gold);
+      color: var(--text-secondary);
+    }
+    .callout-gold strong { color: var(--wheat-gold); }
+    .callout-mastery {
+      background: rgba(59, 130, 126, 0.08);
+      border-color: var(--mastery);
+      color: var(--text-secondary);
+    }
+    .callout-mastery strong { color: var(--mastery); }
+    .callout-critical {
+      background: rgba(158, 59, 59, 0.08);
+      border-color: var(--critical);
+      color: var(--text-secondary);
+    }
+    .callout-critical strong { color: var(--critical); }
+
+    /* ── Script Quote ── */
+    .script-quote {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin: 0.75rem 0;
+      font-size: 0.95rem;
+      font-style: italic;
+      color: var(--parchment);
+      position: relative;
+      line-height: 1.6;
+    }
+    .script-quote::before {
+      content: '\201C';
+      position: absolute;
+      top: -4px;
+      left: 12px;
+      font-size: 2.5rem;
+      color: var(--terracotta);
+      font-style: normal;
+      line-height: 1;
+      opacity: 0.5;
+    }
+    .script-quote p {
+      padding-left: 1.25rem;
+    }
+
+    /* ── Act Card ── */
+    .act-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .act-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+    .act-card.act-problem::before {
+      background: var(--text-muted);
+    }
+    .act-card.act-student::before {
+      background: linear-gradient(90deg, var(--terracotta), var(--wheat-gold));
+    }
+    .act-card.act-teacher::before {
+      background: var(--wheat-gold);
+    }
+    .act-card.act-arch::before {
+      background: var(--mastery);
+    }
+    .act-card.act-close::before {
+      background: linear-gradient(90deg, var(--wheat-gold), var(--terracotta));
+    }
+
+    .act-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    .act-number {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 800;
+      border: 2px solid;
+      flex-shrink: 0;
+    }
+    .act-problem .act-number  { background: rgba(122,117,103,0.15); border-color: var(--text-muted); color: var(--text-muted); }
+    .act-student .act-number  { background: rgba(200,90,50,0.15); border-color: var(--terracotta); color: var(--terracotta); }
+    .act-teacher .act-number  { background: rgba(196,162,69,0.15); border-color: var(--wheat-gold); color: var(--wheat-gold); }
+    .act-arch .act-number     { background: rgba(59,130,126,0.15); border-color: var(--mastery); color: var(--mastery); }
+    .act-close .act-number    { background: rgba(200,90,50,0.15); border-color: var(--terracotta); color: var(--terracotta); }
+
+    .act-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--parchment);
+    }
+    .act-time {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-left: auto;
+      white-space: nowrap;
+      padding: 0.2rem 0.6rem;
+      background: rgba(244,241,234,0.05);
+      border-radius: 100px;
+    }
+
+    .act-body p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+    }
+
+    /* ── Step List ── */
+    .step-list {
+      list-style: none;
+      counter-reset: step-counter;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      margin: 0.75rem 0;
+    }
+    .step-list li {
+      counter-increment: step-counter;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.65rem;
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      padding: 0.35rem 0;
+    }
+    .step-list li::before {
+      content: counter(step-counter);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: rgba(244,241,234,0.06);
+      border: 1px solid var(--border);
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+    .step-list li strong {
+      color: var(--parchment);
+      font-weight: 600;
+    }
+
+    /* ── WOW Badge ── */
+    .wow-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.25rem 0.65rem;
+      background: rgba(200, 90, 50, 0.15);
+      border: 1px solid var(--terracotta);
+      border-radius: 100px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--terracotta);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      animation: wow-pulse 2s ease-in-out infinite;
+    }
+    @keyframes wow-pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(200, 90, 50, 0.3); }
+      50% { box-shadow: 0 0 12px 2px rgba(200, 90, 50, 0.15); }
+    }
+
+    /* ── Star Label ── */
+    .star-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.3rem 0.75rem;
+      background: linear-gradient(135deg, rgba(200,90,50,0.12), rgba(196,162,69,0.12));
+      border: 1px solid rgba(200,90,50,0.3);
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--terracotta);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-left: 0.5rem;
+    }
+
+    /* ── Differentiators Grid ── */
+    .diff-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+    .diff-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.85rem;
+      padding: 0.85rem 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      transition: border-color 0.2s;
+    }
+    .diff-item:hover {
+      border-color: var(--wheat-gold);
+    }
+    .diff-num {
+      width: 28px;
+      height: 28px;
+      min-width: 28px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 800;
+      background: rgba(196, 162, 69, 0.12);
+      color: var(--wheat-gold);
+      border: 1px solid rgba(196, 162, 69, 0.25);
+      margin-top: 1px;
+    }
+    .diff-content strong {
+      color: var(--parchment);
+      font-weight: 700;
+      font-size: 0.92rem;
+    }
+    .diff-content span {
+      display: block;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      margin-top: 0.15rem;
+    }
+
+    /* ── Do / Don't Table ── */
+    .do-dont-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .do-dont-table thead th {
+      background: var(--surface-raised);
+      font-weight: 700;
+      text-align: left;
+      padding: 0.75rem 1rem;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+    .do-dont-table thead th:first-child {
+      color: var(--mastery);
+    }
+    .do-dont-table thead th:last-child {
+      color: var(--critical);
+    }
+    .do-dont-table tbody td {
+      padding: 0.65rem 1rem;
+      border-top: 1px solid var(--border);
+      vertical-align: top;
+      color: var(--text-secondary);
+    }
+    .do-dont-table tbody tr:hover {
+      background: rgba(196, 162, 69, 0.04);
+    }
+    .do-dont-table .do-cell {
+      position: relative;
+      padding-left: 2rem;
+    }
+    .do-dont-table .dont-cell {
+      position: relative;
+      padding-left: 2rem;
+    }
+    .do-cell::before {
+      content: '\2713';
+      position: absolute;
+      left: 0.75rem;
+      color: var(--mastery);
+      font-weight: 700;
+    }
+    .dont-cell::before {
+      content: '\2717';
+      position: absolute;
+      left: 0.75rem;
+      color: var(--critical);
+      font-weight: 700;
+    }
+
+    /* ── Backup Plan ── */
+    .backup-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .backup-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+    }
+    .backup-trigger {
+      display: inline-block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--critical);
+      background: rgba(158, 59, 59, 0.1);
+      padding: 0.2rem 0.55rem;
+      border-radius: 4px;
+      white-space: nowrap;
+      min-width: fit-content;
+    }
+    .backup-solution {
+      color: var(--text-secondary);
+    }
+    .backup-solution code {
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 0.8rem;
+      color: var(--mastery);
+      background: rgba(59, 130, 126, 0.1);
+      padding: 0.1rem 0.4rem;
+      border-radius: 3px;
+    }
+
+    /* ── Timeline Bar ── */
+    .timeline {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.5rem;
+      overflow: hidden;
+    }
+    .timeline-bar {
+      display: flex;
+      height: 40px;
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+    .timeline-seg {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--near-black);
+      letter-spacing: 0.02em;
+      position: relative;
+      transition: filter 0.2s;
+    }
+    .timeline-seg:hover {
+      filter: brightness(1.15);
+    }
+    .timeline-seg-problem  { background: var(--text-muted); width: 10%; }
+    .timeline-seg-student  { background: var(--terracotta); width: 40%; }
+    .timeline-seg-teacher  { background: var(--wheat-gold); width: 30%; }
+    .timeline-seg-arch     { background: var(--mastery); width: 10%; }
+    .timeline-seg-close    { background: var(--parchment); width: 10%; color: var(--near-black); }
+
+    .timeline-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .timeline-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+    }
+    .timeline-legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+    .legend-problem  .timeline-legend-dot { background: var(--text-muted); }
+    .legend-student  .timeline-legend-dot { background: var(--terracotta); }
+    .legend-teacher  .timeline-legend-dot { background: var(--wheat-gold); }
+    .legend-arch     .timeline-legend-dot { background: var(--mastery); }
+    .legend-close    .timeline-legend-dot { background: var(--parchment); }
+
+    /* ── Talking Points ── */
+    .talking-point {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin: 0.35rem 0;
+    }
+    .talking-point::before {
+      content: '\25B8';
+      color: var(--wheat-gold);
+      font-size: 0.7rem;
+      margin-top: 3px;
+      flex-shrink: 0;
+    }
+
+    /* ── Pain Points ── */
+    .pain-point {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin: 0.3rem 0;
+    }
+    .pain-point::before {
+      content: '\2022';
+      color: var(--critical);
+      flex-shrink: 0;
+      font-weight: 700;
+    }
+
+    /* ── Footer ── */
+    .page-footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .page-wrapper { padding: 1.25rem 1rem 3rem; }
+      .page-header h1 { font-size: 1.65rem; }
+      .act-header { flex-wrap: wrap; }
+      .act-time { margin-left: 0; margin-top: 0.25rem; }
+      .do-dont-table { font-size: 0.8rem; }
+      .do-dont-table thead th,
+      .do-dont-table tbody td { padding: 0.5rem 0.65rem; }
+      .do-cell, .dont-cell { padding-left: 1.75rem !important; }
+      .do-cell::before, .dont-cell::before { left: 0.5rem; }
+      .timeline-legend { gap: 0.6rem; }
+      .timeline-bar { height: 32px; }
+      .timeline-seg { font-size: 0.6rem; }
+      .star-label { margin-left: 0; margin-top: 0.25rem; display: flex; }
+    }
+    @media (max-width: 480px) {
+      .page-header h1 { font-size: 1.35rem; }
+      section h2 { font-size: 1.1rem; }
+      .act-card { padding: 1.15rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+
+    <!-- Navigation -->
+    <a href="index.html" class="back-link">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10 12 L6 8 L10 4"/>
+      </svg>
+      Back to Hub
+    </a>
+
+    <!-- Header -->
+    <header class="page-header">
+      <h1>Demo Playbook</h1>
+      <p class="subtitle">Cambridge EduX Hackathon 2026 &mdash; 5-minute presentation script &amp; preparation guide</p>
+    </header>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- 1. PRE-DEMO CHECKLIST                       -->
+    <!-- ═══════════════════════════════════════════ -->
+    <section>
+      <h2><span class="section-num">1.</span> Pre-Demo Checklist</h2>
+      <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">
+        Complete every item <strong style="color: var(--parchment);">before</strong> stepping on stage. Click to mark done.
+      </p>
+      <ul class="checklist" id="checklist">
+        <li onclick="this.classList.toggle('checked')">
+          <div class="check-box"></div>
+          <span class="check-text">Create a test class (e.g., ECON101 &mdash; Introduction to Economics)</span>
+        </li>
+        <li onclick="this.classList.toggle('checked')">
+          <div class="check-box"></div>
+          <span class="check-text">Enroll 3&ndash;5 test students</span>
+        </li>
+        <li onclick="this.classList.toggle('checked')">
+          <div class="check-box"></div>
+          <span class="check-text">Upload a rubric and generate an arc</span>
+        </li>
+        <li onclick="this.classList.toggle('checked')">
+          <div class="check-box"></div>
+          <span class="check-text">Review and approve the arc</span>
+        </li>
+        <li onclick="this.classList.toggle('checked')">
+          <div class="check-box"></div>
+          <span class="check-text">Publish the arc (scenes generated, characters assigned)</span>
+        </li>
+        <li onclick="this.classList.toggle('checked')">
+          <div class="check-box"></div>
+          <span class="check-text">Run through at least 1 complete student journey (so teacher dashboard has real data)</span>
+        </li>
+        <li onclick="this.classList.toggle('checked')">
+          <div class="check-box"></div>
+          <span class="check-text">Prepare a &ldquo;wrong answer&rdquo; script (know which misconception to trigger)</span>
+        </li>
+        <li onclick="this.classList.toggle('checked')">
+          <div class="check-box"></div>
+          <span class="check-text">Test both Student PWA and Teacher Dashboard end-to-end</span>
+        </li>
+        <li onclick="this.classList.toggle('checked')">
+          <div class="check-box"></div>
+          <span class="check-text">Ensure stable internet for Gemini API calls</span>
+        </li>
+        <li onclick="this.classList.toggle('checked')">
+          <div class="check-box"></div>
+          <span class="check-text">Have fallback screenshots ready in case of API failure</span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- 2. 5-MINUTE DEMO SCRIPT                    -->
+    <!-- ═══════════════════════════════════════════ -->
+    <section>
+      <h2><span class="section-num">2.</span> 5-Minute Demo Script</h2>
+
+      <!-- Act 1 -->
+      <div class="act-card act-problem">
+        <div class="act-header">
+          <div class="act-number">1</div>
+          <div class="act-title">The Problem</div>
+          <div class="act-time">0:00 &ndash; 0:30</div>
+        </div>
+        <div class="act-body">
+          <div class="script-quote">
+            <p>Traditional exams tell you a score, but not WHY a student struggles. Teachers grade 100 papers and still can't see the thinking process.</p>
+          </div>
+          <div class="pain-point">Assessment is disconnected from learning &mdash; students memorize, get a grade, and move on without understanding their gaps.</div>
+          <div class="pain-point">Misconceptions are invisible in traditional formats &mdash; a wrong answer on a multiple-choice test reveals nothing about the underlying reasoning.</div>
+          <div class="callout callout-gold" style="margin-top: 1rem;">
+            <strong>Talking point:</strong> Pause briefly after the opening line. Let the problem land before transitioning: <em>&ldquo;We built Cervantes to change that.&rdquo;</em>
+          </div>
+        </div>
+      </div>
+
+      <!-- Act 2 -->
+      <div class="act-card act-student">
+        <div class="act-header">
+          <div class="act-number">2</div>
+          <div class="act-title">Student Experience &mdash; Live Demo</div>
+          <div class="act-time">0:30 &ndash; 2:30</div>
+          <span class="star-label">THE STAR</span>
+        </div>
+        <div class="act-body">
+          <div class="callout callout-terracotta">
+            <strong>This is the WOW moment.</strong> The audience needs to <em>feel</em> the student experience. Walk through it live, narrating each interaction as it happens.
+          </div>
+          <ol class="step-list">
+            <li>Open Student PWA on your phone or browser &mdash; enter the <strong>Arc ID</strong></li>
+            <li>Enter <strong>Student ID</strong> &mdash; land on the first scene</li>
+            <li>Show the <strong>narration fade-in</strong> and the <strong>character sprite with emotion</strong></li>
+            <li>
+              <span>
+                <span class="wow-badge">WOW moment</span>
+                <strong>Give a wrong answer</strong> using a common misconception (e.g., &ldquo;supply goes up when price goes down&rdquo;)
+              </span>
+            </li>
+            <li>Show how the <strong>AI character responds with Socratic probing</strong> &mdash; it does NOT give away the answer</li>
+            <li>Show <strong>character emotion change</strong> &mdash; concerned when the student is struggling, encouraging as they improve</li>
+            <li>Correct the answer &mdash; show <strong>scene completion</strong> and the transition</li>
+          </ol>
+          <div class="callout callout-gold">
+            <strong>Talking points at each step:</strong><br>
+            Step 1&ndash;2: <em>&ldquo;Students just need an Arc ID &mdash; no app download, no account creation. It is a PWA.&rdquo;</em><br>
+            Step 3: <em>&ldquo;This is a Visual Novel &mdash; narrative and character make assessment feel like a game.&rdquo;</em><br>
+            Step 4&ndash;5: <em>&ldquo;Watch what happens when the student gets it wrong &mdash; the AI doesn't correct them. It asks a follow-up question, just like a great teacher would.&rdquo;</em><br>
+            Step 6: <em>&ldquo;The character's emotions respond in real-time to the student's understanding.&rdquo;</em><br>
+            Step 7: <em>&ldquo;Every response is captured and analysed &mdash; which the teacher sees instantly.&rdquo;</em>
+          </div>
+        </div>
+      </div>
+
+      <!-- Act 3 -->
+      <div class="act-card act-teacher">
+        <div class="act-header">
+          <div class="act-number">3</div>
+          <div class="act-title">Teacher Analytics</div>
+          <div class="act-time">2:30 &ndash; 4:00</div>
+        </div>
+        <div class="act-body">
+          <ol class="step-list">
+            <li>Switch to the <strong>Teacher Dashboard</strong> &mdash; show the class overview</li>
+            <li>Show <strong>student progress cards</strong> with live status indicators</li>
+            <li>Click into a student &mdash; show the <strong>reasoning trace graph</strong> (force-directed visualization)</li>
+            <li>Show <strong>dimension scores</strong> with color-coded levels:
+              <span style="color: var(--mastery); font-weight: 600;">mastery</span> /
+              <span style="color: var(--wheat-gold); font-weight: 600;">developing</span> /
+              <span style="color: var(--critical); font-weight: 600;">critical gap</span>
+            </li>
+          </ol>
+          <div class="callout callout-mastery">
+            <strong>Key message:</strong> <em>&ldquo;Zero grading work. AI diagnosed every misconception automatically. The teacher sees not just what students got wrong, but how they think.&rdquo;</em>
+          </div>
+          <div class="talking-point"><em>&ldquo;This used to take hours of rubric grading. Cervantes does it in real-time, for every student, simultaneously.&rdquo;</em></div>
+          <div class="talking-point"><em>&ldquo;The reasoning trace isn't just a score &mdash; it is a map of how the student's understanding evolved through the conversation.&rdquo;</em></div>
+        </div>
+      </div>
+
+      <!-- Act 4 -->
+      <div class="act-card act-arch">
+        <div class="act-header">
+          <div class="act-number">4</div>
+          <div class="act-title">Architecture Flash</div>
+          <div class="act-time">4:00 &ndash; 4:30</div>
+        </div>
+        <div class="act-body">
+          <p>Quick high-level overview &mdash; three bullet points maximum. Do not linger here.</p>
+          <div class="talking-point"><strong>CurricuLLM</strong> ensures curriculum alignment &mdash; this is not random AI conversation, every question maps to learning standards</div>
+          <div class="talking-point"><strong>Gemini 2.5 Flash</strong> drives real-time Socratic dialogue &mdash; the AI adapts to each student's responses in the moment</div>
+          <div class="talking-point"><strong>Signal extraction</strong> provides 3-level diagnosis automatically from conversation transcripts</div>
+          <div class="callout callout-gold">
+            <strong>Tip:</strong> If judges seem technical, expand briefly. If not, keep this to 20 seconds and move to the close.
+          </div>
+        </div>
+      </div>
+
+      <!-- Act 5 -->
+      <div class="act-card act-close">
+        <div class="act-header">
+          <div class="act-number">5</div>
+          <div class="act-title">Close</div>
+          <div class="act-time">4:30 &ndash; 5:00</div>
+        </div>
+        <div class="act-body">
+          <div class="script-quote">
+            <p>Cervantes turns assessment into learning itself. Students learn while being assessed. Teachers get unprecedented insight &mdash; without grading a single paper.</p>
+          </div>
+          <div class="callout callout-terracotta" style="margin-top: 1rem;">
+            <strong>Final beat:</strong> End confidently. Make eye contact. Do not rush to say &ldquo;any questions?&rdquo; &mdash; let the closing line breathe for two seconds.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- 3. TIMING GUIDE                            -->
+    <!-- ═══════════════════════════════════════════ -->
+    <section>
+      <h2><span class="section-num">3.</span> Timing Guide</h2>
+      <div class="timeline">
+        <div class="timeline-bar">
+          <div class="timeline-seg timeline-seg-problem" title="Act 1: The Problem (30s)">0:30</div>
+          <div class="timeline-seg timeline-seg-student" title="Act 2: Student Demo (2:00)">2:00</div>
+          <div class="timeline-seg timeline-seg-teacher" title="Act 3: Teacher Analytics (1:30)">1:30</div>
+          <div class="timeline-seg timeline-seg-arch" title="Act 4: Architecture (0:30)">0:30</div>
+          <div class="timeline-seg timeline-seg-close" title="Act 5: Close (0:30)">0:30</div>
+        </div>
+        <div class="timeline-legend">
+          <div class="timeline-legend-item legend-problem">
+            <div class="timeline-legend-dot"></div>
+            Act 1: Problem (30s)
+          </div>
+          <div class="timeline-legend-item legend-student">
+            <div class="timeline-legend-dot"></div>
+            Act 2: Student Demo (2m)
+          </div>
+          <div class="timeline-legend-item legend-teacher">
+            <div class="timeline-legend-dot"></div>
+            Act 3: Teacher (1m 30s)
+          </div>
+          <div class="timeline-legend-item legend-arch">
+            <div class="timeline-legend-dot"></div>
+            Act 4: Architecture (30s)
+          </div>
+          <div class="timeline-legend-item legend-close">
+            <div class="timeline-legend-dot"></div>
+            Act 5: Close (30s)
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- 4. DIFFERENTIATORS                         -->
+    <!-- ═══════════════════════════════════════════ -->
+    <section>
+      <h2><span class="section-num">4.</span> Differentiators to Emphasize</h2>
+      <ul class="diff-list">
+        <li class="diff-item">
+          <div class="diff-num">1</div>
+          <div class="diff-content">
+            <strong>Curriculum Alignment</strong>
+            <span>CurricuLLM ensures every question maps to learning standards &mdash; this is not generic AI chat.</span>
+          </div>
+        </li>
+        <li class="diff-item">
+          <div class="diff-num">2</div>
+          <div class="diff-content">
+            <strong>Anti-Cheating Design</strong>
+            <span>Each student gets unique character variants with different names and personalities &mdash; no two experiences are identical.</span>
+          </div>
+        </li>
+        <li class="diff-item">
+          <div class="diff-num">3</div>
+          <div class="diff-content">
+            <strong>3-Level Diagnosis</strong>
+            <span>
+              <span style="color: var(--mastery); font-weight: 600;">mastery</span> /
+              <span style="color: var(--wheat-gold); font-weight: 600;">revised_with_scaffolding</span> /
+              <span style="color: var(--critical); font-weight: 600;">critical_gap</span>
+              &mdash; not just right or wrong.
+            </span>
+          </div>
+        </li>
+        <li class="diff-item">
+          <div class="diff-num">4</div>
+          <div class="diff-content">
+            <strong>Reasoning Visualization</strong>
+            <span>Force-directed graph shows concept mastery relationships &mdash; teachers see how students think, not just what they scored.</span>
+          </div>
+        </li>
+        <li class="diff-item">
+          <div class="diff-num">5</div>
+          <div class="diff-content">
+            <strong>PWA Mobile-First</strong>
+            <span>Students access the assessment on any device &mdash; no app install, no download, works offline after first load.</span>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- 5. DO'S AND DON'TS                         -->
+    <!-- ═══════════════════════════════════════════ -->
+    <section>
+      <h2><span class="section-num">5.</span> Do&rsquo;s and Don&rsquo;ts</h2>
+      <div style="overflow-x: auto; border-radius: 8px;">
+        <table class="do-dont-table">
+          <thead>
+            <tr>
+              <th>Do</th>
+              <th>Don&rsquo;t</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="do-cell">Pre-load a published Arc before the demo</td>
+              <td class="dont-cell">Wait for AI generation live (too slow, risky)</td>
+            </tr>
+            <tr>
+              <td class="do-cell">Use the Economics course for the demo</td>
+              <td class="dont-cell">Use technical jargon with non-technical judges</td>
+            </tr>
+            <tr>
+              <td class="do-cell">Show the student experience FIRST</td>
+              <td class="dont-cell">Start with architecture slides</td>
+            </tr>
+            <tr>
+              <td class="do-cell">Emphasize &ldquo;dialogue-based assessment&rdquo;</td>
+              <td class="dont-cell">Over-explain Visual Novel mechanics</td>
+            </tr>
+            <tr>
+              <td class="do-cell">Show the mobile PWA experience</td>
+              <td class="dont-cell">Show placeholder pages (log / calendar / map)</td>
+            </tr>
+            <tr>
+              <td class="do-cell">Prepare a wrong-answer script in advance</td>
+              <td class="dont-cell">Wing the student responses during the demo</td>
+            </tr>
+            <tr>
+              <td class="do-cell">Have backup screenshots ready on standby</td>
+              <td class="dont-cell">Rely solely on live demo with no safety net</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- 6. BACKUP PLAN                             -->
+    <!-- ═══════════════════════════════════════════ -->
+    <section>
+      <h2><span class="section-num">6.</span> Backup Plan</h2>
+      <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">
+        If something fails during the live demo, switch to the fallback immediately. Do not debug on stage.
+      </p>
+      <div class="backup-grid">
+        <div class="backup-item">
+          <span class="backup-trigger">Gemini API slow</span>
+          <span class="backup-solution">Switch to pre-recorded screenshots or screen-capture video of a successful student journey.</span>
+        </div>
+        <div class="backup-item">
+          <span class="backup-trigger">Login fails</span>
+          <span class="backup-solution">Use E2E test mode &mdash; set <code>NEXT_PUBLIC_E2E_TEST=true</code> to bypass authentication entirely.</span>
+        </div>
+        <div class="backup-item">
+          <span class="backup-trigger">Student dashboard down</span>
+          <span class="backup-solution">Skip to Teacher Dashboard with pre-loaded data &mdash; the analytics still tell the full story.</span>
+        </div>
+        <div class="backup-item">
+          <span class="backup-trigger">WiFi unstable</span>
+          <span class="backup-solution">Use phone hotspot as backup. The Student PWA works offline after initial load (service worker cache).</span>
+        </div>
+      </div>
+      <div class="callout callout-critical" style="margin-top: 1rem;">
+        <strong>Golden rule:</strong> If the live demo breaks, acknowledge it casually (&ldquo;Let me show you what this looks like&rdquo;), switch to screenshots, and keep talking. Never apologize twice or try to fix it live.
+      </div>
+    </section>
+
+    <footer class="page-footer">
+      Cervantes &mdash; Cambridge EduX Hackathon 2026
+    </footer>
+
+  </div>
+</body>
+</html>

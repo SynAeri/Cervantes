@@ -74,5 +74,20 @@ app/backend/_legacy_*/
 dev/*
 !dev/research/
 !dev/slides/
+!dev/tut/
 !dev/chat-summary.md
 screenshots/
+
+# tool caches
+.claude/
+.playwright-mcp/
+
+# Office temp files
+~$*
+
+# test artifacts
+**/test-results/
+**/playwright-report/
+
+# stray screenshots
+/*.png

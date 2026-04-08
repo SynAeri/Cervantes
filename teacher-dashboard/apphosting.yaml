@@ -13,3 +13,5 @@ env:
     value: production
   - variable: NEXT_PUBLIC_API_URL
     value: https://cervantes-api-878325801565.asia-southeast1.run.app
+  - variable: NEXT_PUBLIC_STUDENT_URL
+    value: https://cervantes-caebc.web.app

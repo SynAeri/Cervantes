@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 180" font-family="Segoe UI,system-ui,sans-serif">
+  <rect width="880" height="180" rx="12" fill="#F4F1EA"/>
+
+  <!-- Title -->
+  <text x="440" y="26" text-anchor="middle" font-size="12" font-weight="700" fill="#1E1C18" letter-spacing="2.5">AI ASSESSMENT PIPELINE</text>
+  <rect x="340" y="32" width="200" height="2.5" rx="1" fill="#C85A32"/>
+
+  <!-- Step 1 -->
+  <rect x="12" y="50" width="108" height="62" rx="8" fill="#C4A245"/>
+  <text x="66" y="70" text-anchor="middle" font-size="8" font-weight="700" fill="#1E1C18" opacity=".55">STEP 1</text>
+  <text x="66" y="85" text-anchor="middle" font-size="11" font-weight="700" fill="#1E1C18">Upload</text>
+  <text x="66" y="100" text-anchor="middle" font-size="8" fill="#1E1C18" opacity=".6">Rubric PDF/DOCX</text>
+
+  <!-- Arrow -->
+  <polygon points="124,81 132,76 132,86" fill="#C85A32"/>
+
+  <!-- Step 2 -->
+  <rect x="136" y="50" width="108" height="62" rx="8" fill="#C85A32"/>
+  <text x="190" y="70" text-anchor="middle" font-size="8" font-weight="700" fill="#fff" opacity=".65">STEP 2</text>
+  <text x="190" y="85" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">Parse</text>
+  <text x="190" y="100" text-anchor="middle" font-size="8" fill="#fff" opacity=".7">CurricuLLM</text>
+
+  <polygon points="248,81 256,76 256,86" fill="#C85A32"/>
+
+  <!-- Step 3 -->
+  <rect x="260" y="50" width="108" height="62" rx="8" fill="#3B827E"/>
+  <text x="314" y="70" text-anchor="middle" font-size="8" font-weight="700" fill="#fff" opacity=".65">STEP 3</text>
+  <text x="314" y="85" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">Plan Arc</text>
+  <text x="314" y="100" text-anchor="middle" font-size="8" fill="#fff" opacity=".7">Gemini</text>
+
+  <polygon points="372,81 380,76 380,86" fill="#C85A32"/>
+
+  <!-- Step 4 -->
+  <rect x="384" y="50" width="108" height="62" rx="8" fill="#1E1C18"/>
+  <text x="438" y="70" text-anchor="middle" font-size="8" font-weight="700" fill="#C85A32" opacity=".8">STEP 4</text>
+  <text x="438" y="85" text-anchor="middle" font-size="11" font-weight="700" fill="#F4F1EA">Generate</text>
+  <text x="438" y="100" text-anchor="middle" font-size="8" fill="#F4F1EA" opacity=".6">VN Scenes</text>
+
+  <polygon points="496,81 504,76 504,86" fill="#C85A32"/>
+
+  <!-- Step 5 -->
+  <rect x="508" y="50" width="108" height="62" rx="8" fill="#C85A32"/>
+  <text x="562" y="70" text-anchor="middle" font-size="8" font-weight="700" fill="#fff" opacity=".65">STEP 5</text>
+  <text x="562" y="85" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">Dialogue</text>
+  <text x="562" y="100" text-anchor="middle" font-size="8" fill="#fff" opacity=".7">Socratic AI</text>
+
+  <polygon points="620,81 628,76 628,86" fill="#C85A32"/>
+
+  <!-- Step 6 -->
+  <rect x="632" y="50" width="108" height="62" rx="8" fill="#3B827E"/>
+  <text x="686" y="70" text-anchor="middle" font-size="8" font-weight="700" fill="#fff" opacity=".65">STEP 6</text>
+  <text x="686" y="85" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">Signals</text>
+  <text x="686" y="100" text-anchor="middle" font-size="8" fill="#fff" opacity=".7">3-Level Diagnosis</text>
+
+  <polygon points="744,81 752,76 752,86" fill="#C85A32"/>
+
+  <!-- Step 7 -->
+  <rect x="756" y="50" width="112" height="62" rx="8" fill="#C4A245"/>
+  <text x="812" y="70" text-anchor="middle" font-size="8" font-weight="700" fill="#1E1C18" opacity=".55">STEP 7</text>
+  <text x="812" y="85" text-anchor="middle" font-size="11" font-weight="700" fill="#1E1C18">Analytics</text>
+  <text x="812" y="100" text-anchor="middle" font-size="8" fill="#1E1C18" opacity=".6">Teacher Dashboard</text>
+
+  <!-- Output labels row -->
+  <rect x="136" y="125" width="78" height="20" rx="4" fill="#C85A32" opacity=".12"/>
+  <text x="175" y="139" text-anchor="middle" font-size="8" font-weight="600" fill="#C85A32">Objectives</text>
+
+  <rect x="260" y="125" width="78" height="20" rx="4" fill="#3B827E" opacity=".12"/>
+  <text x="299" y="139" text-anchor="middle" font-size="8" font-weight="600" fill="#3B827E">Scenes</text>
+
+  <rect x="384" y="125" width="78" height="20" rx="4" fill="#1E1C18" opacity=".08"/>
+  <text x="423" y="139" text-anchor="middle" font-size="8" font-weight="600" fill="#1E1C18">VN Script</text>
+
+  <rect x="508" y="125" width="78" height="20" rx="4" fill="#C85A32" opacity=".12"/>
+  <text x="547" y="139" text-anchor="middle" font-size="8" font-weight="600" fill="#C85A32">Traces</text>
+
+  <rect x="632" y="125" width="108" height="20" rx="4" fill="#3B827E" opacity=".12"/>
+  <text x="686" y="139" text-anchor="middle" font-size="8" font-weight="600" fill="#3B827E">Mastery / Gap</text>
+
+  <!-- Footer -->
+  <text x="440" y="170" text-anchor="middle" font-size="9" fill="#6b655a">Rubric &#x2192; Curriculum Alignment &#x2192; Narrative Generation &#x2192; Socratic Assessment &#x2192; Reasoning Analytics</text>
+</svg>
