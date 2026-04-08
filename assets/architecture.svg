@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" font-family="'Segoe UI',system-ui,sans-serif">
+  <defs>
+    <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#C85A32"/><stop offset="100%" stop-color="#D4A347"/></linearGradient>
+    <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#3B827E"/><stop offset="100%" stop-color="#4A9E9A"/></linearGradient>
+    <linearGradient id="g3" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#C4A245"/><stop offset="100%" stop-color="#D4B86A"/></linearGradient>
+    <linearGradient id="g4" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2A2720"/><stop offset="100%" stop-color="#1E1C18"/></linearGradient>
+    <filter id="shadow"><feDropShadow dx="0" dy="2" stdDeviation="4" flood-opacity="0.15"/></filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="420" rx="12" fill="#F4F1EA"/>
+
+  <!-- Title -->
+  <text x="450" y="36" text-anchor="middle" font-size="15" font-weight="700" fill="#1E1C18" letter-spacing="3">SYSTEM ARCHITECTURE</text>
+  <line x1="370" y1="44" x2="530" y2="44" stroke="#C85A32" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- Student PWA -->
+  <rect x="40" y="70" width="200" height="100" rx="10" fill="url(#g1)" filter="url(#shadow)"/>
+  <text x="140" y="100" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" opacity="0.8" letter-spacing="1.5">STUDENT</text>
+  <text x="140" y="122" text-anchor="middle" font-size="16" font-weight="700" fill="#fff">PWA Client</text>
+  <text x="140" y="142" text-anchor="middle" font-size="10" fill="#fff" opacity="0.8">Next.js 16 &middot; React 19 &middot; Serwist</text>
+  <text x="140" y="158" text-anchor="middle" font-size="10" fill="#fff" opacity="0.7">:3000</text>
+
+  <!-- Teacher Dashboard -->
+  <rect x="40" y="200" width="200" height="100" rx="10" fill="url(#g3)" filter="url(#shadow)"/>
+  <text x="140" y="230" text-anchor="middle" font-size="11" font-weight="700" fill="#1E1C18" opacity="0.7" letter-spacing="1.5">TEACHER</text>
+  <text x="140" y="252" text-anchor="middle" font-size="16" font-weight="700" fill="#1E1C18">Dashboard</text>
+  <text x="140" y="272" text-anchor="middle" font-size="10" fill="#1E1C18" opacity="0.7">Next.js 16 &middot; React Query</text>
+  <text x="140" y="288" text-anchor="middle" font-size="10" fill="#1E1C18" opacity="0.6">:3001</text>
+
+  <!-- Arrows: Frontends → Backend -->
+  <path d="M 240 120 Q 290 120 310 170 Q 330 210 340 210" stroke="#C85A32" stroke-width="2" fill="none" marker-end="url(#arrowT)"/>
+  <path d="M 240 250 Q 290 250 310 230 Q 330 210 340 210" stroke="#C4A245" stroke-width="2" fill="none" marker-end="url(#arrowT)"/>
+  <defs><marker id="arrowT" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#1E1C18"/></marker></defs>
+  <text x="290" y="178" text-anchor="middle" font-size="9" fill="#6b655a" font-weight="600">REST API</text>
+
+  <!-- FastAPI Backend -->
+  <rect x="340" y="150" width="220" height="120" rx="10" fill="url(#g4)" filter="url(#shadow)"/>
+  <text x="450" y="178" text-anchor="middle" font-size="11" font-weight="700" fill="#C85A32" letter-spacing="1.5">BACKEND</text>
+  <text x="450" y="200" text-anchor="middle" font-size="16" font-weight="700" fill="#F4F1EA">FastAPI</text>
+  <text x="450" y="220" text-anchor="middle" font-size="10" fill="#F4F1EA" opacity="0.7">Python 3.12 &middot; Uvicorn</text>
+  <text x="450" y="240" text-anchor="middle" font-size="10" fill="#F4F1EA" opacity="0.6">13 Feature Modules</text>
+  <text x="450" y="256" text-anchor="middle" font-size="10" fill="#F4F1EA" opacity="0.5">Cloud Run :8080</text>
+
+  <!-- Arrows: Backend → Services -->
+  <path d="M 560 180 L 640 110" stroke="#3B827E" stroke-width="2" fill="none" marker-end="url(#arrowT)"/>
+  <path d="M 560 210 L 640 210" stroke="#C85A32" stroke-width="2" fill="none" marker-end="url(#arrowT)"/>
+  <path d="M 560 240 L 640 310" stroke="#C4A245" stroke-width="2" fill="none" marker-end="url(#arrowT)"/>
+
+  <!-- Firestore -->
+  <rect x="650" y="70" width="210" height="80" rx="10" fill="url(#g2)" filter="url(#shadow)"/>
+  <text x="755" y="98" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" opacity="0.8" letter-spacing="1.5">DATABASE</text>
+  <text x="755" y="118" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">Firebase</text>
+  <text x="755" y="136" text-anchor="middle" font-size="10" fill="#fff" opacity="0.8">Firestore &middot; Auth</text>
+
+  <!-- Gemini -->
+  <rect x="650" y="175" width="210" height="70" rx="10" fill="url(#g1)" filter="url(#shadow)"/>
+  <text x="755" y="200" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" opacity="0.8" letter-spacing="1.5">AI ENGINE</text>
+  <text x="755" y="220" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">Gemini 2.5 Flash</text>
+  <text x="755" y="236" text-anchor="middle" font-size="10" fill="#fff" opacity="0.8">Dialogue &middot; Scenes &middot; Signals</text>
+
+  <!-- CurricuLLM -->
+  <rect x="650" y="275" width="210" height="70" rx="10" fill="url(#g3)" filter="url(#shadow)"/>
+  <text x="755" y="300" text-anchor="middle" font-size="11" font-weight="700" fill="#1E1C18" opacity="0.7" letter-spacing="1.5">CURRICULUM</text>
+  <text x="755" y="320" text-anchor="middle" font-size="14" font-weight="700" fill="#1E1C18">CurricuLLM-AU</text>
+  <text x="755" y="336" text-anchor="middle" font-size="10" fill="#1E1C18" opacity="0.7">Rubric Parsing &middot; Standards</text>
+
+  <!-- Deploy labels -->
+  <rect x="40" y="330" width="120" height="28" rx="6" fill="#3B827E"/>
+  <text x="100" y="349" text-anchor="middle" font-size="10" font-weight="600" fill="#fff">Firebase Hosting</text>
+  <rect x="180" y="330" width="120" height="28" rx="6" fill="#2A2720"/>
+  <text x="240" y="349" text-anchor="middle" font-size="10" font-weight="600" fill="#F4F1EA">Docker Compose</text>
+  <rect x="320" y="330" width="120" height="28" rx="6" fill="#C85A32"/>
+  <text x="380" y="349" text-anchor="middle" font-size="10" font-weight="600" fill="#fff">GCP Cloud Run</text>
+
+  <!-- Footer -->
+  <text x="450" y="400" text-anchor="middle" font-size="10" fill="#6b655a">Cambridge EduX Hackathon 2026</text>
+</svg>

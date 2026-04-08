@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 170" font-family="'Segoe UI',system-ui,sans-serif">
+  <defs>
+    <filter id="fs"><feDropShadow dx="0" dy="1" stdDeviation="3" flood-opacity="0.1"/></filter>
+  </defs>
+
+  <rect width="900" height="170" rx="12" fill="#F4F1EA"/>
+
+  <!-- Card 1 -->
+  <rect x="20" y="20" width="165" height="130" rx="10" fill="#fff" filter="url(#fs)" stroke="#E8E2D6" stroke-width="1"/>
+  <circle cx="55" cy="52" r="16" fill="#C85A32" opacity="0.12"/>
+  <text x="55" y="57" text-anchor="middle" font-size="16">&#x1F4DA;</text>
+  <text x="102" y="52" text-anchor="middle" font-size="11" font-weight="700" fill="#1E1C18">Narrative</text>
+  <text x="102" y="65" text-anchor="middle" font-size="11" font-weight="700" fill="#1E1C18">Assessment</text>
+  <text x="92" y="85" font-size="8.5" fill="#6b655a">Visual novel scenes replace</text>
+  <text x="92" y="97" font-size="8.5" fill="#6b655a">traditional exam formats</text>
+
+  <!-- Card 2 -->
+  <rect x="200" y="20" width="165" height="130" rx="10" fill="#fff" filter="url(#fs)" stroke="#E8E2D6" stroke-width="1"/>
+  <circle cx="235" cy="52" r="16" fill="#3B827E" opacity="0.12"/>
+  <text x="235" y="57" text-anchor="middle" font-size="16">&#x1F9E0;</text>
+  <text x="282" y="52" text-anchor="middle" font-size="11" font-weight="700" fill="#1E1C18">Socratic</text>
+  <text x="282" y="65" text-anchor="middle" font-size="11" font-weight="700" fill="#1E1C18">Dialogue</text>
+  <text x="272" y="85" font-size="8.5" fill="#6b655a">AI probes reasoning with</text>
+  <text x="272" y="97" font-size="8.5" fill="#6b655a">targeted follow-up questions</text>
+
+  <!-- Card 3 -->
+  <rect x="380" y="20" width="165" height="130" rx="10" fill="#fff" filter="url(#fs)" stroke="#E8E2D6" stroke-width="1"/>
+  <circle cx="415" cy="52" r="16" fill="#C4A245" opacity="0.12"/>
+  <text x="415" y="57" text-anchor="middle" font-size="16">&#x1F3AF;</text>
+  <text x="462" y="52" text-anchor="middle" font-size="11" font-weight="700" fill="#1E1C18">Curriculum</text>
+  <text x="462" y="65" text-anchor="middle" font-size="11" font-weight="700" fill="#1E1C18">Aligned</text>
+  <text x="452" y="85" font-size="8.5" fill="#6b655a">CurricuLLM grounds every</text>
+  <text x="452" y="97" font-size="8.5" fill="#6b655a">question in official standards</text>
+
+  <!-- Card 4 -->
+  <rect x="560" y="20" width="165" height="130" rx="10" fill="#fff" filter="url(#fs)" stroke="#E8E2D6" stroke-width="1"/>
+  <circle cx="595" cy="52" r="16" fill="#9E3B3B" opacity="0.12"/>
+  <text x="595" y="57" text-anchor="middle" font-size="16">&#x1F50D;</text>
+  <text x="642" y="52" text-anchor="middle" font-size="11" font-weight="700" fill="#1E1C18">Reasoning</text>
+  <text x="642" y="65" text-anchor="middle" font-size="11" font-weight="700" fill="#1E1C18">Traces</text>
+  <text x="632" y="85" font-size="8.5" fill="#6b655a">Captures full thought process</text>
+  <text x="632" y="97" font-size="8.5" fill="#6b655a">not just final answers</text>
+
+  <!-- Card 5 -->
+  <rect x="740" y="20" width="145" height="130" rx="10" fill="#fff" filter="url(#fs)" stroke="#E8E2D6" stroke-width="1"/>
+  <circle cx="775" cy="52" r="16" fill="#3B827E" opacity="0.12"/>
+  <text x="775" y="57" text-anchor="middle" font-size="16">&#x1F4F1;</text>
+  <text x="812" y="52" text-anchor="middle" font-size="11" font-weight="700" fill="#1E1C18">PWA</text>
+  <text x="812" y="65" text-anchor="middle" font-size="11" font-weight="700" fill="#1E1C18">Mobile</text>
+  <text x="802" y="85" font-size="8.5" fill="#6b655a">Works on any device</text>
+  <text x="802" y="97" font-size="8.5" fill="#6b655a">no app install needed</text>
+</svg>
