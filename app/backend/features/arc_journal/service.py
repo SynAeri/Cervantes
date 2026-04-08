@@ -78,6 +78,10 @@ async def append_to_arc_journal(
         journal_data = await get_or_create_arc_journal(student_id, arc_id, db)
         existing_entries = []
 
+    # Remove any existing entries for this scene to prevent duplicates
+    # (handles double-submit from React Strict Mode or network retries)
+    existing_entries = [e for e in existing_entries if e.get("scene_id") != scene_id]
+
     # Add scene_id and scene_order to each entry
     formatted_entries = []
     for entry in new_entries:
@@ -93,7 +97,7 @@ async def append_to_arc_journal(
         }
         formatted_entries.append(formatted_entry)
 
-    # Append new entries
+    # Append new entries (existing entries for this scene already removed above)
     updated_entries = existing_entries + formatted_entries
 
     # Update journal

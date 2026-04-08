@@ -18,6 +18,7 @@ export function ScenePageClient({ params }: { params: Promise<{ sceneId: string 
   const [sceneData, setSceneData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isCompleting, setIsCompleting] = useState(false);
 
   // Get studentId and arcId from URL params
   const studentId = searchParams.get('studentId');
@@ -72,6 +73,9 @@ export function ScenePageClient({ params }: { params: Promise<{ sceneId: string 
       console.error('Cannot complete scene: student ID or arc ID missing');
       return;
     }
+    // Guard against double invocation (React Strict Mode, rapid clicks)
+    if (isCompleting) return;
+    setIsCompleting(true);
 
     try {
       // Extract scene_order from sceneId
