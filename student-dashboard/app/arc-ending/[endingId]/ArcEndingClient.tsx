@@ -6,6 +6,7 @@
 import { use, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { parseVNScene, type VNBlock } from '@/app/lib/vn-parser';
+import { BASE_URL } from '@/app/lib/api';
 
 export function ArcEndingClient({ params }: { params: Promise<{ endingId: string }> }) {
   const { endingId } = use(params);
@@ -34,7 +35,7 @@ export function ArcEndingClient({ params }: { params: Promise<{ endingId: string
   useEffect(() => {
     const fetchEnding = async () => {
       try {
-        const response = await fetch(`http://localhost:8080/api/arc-endings/${endingId}`);
+        const response = await fetch(`${BASE_URL}/api/arc-endings/${endingId}`);
 
         if (!response.ok) {
           throw new Error('Failed to fetch ending');

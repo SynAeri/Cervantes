@@ -7,7 +7,7 @@ import { use, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { SceneRenderer } from '../../components/vn/SceneRenderer';
 import { useSaveReasoningTrace } from '../../hooks/useJournal';
-import { api } from '../../lib/api';
+import { api, BASE_URL } from '../../lib/api';
 
 export function ScenePageClient({ params }: { params: Promise<{ sceneId: string }> }) {
   const { sceneId } = use(params);
@@ -116,7 +116,7 @@ export function ScenePageClient({ params }: { params: Promise<{ sceneId: string 
           if (traceResponse && traceResponse.trace_id) {
             console.log('Running signal extraction on trace:', traceResponse.trace_id);
             try {
-              const extractionResponse = await fetch(`http://localhost:8080/api/signal-extraction/${traceResponse.trace_id}`, {
+              const extractionResponse = await fetch(`${BASE_URL}/api/signal-extraction/${traceResponse.trace_id}`, {
                 method: 'POST',
               });
 
@@ -197,7 +197,7 @@ export function ScenePageClient({ params }: { params: Promise<{ sceneId: string 
           }
 
           // Generate arc ending
-          const endingResponse = await fetch('http://localhost:8080/api/arc-endings/generate', {
+          const endingResponse = await fetch(`${BASE_URL}/api/arc-endings/generate`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

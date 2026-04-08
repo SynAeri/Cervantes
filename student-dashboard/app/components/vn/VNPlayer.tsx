@@ -11,7 +11,7 @@ import { ChoicePanel } from './ChoicePanel';
 import { FreeformInput } from './FreeformInput';
 import { MultiPartFreeformInput } from './MultiPartFreeformInput';
 import { CharacterSprite } from './CharacterSprite';
-import { api } from '../../lib/api';
+import { api, BASE_URL } from '../../lib/api';
 
 interface VNPlayerProps {
   sceneContent: string;
@@ -247,7 +247,7 @@ export function VNPlayer({
       }
 
       // Call dialogue API with multi-part response
-      const dialogueResponse = await fetch('http://localhost:8080/api/dialogue/turn', {
+      const dialogueResponse = await fetch(`${BASE_URL}/api/dialogue/turn`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -327,7 +327,7 @@ export function VNPlayer({
       }
 
       // Call dialogue API for Socratic pushback
-      const dialogueResponse = await fetch('http://localhost:8080/api/dialogue/turn', {
+      const dialogueResponse = await fetch(`${BASE_URL}/api/dialogue/turn`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
