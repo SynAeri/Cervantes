@@ -1,0 +1,1576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Reference — Cervantes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,500&display=swap" rel="stylesheet">
+  <style>
+    /* ── La Mancha Design Tokens ── */
+    :root {
+      --near-black: #1E1C18;
+      --parchment: #F4F1EA;
+      --terracotta: #C85A32;
+      --wheat-gold: #C4A245;
+      --mastery: #3B827E;
+      --critical: #9E3B3B;
+
+      --surface: #28261F;
+      --surface-hover: #33302A;
+      --border: #3D3A33;
+      --text-muted: #A09A8C;
+
+      --sidebar-width: 280px;
+    }
+
+    /* ── Reset & Base ── */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 24px;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      background-color: var(--near-black);
+      color: var(--parchment);
+      line-height: 1.6;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* ── Decorative Background ── */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(200, 90, 50, 0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 80%, rgba(196, 162, 69, 0.05) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 50% 50%, rgba(59, 130, 126, 0.03) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Top Bar ── */
+    .top-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(30, 28, 24, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+
+    .back-link:hover {
+      color: var(--terracotta);
+    }
+
+    .back-link svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .top-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--parchment);
+    }
+
+    .hamburger {
+      display: none;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 8px;
+      color: var(--parchment);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .hamburger:hover {
+      border-color: var(--terracotta);
+      color: var(--terracotta);
+    }
+
+    .hamburger svg {
+      width: 20px;
+      height: 20px;
+      display: block;
+    }
+
+    /* ── Layout ── */
+    .layout {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      min-height: calc(100vh - 53px);
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      position: sticky;
+      top: 53px;
+      width: var(--sidebar-width);
+      height: calc(100vh - 53px);
+      overflow-y: auto;
+      border-right: 1px solid var(--border);
+      padding: 24px 0;
+      flex-shrink: 0;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+
+    .sidebar::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .sidebar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .sidebar::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 4px;
+    }
+
+    .sidebar-section {
+      margin-bottom: 6px;
+    }
+
+    .sidebar-section-title {
+      display: block;
+      padding: 6px 24px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-top: 12px;
+    }
+
+    .sidebar-section:first-child .sidebar-section-title {
+      margin-top: 0;
+    }
+
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 24px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: all 0.15s ease;
+      border-left: 2px solid transparent;
+    }
+
+    .sidebar-link:hover {
+      color: var(--parchment);
+      background: var(--surface);
+      border-left-color: var(--terracotta);
+    }
+
+    .sidebar-link .endpoint-count {
+      margin-left: auto;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: var(--surface);
+      padding: 1px 7px;
+      border-radius: 100px;
+      opacity: 0.7;
+    }
+
+    /* ── Main Content ── */
+    .main {
+      flex: 1;
+      min-width: 0;
+      max-width: 900px;
+      padding: 40px 48px 80px;
+    }
+
+    /* ── Page Header ── */
+    .page-header {
+      margin-bottom: 48px;
+    }
+
+    .page-header h1 {
+      font-size: clamp(2rem, 4vw, 2.8rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, var(--parchment) 0%, var(--wheat-gold) 50%, var(--terracotta) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .page-header p {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+      max-width: 600px;
+    }
+
+    .base-url {
+      margin-top: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 0.9rem;
+    }
+
+    .base-url-label {
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .base-url-value {
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      color: var(--wheat-gold);
+      font-weight: 600;
+      font-size: 0.88rem;
+    }
+
+    /* ── Section ── */
+    .api-section {
+      margin-bottom: 56px;
+    }
+
+    .section-anchor {
+      display: block;
+      position: relative;
+      top: -80px;
+      visibility: hidden;
+    }
+
+    .section-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--parchment);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-title .section-icon {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      background: rgba(200, 90, 50, 0.1);
+      border: 1px solid rgba(200, 90, 50, 0.2);
+      flex-shrink: 0;
+    }
+
+    .section-title .section-icon svg {
+      width: 17px;
+      height: 17px;
+      color: var(--terracotta);
+    }
+
+    .section-base {
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      padding-left: 42px;
+    }
+
+    /* ── Endpoint Card ── */
+    .endpoint {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 22px;
+      margin-bottom: 10px;
+      transition: border-color 0.2s ease;
+    }
+
+    .endpoint:hover {
+      border-color: rgba(200, 90, 50, 0.3);
+    }
+
+    .endpoint-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .endpoint-info {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    /* ── Method Badges ── */
+    .method {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 60px;
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      flex-shrink: 0;
+      line-height: 1.5;
+    }
+
+    .method-get {
+      background: rgba(59, 130, 126, 0.15);
+      color: var(--mastery);
+      border: 1px solid rgba(59, 130, 126, 0.3);
+    }
+
+    .method-post {
+      background: rgba(200, 90, 50, 0.15);
+      color: var(--terracotta);
+      border: 1px solid rgba(200, 90, 50, 0.3);
+    }
+
+    .method-patch {
+      background: rgba(196, 162, 69, 0.15);
+      color: var(--wheat-gold);
+      border: 1px solid rgba(196, 162, 69, 0.3);
+    }
+
+    .method-delete {
+      background: rgba(158, 59, 59, 0.15);
+      color: var(--critical);
+      border: 1px solid rgba(158, 59, 59, 0.3);
+    }
+
+    .endpoint-path {
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 0.88rem;
+      color: var(--parchment);
+      font-weight: 600;
+      word-break: break-all;
+    }
+
+    .endpoint-path .param {
+      color: var(--wheat-gold);
+    }
+
+    .endpoint-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .endpoint-desc {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      flex: 1;
+    }
+
+    .auth-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 10px;
+      border-radius: 100px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    .auth-professor {
+      background: rgba(196, 162, 69, 0.12);
+      color: var(--wheat-gold);
+      border: 1px solid rgba(196, 162, 69, 0.25);
+    }
+
+    .auth-student {
+      background: rgba(59, 130, 126, 0.12);
+      color: var(--mastery);
+      border: 1px solid rgba(59, 130, 126, 0.25);
+    }
+
+    .auth-public {
+      background: rgba(244, 241, 234, 0.06);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+
+    .auth-any {
+      background: rgba(200, 90, 50, 0.10);
+      color: var(--terracotta);
+      border: 1px solid rgba(200, 90, 50, 0.25);
+    }
+
+    .auth-badge svg {
+      width: 11px;
+      height: 11px;
+    }
+
+    /* ── Auth Legend ── */
+    .auth-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 24px;
+      padding: 16px 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+
+    .auth-legend-title {
+      width: 100%;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 4px;
+    }
+
+    .auth-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    /* ── Divider ── */
+    .section-divider {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border) 20%, var(--border) 80%, transparent);
+      margin: 48px 0;
+    }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 28px 48px;
+    }
+
+    .footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      max-width: 900px;
+    }
+
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--parchment);
+    }
+
+    .footer-quill {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+    }
+
+    .footer-quill svg {
+      width: 20px;
+      height: 20px;
+      color: var(--terracotta);
+    }
+
+    .footer-info {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .footer-team {
+      color: var(--parchment);
+      font-weight: 500;
+    }
+
+    /* ── Mobile Sidebar Overlay ── */
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 90;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 960px) {
+      .hamburger {
+        display: block;
+      }
+
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        z-index: 95;
+        background: var(--near-black);
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        padding-top: 72px;
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .sidebar-overlay.open {
+        display: block;
+      }
+
+      .main {
+        padding: 32px 24px 80px;
+      }
+
+      footer {
+        padding: 28px 24px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .main {
+        padding: 24px 16px 64px;
+      }
+
+      .endpoint {
+        padding: 14px 16px;
+      }
+
+      .endpoint-info {
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .endpoint-row {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .base-url {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+      }
+
+      .auth-legend {
+        gap: 8px;
+      }
+
+      .top-bar {
+        padding: 12px 16px;
+      }
+
+      footer {
+        padding: 24px 16px;
+      }
+
+      .footer-inner {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+
+    /* ── Focus Styles ── */
+    a:focus-visible,
+    button:focus-visible {
+      outline: 2px solid var(--terracotta);
+      outline-offset: 2px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <a href="index.html" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      Back to Hub
+    </a>
+    <span class="top-title">API Reference</span>
+    <button class="hamburger" onclick="toggleSidebar()" aria-label="Toggle navigation">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+
+  <!-- Layout -->
+  <div class="layout">
+
+    <!-- Sidebar Overlay (mobile) -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar / TOC -->
+    <nav class="sidebar" id="sidebar" aria-label="API sections">
+      <div class="sidebar-section">
+        <span class="sidebar-section-title">General</span>
+        <a href="#health" class="sidebar-link">Health<span class="endpoint-count">2</span></a>
+        <a href="#auth" class="sidebar-link">Authentication<span class="endpoint-count">3</span></a>
+      </div>
+      <div class="sidebar-section">
+        <span class="sidebar-section-title">Core Resources</span>
+        <a href="#classes" class="sidebar-link">Classes<span class="endpoint-count">3</span></a>
+        <a href="#students" class="sidebar-link">Students<span class="endpoint-count">5</span></a>
+        <a href="#arcs" class="sidebar-link">Narrative Arcs<span class="endpoint-count">11</span></a>
+        <a href="#scenes" class="sidebar-link">Scenes<span class="endpoint-count">1</span></a>
+      </div>
+      <div class="sidebar-section">
+        <span class="sidebar-section-title">Gameplay</span>
+        <a href="#dialogue" class="sidebar-link">Dialogue<span class="endpoint-count">1</span></a>
+        <a href="#character-pools" class="sidebar-link">Character Pools<span class="endpoint-count">4</span></a>
+        <a href="#character-mappings" class="sidebar-link">Character Mappings<span class="endpoint-count">1</span></a>
+        <a href="#scene-progress" class="sidebar-link">Scene Progress<span class="endpoint-count">4</span></a>
+      </div>
+      <div class="sidebar-section">
+        <span class="sidebar-section-title">Assessment</span>
+        <a href="#signals" class="sidebar-link">Signal Extraction<span class="endpoint-count">2</span></a>
+        <a href="#reasoning-traces" class="sidebar-link">Reasoning Traces<span class="endpoint-count">4</span></a>
+        <a href="#arc-endings" class="sidebar-link">Arc Endings<span class="endpoint-count">3</span></a>
+        <a href="#arc-journal" class="sidebar-link">Arc Journal<span class="endpoint-count">3</span></a>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main">
+
+      <!-- Header -->
+      <div class="page-header">
+        <h1>API Reference</h1>
+        <p>Complete endpoint reference for the Cervantes backend. All routes are served by the FastAPI application and documented below by feature module.</p>
+        <div class="base-url">
+          <span class="base-url-label">Base URL</span>
+          <code class="base-url-value">https://cervantes-api.azurewebsites.net</code>
+        </div>
+        <div class="auth-legend">
+          <div class="auth-legend-title">Authentication Roles</div>
+          <div class="auth-legend-item">
+            <span class="auth-badge auth-professor"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Professor</span>
+            Firebase token, role=professor
+          </div>
+          <div class="auth-legend-item">
+            <span class="auth-badge auth-student"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 1.66 2.69 3 6 3s6-1.34 6-3v-5"/></svg>Student</span>
+            Student ID or Firebase token
+          </div>
+          <div class="auth-legend-item">
+            <span class="auth-badge auth-any"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>Authenticated</span>
+            Any valid token
+          </div>
+          <div class="auth-legend-item">
+            <span class="auth-badge auth-public"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Public</span>
+            No auth required
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════ HEALTH ═══════════════════════════ -->
+      <span class="section-anchor" id="health"></span>
+      <section class="api-section">
+        <h2 class="section-title">
+          <span class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></span>
+          Health
+        </h2>
+        <div class="section-base">/</div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-get">GET</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/</span>
+            </div>
+            <span class="auth-badge auth-public">Public</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Root info &mdash; returns API status, version, and stack details.</span>
+          </div>
+        </div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-get">GET</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/health</span>
+            </div>
+            <span class="auth-badge auth-public">Public</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Health check endpoint for monitoring and load balancers.</span>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- ═══════════════════════ AUTHENTICATION ═══════════════════════ -->
+      <span class="section-anchor" id="auth"></span>
+      <section class="api-section">
+        <h2 class="section-title">
+          <span class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+          Authentication
+        </h2>
+        <div class="section-base">/api/auth</div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-post">POST</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/auth/register</span>
+            </div>
+            <span class="auth-badge auth-public">Public</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Register a new user (professor or student) with Firebase Auth.</span>
+          </div>
+        </div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-post">POST</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/auth/student-login</span>
+            </div>
+            <span class="auth-badge auth-public">Public</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Student ID validation &mdash; authenticates without requiring a Firebase token.</span>
+          </div>
+        </div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-get">GET</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/auth/me</span>
+            </div>
+            <span class="auth-badge auth-any">Authenticated</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Get the current authenticated user's profile and role.</span>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- ═══════════════════════════ CLASSES ═══════════════════════════ -->
+      <span class="section-anchor" id="classes"></span>
+      <section class="api-section">
+        <h2 class="section-title">
+          <span class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span>
+          Classes
+        </h2>
+        <div class="section-base">/api/class</div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-get">GET</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/class</span>
+            </div>
+            <span class="auth-badge auth-professor">Professor</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">List all classes owned by the authenticated professor.</span>
+          </div>
+        </div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-get">GET</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/class/<span class="param">{class_id}</span></span>
+            </div>
+            <span class="auth-badge auth-professor">Professor</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Get class details including the full student roster.</span>
+          </div>
+        </div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-get">GET</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/class/<span class="param">{class_id}</span>/progress</span>
+            </div>
+            <span class="auth-badge auth-professor">Professor</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Class-wide progress statistics across all arcs and students.</span>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- ═══════════════════════════ STUDENTS ═══════════════════════════ -->
+      <span class="section-anchor" id="students"></span>
+      <section class="api-section">
+        <h2 class="section-title">
+          <span class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+          Students
+        </h2>
+        <div class="section-base">/api/students</div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-get">GET</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/students</span>
+            </div>
+            <span class="auth-badge auth-professor">Professor</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">List all students across all classes for the professor.</span>
+          </div>
+        </div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-get">GET</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/students/<span class="param">{student_id}</span></span>
+            </div>
+            <span class="auth-badge auth-professor">Professor</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Get student profile, enrollments, and summary data.</span>
+          </div>
+        </div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-get">GET</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/students/class/<span class="param">{class_id}</span></span>
+            </div>
+            <span class="auth-badge auth-professor">Professor</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">List students enrolled in a class with their arc progress.</span>
+          </div>
+        </div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-get">GET</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/students/<span class="param">{student_id}</span>/reasoning-traces</span>
+            </div>
+            <span class="auth-badge auth-professor">Professor</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Retrieve all reasoning traces for a specific student.</span>
+          </div>
+        </div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-get">GET</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/students/<span class="param">{student_id}</span>/arc-journals</span>
+            </div>
+            <span class="auth-badge auth-professor">Professor</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Retrieve all arc journals written by a specific student.</span>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- ═══════════════════════ NARRATIVE ARCS ═══════════════════════ -->
+      <span class="section-anchor" id="arcs"></span>
+      <section class="api-section">
+        <h2 class="section-title">
+          <span class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a4 4 0 0 1 4 4c0 1.5-.8 2.8-2 3.4V11h3a3 3 0 0 1 3 3v1.6A4 4 0 0 1 22 19a4 4 0 0 1-8 0 4 4 0 0 1 2-3.4V14a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v1.6A4 4 0 0 1 10 19a4 4 0 0 1-8 0 4 4 0 0 1 2-3.4V14a3 3 0 0 1 3-3h3V9.4A4 4 0 0 1 8 6a4 4 0 0 1 4-4z"/></svg></span>
+          Narrative Arcs
+        </h2>
+        <div class="section-base">/api/arc</div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-post">POST</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/arc/generate</span>
+            </div>
+            <span class="auth-badge auth-professor">Professor</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Generate a narrative arc from a rubric using CurricuLLM + Gemini pipeline.</span>
+          </div>
+        </div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-post">POST</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/arc/upload-rubric</span>
+            </div>
+            <span class="auth-badge auth-professor">Professor</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Upload a rubric file (PDF/DOCX), extract text for arc generation.</span>
+          </div>
+        </div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-get">GET</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/arc/class/<span class="param">{class_id}</span></span>
+            </div>
+            <span class="auth-badge auth-any">Authenticated</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">List all arcs for a class, including scene counts.</span>
+          </div>
+        </div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-get">GET</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/arc/<span class="param">{arc_id}</span></span>
+            </div>
+            <span class="auth-badge auth-any">Authenticated</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Get full arc details with all scenes and metadata.</span>
+          </div>
+        </div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-post">POST</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/arc/<span class="param">{arc_id}</span>/approve</span>
+            </div>
+            <span class="auth-badge auth-professor">Professor</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Approve a draft arc for publishing.</span>
+          </div>
+        </div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-post">POST</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/arc/<span class="param">{arc_id}</span>/publish</span>
+            </div>
+            <span class="auth-badge auth-professor">Professor</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Publish the arc &mdash; triggers scene generation and character assignment.</span>
+          </div>
+        </div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-post">POST</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/arc/<span class="param">{arc_id}</span>/check-student-access</span>
+            </div>
+            <span class="auth-badge auth-student">Student</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Validate whether a student has access to an arc.</span>
+          </div>
+        </div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-post">POST</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/arc/<span class="param">{arc_id}</span>/generate-scenes</span>
+            </div>
+            <span class="auth-badge auth-professor">Professor</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Generate all VN scene content for an arc.</span>
+          </div>
+        </div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-post">POST</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/arc/scene/generate</span>
+            </div>
+            <span class="auth-badge auth-professor">Professor</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Generate a single scene with VN formatting and dialogue blocks.</span>
+          </div>
+        </div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-patch">PATCH</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/arc/<span class="param">{arc_id}</span></span>
+            </div>
+            <span class="auth-badge auth-professor">Professor</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Update arc metadata or scene content.</span>
+          </div>
+        </div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-delete">DELETE</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/arc/<span class="param">{arc_id}</span></span>
+            </div>
+            <span class="auth-badge auth-professor">Professor</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Cascade delete an arc and all related scenes, traces, and journals.</span>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- ═══════════════════════════ DIALOGUE ═══════════════════════════ -->
+      <span class="section-anchor" id="dialogue"></span>
+      <section class="api-section">
+        <h2 class="section-title">
+          <span class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+          Dialogue
+        </h2>
+        <div class="section-base">/api/dialogue</div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-post">POST</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/dialogue/turn</span>
+            </div>
+            <span class="auth-badge auth-student">Student</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Submit a dialogue turn for real-time Socratic exchange with Gemini.</span>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- ═══════════════════════════ SCENES ═══════════════════════════ -->
+      <span class="section-anchor" id="scenes"></span>
+      <section class="api-section">
+        <h2 class="section-title">
+          <span class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg></span>
+          Scenes
+        </h2>
+        <div class="section-base">/api/scene</div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-get">GET</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/scene/<span class="param">{arc_id}</span>/<span class="param">{scene_order}</span></span>
+            </div>
+            <span class="auth-badge auth-student">Student</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Get a specific scene with the student's assigned character.</span>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- ═══════════════════════ CHARACTER POOLS ═══════════════════════ -->
+      <span class="section-anchor" id="character-pools"></span>
+      <section class="api-section">
+        <h2 class="section-title">
+          <span class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 1 0-16 0"/></svg></span>
+          Character Pools
+        </h2>
+        <div class="section-base">/api/character-pools</div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-post">POST</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/character-pools/generate</span>
+            </div>
+            <span class="auth-badge auth-professor">Professor</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Generate character variants for an arc's cast.</span>
+          </div>
+        </div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-post">POST</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/character-pools/assign/<span class="param">{arc_id}</span>/student/<span class="param">{student_id}</span></span>
+            </div>
+            <span class="auth-badge auth-any">Authenticated</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Assign character variants to a student for the arc.</span>
+          </div>
+        </div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-get">GET</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/character-pools/student/<span class="param">{student_id}</span>/arc/<span class="param">{arc_id}</span>/scene/<span class="param">{scene_order}</span>/character</span>
+            </div>
+            <span class="auth-badge auth-student">Student</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Get the character assigned to a student for a specific scene.</span>
+          </div>
+        </div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-get">GET</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/character-pools/arc/<span class="param">{arc_id}</span></span>
+            </div>
+            <span class="auth-badge auth-professor">Professor</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">List all character pools for an arc.</span>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- ═══════════════════ CHARACTER MAPPINGS ═══════════════════ -->
+      <span class="section-anchor" id="character-mappings"></span>
+      <section class="api-section">
+        <h2 class="section-title">
+          <span class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg></span>
+          Character Mappings
+        </h2>
+        <div class="section-base">/api/character-mappings</div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-get">GET</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/character-mappings/<span class="param">{student_id}</span>/<span class="param">{arc_id}</span></span>
+            </div>
+            <span class="auth-badge auth-student">Student</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Get character ID to name/sprite mappings for a student's arc.</span>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- ═══════════════════ SIGNAL EXTRACTION ═══════════════════ -->
+      <span class="section-anchor" id="signals"></span>
+      <section class="api-section">
+        <h2 class="section-title">
+          <span class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>
+          Signal Extraction
+        </h2>
+        <div class="section-base">/api/signals</div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-post">POST</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/signals/extract</span>
+            </div>
+            <span class="auth-badge auth-any">Authenticated</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Extract reasoning signals from a completed scene's dialogue.</span>
+          </div>
+        </div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-post">POST</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/signals/<span class="param">{trace_id}</span></span>
+            </div>
+            <span class="auth-badge auth-any">Authenticated</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Extract signals by referencing an existing reasoning trace ID.</span>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- ═══════════════════ REASONING TRACES ═══════════════════ -->
+      <span class="section-anchor" id="reasoning-traces"></span>
+      <section class="api-section">
+        <h2 class="section-title">
+          <span class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></span>
+          Reasoning Traces
+        </h2>
+        <div class="section-base">/api/reasoning-trace</div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-post">POST</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/reasoning-trace/</span>
+            </div>
+            <span class="auth-badge auth-any">Authenticated</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Save a new reasoning trace from a dialogue session.</span>
+          </div>
+        </div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-get">GET</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/reasoning-trace/student/<span class="param">{student_id}</span></span>
+            </div>
+            <span class="auth-badge auth-any">Authenticated</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Get all reasoning traces for a student across all scenes.</span>
+          </div>
+        </div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-get">GET</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/reasoning-trace/student/<span class="param">{student_id}</span>/scene/<span class="param">{scene_id}</span></span>
+            </div>
+            <span class="auth-badge auth-any">Authenticated</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Get reasoning traces for a specific student-scene pair.</span>
+          </div>
+        </div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-get">GET</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/reasoning-trace/<span class="param">{trace_id}</span></span>
+            </div>
+            <span class="auth-badge auth-any">Authenticated</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Retrieve a single reasoning trace by ID.</span>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- ═══════════════════════ ARC ENDINGS ═══════════════════════ -->
+      <span class="section-anchor" id="arc-endings"></span>
+      <section class="api-section">
+        <h2 class="section-title">
+          <span class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg></span>
+          Arc Endings
+        </h2>
+        <div class="section-base">/api/arc-endings</div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-post">POST</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/arc-endings/generate</span>
+            </div>
+            <span class="auth-badge auth-any">Authenticated</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Generate a personalized narrative ending for a student's arc.</span>
+          </div>
+        </div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-get">GET</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/arc-endings/<span class="param">{ending_id}</span></span>
+            </div>
+            <span class="auth-badge auth-any">Authenticated</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Get an arc ending by its ID.</span>
+          </div>
+        </div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-get">GET</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/arc-endings/student/<span class="param">{student_id}</span>/arc/<span class="param">{arc_id}</span></span>
+            </div>
+            <span class="auth-badge auth-any">Authenticated</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Get the ending for a specific student-arc combination.</span>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- ═══════════════════════ ARC JOURNAL ═══════════════════════ -->
+      <span class="section-anchor" id="arc-journal"></span>
+      <section class="api-section">
+        <h2 class="section-title">
+          <span class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
+          Arc Journal
+        </h2>
+        <div class="section-base">/api/arc-journal</div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-get">GET</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/arc-journal/<span class="param">{student_id}</span>/<span class="param">{arc_id}</span></span>
+            </div>
+            <span class="auth-badge auth-any">Authenticated</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Get the complete journal for a student's arc.</span>
+          </div>
+        </div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-post">POST</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/arc-journal/append</span>
+            </div>
+            <span class="auth-badge auth-any">Authenticated</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Append new entries to an arc journal.</span>
+          </div>
+        </div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-post">POST</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/arc-journal/<span class="param">{student_id}</span>/<span class="param">{arc_id}</span>/complete</span>
+            </div>
+            <span class="auth-badge auth-any">Authenticated</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Mark a journal as complete after the final scene.</span>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- ═══════════════════ SCENE PROGRESS ═══════════════════ -->
+      <span class="section-anchor" id="scene-progress"></span>
+      <section class="api-section">
+        <h2 class="section-title">
+          <span class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg></span>
+          Scene Progress
+        </h2>
+        <div class="section-base">/api/scene/progress</div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-post">POST</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/scene/progress/student/<span class="param">{student_id}</span>/arc/<span class="param">{arc_id}</span>/scene/<span class="param">{scene_order}</span>/start</span>
+            </div>
+            <span class="auth-badge auth-student">Student</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Mark a scene as started for the student.</span>
+          </div>
+        </div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-post">POST</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/scene/progress/student/<span class="param">{student_id}</span>/arc/<span class="param">{arc_id}</span>/scene/<span class="param">{scene_order}</span>/complete</span>
+            </div>
+            <span class="auth-badge auth-student">Student</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Mark a scene as completed for the student.</span>
+          </div>
+        </div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-get">GET</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/scene/progress/student/<span class="param">{student_id}</span>/arc/<span class="param">{arc_id}</span></span>
+            </div>
+            <span class="auth-badge auth-any">Authenticated</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Get a student's progress through all scenes in an arc.</span>
+          </div>
+        </div>
+
+        <div class="endpoint">
+          <div class="endpoint-row">
+            <span class="method method-get">GET</span>
+            <div class="endpoint-info">
+              <span class="endpoint-path">/api/scene/progress/class/<span class="param">{class_id}</span>/arc/<span class="param">{arc_id}</span></span>
+            </div>
+            <span class="auth-badge auth-professor">Professor</span>
+          </div>
+          <div class="endpoint-meta">
+            <span class="endpoint-desc">Class-wide arc progress overview for all enrolled students.</span>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div class="footer-quill">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/>
+            <line x1="16" y1="8" x2="2" y2="22"/>
+            <line x1="17.5" y1="15" x2="9" y2="15"/>
+          </svg>
+        </div>
+        Cervantes
+      </div>
+      <div class="footer-info">
+        Cambridge EduX Hackathon 2026 &mdash;
+        <span class="footer-team">Jordan, Liu, Adrian</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+      document.getElementById('sidebarOverlay').classList.toggle('open');
+    }
+
+    // Close sidebar when clicking a link (mobile)
+    document.querySelectorAll('.sidebar-link').forEach(function(link) {
+      link.addEventListener('click', function() {
+        document.getElementById('sidebar').classList.remove('open');
+        document.getElementById('sidebarOverlay').classList.remove('open');
+      });
+    });
+
+    // Highlight active sidebar link on scroll
+    (function() {
+      var anchors = document.querySelectorAll('.section-anchor');
+      var links = document.querySelectorAll('.sidebar-link');
+      var idToLink = {};
+
+      links.forEach(function(l) {
+        var href = l.getAttribute('href');
+        if (href && href.startsWith('#')) {
+          idToLink[href.substring(1)] = l;
+        }
+      });
+
+      function onScroll() {
+        var scrollY = window.scrollY + 120;
+        var current = null;
+
+        anchors.forEach(function(anchor) {
+          var section = anchor.parentElement;
+          if (section && section.offsetTop <= scrollY) {
+            current = anchor.id;
+          }
+        });
+
+        links.forEach(function(l) { l.style.color = ''; l.style.borderLeftColor = 'transparent'; });
+
+        if (current && idToLink[current]) {
+          idToLink[current].style.color = 'var(--parchment)';
+          idToLink[current].style.borderLeftColor = 'var(--terracotta)';
+        }
+      }
+
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+  </script>
+
+</body>
+</html>

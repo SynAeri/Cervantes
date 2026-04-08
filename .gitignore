@@ -74,5 +74,6 @@ app/backend/_legacy_*/
 dev/*
 !dev/research/
 !dev/slides/
+!dev/tut/
 !dev/chat-summary.md
 screenshots/

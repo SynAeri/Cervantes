@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teacher Journey Guide - Cervantes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<style>
+  /* ── La Mancha Design Tokens ── */
+  :root {
+    --near-black: #1E1C18;
+    --parchment: #F4F1EA;
+    --terracotta: #C85A32;
+    --wheat-gold: #C4A245;
+    --mastery: #3B827E;
+    --misconception: #D4A347;
+    --critical: #9E3B3B;
+    --warm-white: #FAFAF7;
+    --warm-grey: #E4E0D8;
+    --body-text: #4A463D;
+    --tertiary: #8A857B;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    background: var(--near-black);
+    color: var(--parchment);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* ── Ambient background ── */
+  .ambient {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .ambient .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.07;
+  }
+  .ambient .orb-1 { width: 600px; height: 600px; background: var(--terracotta); top: -10%; right: -5%; }
+  .ambient .orb-2 { width: 500px; height: 500px; background: var(--wheat-gold); bottom: 10%; left: -8%; }
+  .ambient .orb-3 { width: 400px; height: 400px; background: var(--mastery); top: 40%; right: 20%; }
+
+  /* ── Layout ── */
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* ── Top bar ── */
+  .top-bar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    background: rgba(30, 28, 24, 0.75);
+    border-bottom: 1px solid rgba(228, 224, 216, 0.08);
+  }
+  .top-bar-inner {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--tertiary);
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    transition: color 0.2s;
+  }
+  .back-link:hover { color: var(--terracotta); }
+  .back-link .material-symbols-outlined { font-size: 16px; }
+  .top-bar-badge {
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--terracotta);
+    background: rgba(200, 90, 50, 0.12);
+    padding: 4px 12px;
+    border-radius: 999px;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    text-align: center;
+    padding: 96px 0 64px;
+  }
+  .hero-icon {
+    display: inline-flex;
+    width: 64px;
+    height: 64px;
+    background: var(--terracotta);
+    border-radius: 14px;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+  }
+  .hero-icon .material-symbols-outlined {
+    font-size: 32px;
+    color: var(--parchment);
+    font-variation-settings: 'FILL' 1;
+  }
+  .hero h1 {
+    font-size: clamp(28px, 5vw, 42px);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    margin-bottom: 16px;
+  }
+  .hero h1 span { color: var(--terracotta); }
+  .hero p {
+    color: var(--tertiary);
+    font-size: 15px;
+    max-width: 540px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  /* ── Timeline spine ── */
+  .timeline {
+    position: relative;
+    padding-bottom: 96px;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 28px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(228, 224, 216, 0.12) 4%,
+      rgba(228, 224, 216, 0.12) 96%,
+      transparent 100%
+    );
+  }
+
+  /* ── Step ── */
+  .step {
+    position: relative;
+    padding-left: 76px;
+    margin-bottom: 64px;
+  }
+  .step:last-child { margin-bottom: 0; }
+
+  /* Number badge on the timeline */
+  .step-badge {
+    position: absolute;
+    left: 12px;
+    top: 0;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--parchment);
+    background: var(--terracotta);
+    box-shadow: 0 0 0 4px var(--near-black), 0 0 20px rgba(200, 90, 50, 0.25);
+    z-index: 2;
+  }
+
+  /* Step card */
+  .step-card {
+    background: rgba(250, 250, 247, 0.035);
+    border: 1px solid rgba(228, 224, 216, 0.08);
+    border-radius: 16px;
+    padding: 32px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  .step-card:hover {
+    border-color: rgba(200, 90, 50, 0.18);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Step header */
+  .step-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .step-icon {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .step-icon .material-symbols-outlined {
+    font-size: 24px;
+    font-variation-settings: 'FILL' 1;
+  }
+  .step-icon.terra { background: rgba(200, 90, 50, 0.12); color: var(--terracotta); }
+  .step-icon.gold  { background: rgba(196, 162, 69, 0.12); color: var(--wheat-gold); }
+  .step-icon.teal  { background: rgba(59, 130, 126, 0.12); color: var(--mastery); }
+  .step-icon.crit  { background: rgba(158, 59, 59, 0.12); color: var(--critical); }
+
+  .step-meta {
+    flex: 1;
+    min-width: 0;
+  }
+  .step-title {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+  }
+  .step-route {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--terracotta);
+    background: rgba(200, 90, 50, 0.08);
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  }
+
+  .step-body {
+    color: rgba(244, 241, 234, 0.7);
+    font-size: 14px;
+    line-height: 1.75;
+  }
+  .step-body p { margin-bottom: 12px; }
+  .step-body p:last-child { margin-bottom: 0; }
+
+  /* ── Detail sections inside steps ── */
+  .detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .detail-box {
+    background: rgba(250, 250, 247, 0.03);
+    border: 1px solid rgba(228, 224, 216, 0.06);
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .detail-box-label {
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--tertiary);
+    margin-bottom: 8px;
+  }
+  .detail-box-content {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--parchment);
+  }
+
+  /* Feature bullets */
+  .feature-list {
+    list-style: none;
+    margin-top: 16px;
+  }
+  .feature-list li {
+    position: relative;
+    padding-left: 22px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    color: rgba(244, 241, 234, 0.75);
+  }
+  .feature-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--terracotta);
+    opacity: 0.6;
+  }
+
+  /* Color legend items */
+  .color-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 12px;
+  }
+  .color-swatch {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .color-swatch .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* Workflow stepper */
+  .workflow-stepper {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin: 20px 0;
+    flex-wrap: wrap;
+  }
+  .wf-step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .wf-circle {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+  .wf-circle.active { background: var(--terracotta); color: var(--parchment); }
+  .wf-circle.done   { background: var(--mastery); color: var(--parchment); }
+  .wf-circle.pending { background: rgba(228, 224, 216, 0.1); color: var(--tertiary); }
+  .wf-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+  .wf-line {
+    flex: 0 0 40px;
+    height: 2px;
+    background: rgba(228, 224, 216, 0.12);
+    margin: 0 8px;
+  }
+
+  /* Stage list (generation phases) */
+  .stage-list {
+    list-style: none;
+    margin: 12px 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .stage-pill {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--wheat-gold);
+    background: rgba(196, 162, 69, 0.1);
+    border: 1px solid rgba(196, 162, 69, 0.15);
+    padding: 4px 12px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .stage-pill .material-symbols-outlined { font-size: 14px; }
+
+  /* Scene type pills */
+  .scene-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .scene-pill {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 5px 14px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .scene-pill .material-symbols-outlined { font-size: 16px; }
+  .scene-pill.bridge    { color: var(--mastery); background: rgba(59, 130, 126, 0.1); border: 1px solid rgba(59, 130, 126, 0.15); }
+  .scene-pill.deep      { color: var(--terracotta); background: rgba(200, 90, 50, 0.1); border: 1px solid rgba(200, 90, 50, 0.15); }
+  .scene-pill.side      { color: var(--wheat-gold); background: rgba(196, 162, 69, 0.1); border: 1px solid rgba(196, 162, 69, 0.15); }
+
+  /* Callout box */
+  .callout {
+    margin-top: 20px;
+    padding: 16px 20px;
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.65;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .callout .material-symbols-outlined { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+  .callout.info {
+    background: rgba(59, 130, 126, 0.08);
+    border: 1px solid rgba(59, 130, 126, 0.12);
+    color: rgba(244, 241, 234, 0.8);
+  }
+  .callout.info .material-symbols-outlined { color: var(--mastery); }
+  .callout.warn {
+    background: rgba(196, 162, 69, 0.08);
+    border: 1px solid rgba(196, 162, 69, 0.12);
+    color: rgba(244, 241, 234, 0.8);
+  }
+  .callout.warn .material-symbols-outlined { color: var(--wheat-gold); }
+
+  /* Mini-mock UI elements */
+  .mock-card {
+    background: rgba(250, 250, 247, 0.04);
+    border: 1px solid rgba(228, 224, 216, 0.08);
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 16px;
+  }
+  .mock-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(228, 224, 216, 0.05);
+  }
+  .mock-row:last-child { border-bottom: none; }
+
+  .mock-bar-track {
+    width: 80px;
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(228, 224, 216, 0.08);
+    overflow: hidden;
+  }
+  .mock-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .badge {
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 3px 10px;
+    border-radius: 999px;
+  }
+  .badge-active   { color: var(--mastery); background: rgba(59, 130, 126, 0.12); }
+  .badge-draft    { color: var(--tertiary); background: rgba(228, 224, 216, 0.1); }
+  .badge-noarc    { color: var(--critical); background: rgba(158, 59, 59, 0.1); }
+
+  /* Chat bubbles */
+  .chat-wrap { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .chat-bubble {
+    max-width: 75%;
+    padding: 10px 16px;
+    border-radius: 14px;
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  .chat-bubble.character {
+    align-self: flex-start;
+    background: rgba(250, 250, 247, 0.06);
+    border: 1px solid rgba(228, 224, 216, 0.08);
+  }
+  .chat-bubble.student {
+    align-self: flex-end;
+    background: rgba(200, 90, 50, 0.1);
+    border: 1px solid rgba(200, 90, 50, 0.15);
+  }
+  .chat-role {
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--tertiary);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .chat-role .material-symbols-outlined { font-size: 12px; }
+  .chat-emotion {
+    font-style: italic;
+    color: var(--tertiary);
+    opacity: 0.7;
+  }
+
+  /* Reasoning graph mock */
+  .graph-mock {
+    margin-top: 16px;
+    height: 180px;
+    border-radius: 12px;
+    background: rgba(250, 250, 247, 0.025);
+    border: 1px solid rgba(228, 224, 216, 0.06);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .graph-node {
+    position: absolute;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    z-index: 2;
+    border: 2px solid;
+  }
+  .graph-node.scene { background: rgba(200, 90, 50, 0.15); border-color: rgba(200, 90, 50, 0.35); color: var(--terracotta); }
+  .graph-node.concept-m { background: rgba(59, 130, 126, 0.15); border-color: rgba(59, 130, 126, 0.35); color: var(--mastery); }
+  .graph-node.concept-d { background: rgba(212, 163, 71, 0.15); border-color: rgba(212, 163, 71, 0.35); color: var(--misconception); }
+  .graph-node.concept-c { background: rgba(158, 59, 59, 0.15); border-color: rgba(158, 59, 59, 0.35); color: var(--critical); }
+  .graph-edge {
+    position: absolute;
+    height: 1px;
+    background: rgba(228, 224, 216, 0.1);
+    transform-origin: left center;
+    z-index: 1;
+  }
+  .graph-label {
+    font-size: 10px;
+    color: var(--tertiary);
+    text-align: center;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* ── Footer ── */
+  .guide-footer {
+    text-align: center;
+    padding: 48px 24px 64px;
+    border-top: 1px solid rgba(228, 224, 216, 0.06);
+  }
+  .guide-footer .logo-mark {
+    display: inline-flex;
+    width: 28px;
+    height: 28px;
+    background: rgba(200, 90, 50, 0.12);
+    border-radius: 6px;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--terracotta);
+    margin-bottom: 12px;
+  }
+  .guide-footer p {
+    font-size: 11px;
+    color: var(--tertiary);
+    letter-spacing: 0.05em;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 640px) {
+    .timeline::before { left: 18px; }
+    .step { padding-left: 56px; }
+    .step-badge { left: 2px; width: 30px; height: 30px; font-size: 12px; }
+    .step-card { padding: 24px 20px; }
+    .step-header { flex-direction: column; gap: 12px; }
+    .detail-grid { grid-template-columns: 1fr; }
+    .workflow-stepper { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .wf-line { display: none; }
+    .hero { padding: 64px 0 48px; }
+    .color-legend { flex-direction: column; gap: 8px; }
+    .graph-mock { height: 140px; }
+  }
+
+  /* ── Scroll reveal animation ── */
+  .step-card {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out, border-color 0.3s, box-shadow 0.3s;
+  }
+  .step-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+</style>
+</head>
+<body>
+
+<!-- Ambient background -->
+<div class="ambient">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+
+<!-- Top bar -->
+<nav class="top-bar">
+  <div class="top-bar-inner">
+    <a href="index.html" class="back-link">
+      <span class="material-symbols-outlined">arrow_back</span>
+      Back to Hub
+    </a>
+    <span class="top-bar-badge">Teacher Guide</span>
+  </div>
+</nav>
+
+<div class="wrapper">
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-icon">
+      <span class="material-symbols-outlined">school</span>
+    </div>
+    <h1>The <span>Teacher</span> Journey</h1>
+    <p>A step-by-step walkthrough of the professor experience in Cervantes &mdash; from authentication through real-time student monitoring and deep learning analytics.</p>
+  </section>
+
+  <!-- Timeline -->
+  <section class="timeline">
+
+    <!-- ───────────── Step 1: Login ───────────── -->
+    <article class="step">
+      <div class="step-badge">1</div>
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-icon terra">
+            <span class="material-symbols-outlined">lock_open</span>
+          </div>
+          <div class="step-meta">
+            <h2 class="step-title">Login</h2>
+            <span class="step-route">/login</span>
+          </div>
+        </div>
+        <div class="step-body">
+          <p>The teacher journey begins at the Cervantes login portal.  Professors authenticate with <strong>email/password</strong>, <strong>Google OAuth</strong>, or <strong>Microsoft OAuth</strong> &mdash; all powered by Firebase Auth.</p>
+          <p>Upon first sign-in the frontend automatically calls <code>/api/auth/register</code> to register the user with <code>role: professor</code> in the backend.</p>
+
+          <ul class="feature-list">
+            <li>Branded "Cervantes" logo with terracotta accent</li>
+            <li>Email + password form with visibility toggle</li>
+            <li>Side-by-side Google and Microsoft OAuth buttons</li>
+            <li>Toggle between Sign In and Sign Up flows</li>
+            <li>Animated <strong>WheatField</strong> SVG decoration behind the card</li>
+          </ul>
+
+          <div class="callout info">
+            <span class="material-symbols-outlined">info</span>
+            <div>The WheatField animation renders subtle, wind-swayed wheat stalks across the bottom of the viewport &mdash; a visual nod to the La Mancha landscape that underpins the Cervantes design system.</div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- ───────────── Step 2: Dashboard ───────────── -->
+    <article class="step">
+      <div class="step-badge">2</div>
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-icon gold">
+            <span class="material-symbols-outlined">dashboard</span>
+          </div>
+          <div class="step-meta">
+            <h2 class="step-title">Dashboard Overview</h2>
+            <span class="step-route">/dashboard</span>
+          </div>
+        </div>
+        <div class="step-body">
+          <p>After login the professor lands on the main dashboard. The <strong>TopBar</strong> greets them with "Welcome Back, Professor" alongside their avatar initials, a search bar, and notification bell.</p>
+          <p>The main content area displays a responsive <strong>grid of class cards</strong>, each showing key information at a glance.</p>
+
+          <!-- Mock class card -->
+          <div class="detail-grid">
+            <div class="detail-box">
+              <div class="detail-box-label">Class Card Shows</div>
+              <ul class="feature-list" style="margin-top:4px">
+                <li>Subject icon (finance, code, menu_book)</li>
+                <li>Class name and module</li>
+                <li>Status badge (ACTIVE / DRAFT / NO ARC)</li>
+                <li>Enrolled student count</li>
+                <li>Progress bar</li>
+              </ul>
+            </div>
+            <div class="detail-box">
+              <div class="detail-box-label">Quick Stats Sidebar</div>
+              <div style="display:flex;flex-direction:column;gap:12px;margin-top:4px">
+                <div style="display:flex;justify-content:space-between;align-items:baseline">
+                  <span style="font-size:11px;color:var(--tertiary);font-weight:700">Total Students</span>
+                  <span style="font-size:22px;font-weight:800">42</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:baseline">
+                  <span style="font-size:11px;color:var(--tertiary);font-weight:700">Active Classes</span>
+                  <span style="font-size:22px;font-weight:800">3</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:baseline">
+                  <span style="font-size:11px;color:var(--tertiary);font-weight:700">Avg Completion</span>
+                  <span style="font-size:22px;font-weight:800;color:var(--terracotta)">67%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="callout info">
+            <span class="material-symbols-outlined">info</span>
+            <div>The dashboard uses <strong>React Query</strong> to fetch classes from the backend API. Skeleton loaders pulse while data loads, ensuring the UI feels responsive even on slow connections.</div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- ───────────── Step 3: Class Detail ───────────── -->
+    <article class="step">
+      <div class="step-badge">3</div>
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-icon teal">
+            <span class="material-symbols-outlined">class</span>
+          </div>
+          <div class="step-meta">
+            <h2 class="step-title">Class Detail</h2>
+            <span class="step-route">/class/[classId]</span>
+          </div>
+        </div>
+        <div class="step-body">
+          <p>Clicking a class card navigates to its detail page. The layout is split into a <strong>9/3 column grid</strong> with the main content on the left and an activity sidebar on the right.</p>
+
+          <div class="detail-grid">
+            <div class="detail-box">
+              <div class="detail-box-label">Class Info Card</div>
+              <div class="detail-box-content">
+                Subject icon, class name, module, enrollment count, progress ring. When an arc has curriculum data, <strong>Learning Objectives</strong> and <strong>Key Concepts</strong> pills are displayed.
+              </div>
+            </div>
+            <div class="detail-box">
+              <div class="detail-box-label">Arc Status Box</div>
+              <div class="detail-box-content">
+                Displays current arc ID, status, scene count, and action buttons. Has a three-dot menu for Edit Arc and Delete Arc. Shows student link when published.
+              </div>
+            </div>
+          </div>
+
+          <p style="margin-top:16px">Below the cards, two tabs let the professor switch views:</p>
+
+          <div style="display:flex;gap:24px;margin-top:12px;border-bottom:1px solid rgba(228,224,216,0.08);padding-bottom:8px">
+            <span style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.15em;color:var(--terracotta);border-bottom:2px solid var(--terracotta);padding-bottom:8px;display:flex;align-items:center;gap:6px">
+              <span class="material-symbols-outlined" style="font-size:14px">group</span>
+              Student Performance
+            </span>
+            <span style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.15em;color:var(--tertiary);display:flex;align-items:center;gap:6px">
+              <span class="material-symbols-outlined" style="font-size:14px">auto_stories</span>
+              Scenarios
+            </span>
+          </div>
+
+          <!-- Mini student performance table mock -->
+          <div class="mock-card">
+            <div class="detail-box-label" style="margin-bottom:12px">Student Performance Table</div>
+            <div class="mock-row">
+              <span style="font-size:12px;font-weight:700;width:120px">Alice Chen</span>
+              <div class="mock-bar-track"><div class="mock-bar-fill" style="width:85%;background:var(--mastery)"></div></div>
+              <span class="badge badge-active">Complete</span>
+            </div>
+            <div class="mock-row">
+              <span style="font-size:12px;font-weight:700;width:120px">Bob Reyes</span>
+              <div class="mock-bar-track"><div class="mock-bar-fill" style="width:60%;background:var(--misconception)"></div></div>
+              <span class="badge badge-draft">In Progress</span>
+            </div>
+            <div class="mock-row">
+              <span style="font-size:12px;font-weight:700;width:120px">Carol Wu</span>
+              <div class="mock-bar-track"><div class="mock-bar-fill" style="width:30%;background:var(--critical)"></div></div>
+              <span class="badge badge-noarc">Flagged</span>
+            </div>
+          </div>
+
+          <div class="color-legend" style="margin-top:16px">
+            <div class="color-swatch"><div class="dot" style="background:var(--mastery)"></div><span>Mastery (80+)</span></div>
+            <div class="color-swatch"><div class="dot" style="background:var(--misconception)"></div><span>Developing (50-79)</span></div>
+            <div class="color-swatch"><div class="dot" style="background:var(--critical)"></div><span>Critical (&lt;50)</span></div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- ───────────── Step 4: Create Arc ───────────── -->
+    <article class="step">
+      <div class="step-badge">4</div>
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-icon terra">
+            <span class="material-symbols-outlined">note_add</span>
+          </div>
+          <div class="step-meta">
+            <h2 class="step-title">Create Assessment Arc</h2>
+            <span class="step-route">/class/[classId]/arc/new</span>
+          </div>
+        </div>
+        <div class="step-body">
+          <p>The arc creation page guides the professor through a <strong>3-step workflow</strong>:</p>
+
+          <div class="workflow-stepper">
+            <div class="wf-step">
+              <div class="wf-circle active">1</div>
+              <span class="wf-label">Upload</span>
+            </div>
+            <div class="wf-line"></div>
+            <div class="wf-step">
+              <div class="wf-circle pending">2</div>
+              <span class="wf-label">Generating</span>
+            </div>
+            <div class="wf-line"></div>
+            <div class="wf-step">
+              <div class="wf-circle pending">3</div>
+              <span class="wf-label">Approved</span>
+            </div>
+          </div>
+
+          <p><strong>Upload</strong> &mdash; A drag-and-drop zone accepts assessment rubrics in <strong>PDF</strong>, <strong>DOCX</strong>, or <strong>TXT</strong> format. The professor can also click "Browse Files" to use a file picker.</p>
+
+          <p><strong>Generating</strong> &mdash; Once uploaded, the system enters an animated generation phase. A spinner rotates while status messages pulse through the stages:</p>
+
+          <ul class="stage-list">
+            <li class="stage-pill"><span class="material-symbols-outlined">description</span> Parsing rubric</li>
+            <li class="stage-pill"><span class="material-symbols-outlined">target</span> Extracting objectives</li>
+            <li class="stage-pill"><span class="material-symbols-outlined">psychology</span> Identifying misconceptions</li>
+            <li class="stage-pill"><span class="material-symbols-outlined">auto_stories</span> Generating narrative</li>
+            <li class="stage-pill"><span class="material-symbols-outlined">person</span> Creating characters</li>
+            <li class="stage-pill"><span class="material-symbols-outlined">movie</span> Planning scenes</li>
+            <li class="stage-pill"><span class="material-symbols-outlined">check_circle</span> Finalizing arc</li>
+          </ul>
+
+          <div class="callout warn">
+            <span class="material-symbols-outlined">bolt</span>
+            <div><strong>Behind the scenes:</strong> CurricuLLM parses the rubric document, extracts learning outcomes, key concepts, and common misconceptions. Gemini then plans the arc structure &mdash; determining scene order, types, and character assignments. Generation typically takes 30&ndash;60 seconds.</div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- ───────────── Step 5: Review & Approve ───────────── -->
+    <article class="step">
+      <div class="step-badge">5</div>
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-icon gold">
+            <span class="material-symbols-outlined">rate_review</span>
+          </div>
+          <div class="step-meta">
+            <h2 class="step-title">Review &amp; Approve Arc</h2>
+            <span class="step-route">ArcReviewModal</span>
+          </div>
+        </div>
+        <div class="step-body">
+          <p>When generation completes, the <strong>ArcReviewModal</strong> slides up over the page. It presents the full arc structure for the professor to inspect before committing.</p>
+
+          <p>The modal displays a list of scenes, each showing:</p>
+
+          <div class="scene-pills">
+            <span class="scene-pill bridge"><span class="material-symbols-outlined">link</span> Bridge Scene</span>
+            <span class="scene-pill deep"><span class="material-symbols-outlined">psychology</span> Deep Dive</span>
+            <span class="scene-pill side"><span class="material-symbols-outlined">explore</span> Side Event</span>
+          </div>
+
+          <ul class="feature-list" style="margin-top:16px">
+            <li><strong>Scene type</strong> &mdash; bridge, deep, or side_event</li>
+            <li><strong>Character</strong> assigned to the scene</li>
+            <li><strong>Concept target</strong> &mdash; the learning objective assessed</li>
+            <li><strong>Misconception target</strong> &mdash; the common error probed</li>
+            <li>Editable learning objectives for fine-tuning</li>
+          </ul>
+
+          <div style="display:flex;gap:12px;margin-top:20px;flex-wrap:wrap">
+            <span style="display:inline-flex;align-items:center;gap:6px;padding:10px 24px;background:var(--terracotta);color:var(--parchment);border-radius:8px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em">
+              <span class="material-symbols-outlined" style="font-size:16px">check</span>
+              Approve
+            </span>
+            <span style="display:inline-flex;align-items:center;gap:6px;padding:10px 24px;background:rgba(228,224,216,0.08);border:1px solid rgba(228,224,216,0.1);color:var(--parchment);border-radius:8px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em">
+              <span class="material-symbols-outlined" style="font-size:16px">refresh</span>
+              Regenerate
+            </span>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- ───────────── Step 6: Publish ───────────── -->
+    <article class="step">
+      <div class="step-badge">6</div>
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-icon teal">
+            <span class="material-symbols-outlined">publish</span>
+          </div>
+          <div class="step-meta">
+            <h2 class="step-title">Publish to Students</h2>
+            <span class="step-route">/class/[classId]</span>
+          </div>
+        </div>
+        <div class="step-body">
+          <p>After approval, the Arc Status Box shows a <strong>"Publish Scenes"</strong> button. Clicking it triggers the full content generation pipeline:</p>
+
+          <ul class="feature-list">
+            <li>System generates complete VN scene content for every scene in the arc</li>
+            <li>Character pools are created &mdash; 2&ndash;3 name variants per scene to add variety</li>
+            <li>Random character variants are assigned to each enrolled student</li>
+            <li>Arc status transitions to <strong>"published"</strong></li>
+            <li>A student access link becomes available in the Arc Status Box</li>
+          </ul>
+
+          <div class="callout info">
+            <span class="material-symbols-outlined">link</span>
+            <div>The student link format is <code>student-portal/{arc_id}</code> &mdash; the professor can share this with the class. Each student sees uniquely assigned character variants while experiencing the same underlying assessment content.</div>
+          </div>
+
+          <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;align-items:center">
+            <span style="display:inline-flex;align-items:center;gap:6px;padding:8px 20px;background:rgba(59,130,126,0.1);color:var(--mastery);border-radius:8px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.12em">
+              <span class="material-symbols-outlined" style="font-size:14px">check_circle</span>
+              Published
+            </span>
+            <span style="display:inline-flex;align-items:center;gap:6px;padding:8px 20px;background:rgba(196,162,69,0.1);color:var(--wheat-gold);border-radius:8px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.12em">
+              <span class="material-symbols-outlined" style="font-size:14px">visibility</span>
+              View Scenes
+            </span>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- ───────────── Step 7: Monitoring ───────────── -->
+    <article class="step">
+      <div class="step-badge">7</div>
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-icon gold">
+            <span class="material-symbols-outlined">monitoring</span>
+          </div>
+          <div class="step-meta">
+            <h2 class="step-title">Real-time Monitoring</h2>
+            <span class="step-route">/class/[classId]</span>
+          </div>
+        </div>
+        <div class="step-body">
+          <p>Once published, the Student Performance table becomes a <strong>live dashboard</strong>. It polls the backend every <strong>10 seconds</strong> via <code>useClassArcProgress</code>, merging fresh progress data with the student list.</p>
+
+          <p>Each student row displays:</p>
+
+          <ul class="feature-list">
+            <li>Name, progress bar, and percentage</li>
+            <li>Color-coded dimension scores for each learning objective</li>
+            <li>Arc status indicator</li>
+          </ul>
+
+          <div class="detail-grid" style="margin-top:16px">
+            <div class="detail-box">
+              <div class="detail-box-label">Dimension Score Colors</div>
+              <div class="color-legend" style="margin-top:4px;flex-direction:column;gap:8px">
+                <div class="color-swatch"><div class="dot" style="background:var(--mastery)"></div><span>Mastery (80+) &mdash; #3B827E</span></div>
+                <div class="color-swatch"><div class="dot" style="background:var(--misconception)"></div><span>Developing (50&ndash;79) &mdash; #D4A347</span></div>
+                <div class="color-swatch"><div class="dot" style="background:var(--critical)"></div><span>Critical (&lt;50) &mdash; #9E3B3B</span></div>
+              </div>
+            </div>
+            <div class="detail-box">
+              <div class="detail-box-label">Arc Status Values</div>
+              <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px">
+                <span style="display:flex;align-items:center;gap:8px;font-size:12px"><span class="badge badge-draft">Not Started</span></span>
+                <span style="display:flex;align-items:center;gap:8px;font-size:12px"><span class="badge" style="color:var(--wheat-gold);background:rgba(196,162,69,0.12)">In Progress</span></span>
+                <span style="display:flex;align-items:center;gap:8px;font-size:12px"><span class="badge badge-active">Complete</span></span>
+                <span style="display:flex;align-items:center;gap:8px;font-size:12px"><span class="badge badge-noarc">Flagged</span></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="callout warn">
+            <span class="material-symbols-outlined">schedule</span>
+            <div>Polling is conditional &mdash; it only activates when the arc status is <code>"published"</code>. Progress data includes per-scene assignment statuses (<code>not_started</code>, <code>started</code>, <code>completed</code>) which are rolled up into the student-level arc status.</div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- ───────────── Step 8: Deep Analysis ───────────── -->
+    <article class="step">
+      <div class="step-badge">8</div>
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-icon crit">
+            <span class="material-symbols-outlined">psychology</span>
+          </div>
+          <div class="step-meta">
+            <h2 class="step-title">Deep Student Analysis</h2>
+            <span class="step-route">StudentDetailModal</span>
+          </div>
+        </div>
+        <div class="step-body">
+          <p>Clicking any student row opens the <strong>StudentDetailModal</strong> &mdash; a full-screen overlay with comprehensive analytics.</p>
+
+          <!-- Stat cards mock -->
+          <div class="detail-grid" style="grid-template-columns:repeat(4,1fr)">
+            <div class="detail-box" style="text-align:center">
+              <div class="detail-box-label">Overall Progress</div>
+              <div class="detail-box-content" style="font-size:24px;font-weight:800">72<span style="font-size:14px;color:var(--tertiary)">%</span></div>
+            </div>
+            <div class="detail-box" style="text-align:center">
+              <div class="detail-box-label">Scenes</div>
+              <div class="detail-box-content" style="font-size:24px;font-weight:800">5<span style="font-size:14px;color:var(--tertiary)">/7</span></div>
+            </div>
+            <div class="detail-box" style="text-align:center">
+              <div class="detail-box-label">Arc Status</div>
+              <div class="detail-box-content"><span class="badge" style="color:var(--wheat-gold);background:rgba(196,162,69,0.12)">In Progress</span></div>
+            </div>
+            <div class="detail-box" style="text-align:center">
+              <div class="detail-box-label">Last Active</div>
+              <div class="detail-box-content" style="font-size:13px">12m ago</div>
+            </div>
+          </div>
+
+          <!-- Dimension bars mock -->
+          <div class="mock-card">
+            <div class="detail-box-label" style="margin-bottom:14px">Dimension Score Bar Charts</div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;align-items:center;gap:12px">
+                <span style="font-size:11px;font-weight:600;width:120px;flex-shrink:0">Supply & Demand</span>
+                <div class="mock-bar-track" style="flex:1"><div class="mock-bar-fill" style="width:88%;background:var(--mastery)"></div></div>
+                <span style="font-size:11px;font-weight:700;color:var(--mastery);width:50px;text-align:right">88%</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px">
+                <span style="font-size:11px;font-weight:600;width:120px;flex-shrink:0">Market Equilibrium</span>
+                <div class="mock-bar-track" style="flex:1"><div class="mock-bar-fill" style="width:62%;background:var(--misconception)"></div></div>
+                <span style="font-size:11px;font-weight:700;color:var(--misconception);width:50px;text-align:right">62%</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px">
+                <span style="font-size:11px;font-weight:600;width:120px;flex-shrink:0">Price Elasticity</span>
+                <div class="mock-bar-track" style="flex:1"><div class="mock-bar-fill" style="width:38%;background:var(--critical)"></div></div>
+                <span style="font-size:11px;font-weight:700;color:var(--critical);width:50px;text-align:right">38%</span>
+              </div>
+            </div>
+            <div class="color-legend" style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(228,224,216,0.06)">
+              <div class="color-swatch"><div class="dot" style="background:var(--mastery)"></div><span style="font-size:10px">Mastery (80+)</span></div>
+              <div class="color-swatch"><div class="dot" style="background:var(--misconception)"></div><span style="font-size:10px">Developing (50-79)</span></div>
+              <div class="color-swatch"><div class="dot" style="background:var(--critical)"></div><span style="font-size:10px">Critical (&lt;50)</span></div>
+            </div>
+          </div>
+
+          <!-- Reasoning trace graph mock -->
+          <div style="margin-top:20px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+              <span class="material-symbols-outlined" style="font-size:18px;color:var(--terracotta)">psychology</span>
+              <span class="detail-box-label" style="margin-bottom:0">Interactive Reasoning Trace Graph</span>
+            </div>
+            <div class="graph-mock">
+              <!-- Edges -->
+              <div class="graph-edge" style="width:90px;left:90px;top:55px;transform:rotate(22deg)"></div>
+              <div class="graph-edge" style="width:100px;left:90px;top:90px;transform:rotate(-5deg)"></div>
+              <div class="graph-edge" style="width:80px;left:230px;top:68px;transform:rotate(-18deg)"></div>
+              <div class="graph-edge" style="width:110px;left:235px;top:100px;transform:rotate(12deg)"></div>
+              <div class="graph-edge" style="width:90px;left:390px;top:80px;transform:rotate(8deg)"></div>
+              <div class="graph-edge" style="width:100px;left:400px;top:110px;transform:rotate(-15deg)"></div>
+              <div class="graph-edge" style="width:80px;left:555px;top:65px;transform:rotate(20deg)"></div>
+              <div class="graph-edge" style="width:90px;left:550px;top:100px;transform:rotate(-8deg)"></div>
+
+              <!-- Scene nodes -->
+              <div class="graph-node scene" style="left:50px;top:60px">S1</div>
+              <div class="graph-node scene" style="left:215px;top:75px">S2</div>
+              <div class="graph-node scene" style="left:380px;top:55px">S3</div>
+              <div class="graph-node scene" style="left:540px;top:70px">S4</div>
+
+              <!-- Concept nodes -->
+              <div class="graph-node concept-m" style="left:155px;top:30px;width:36px;height:36px;font-size:9px">C1</div>
+              <div class="graph-node concept-d" style="left:310px;top:110px;width:36px;height:36px;font-size:9px">C2</div>
+              <div class="graph-node concept-c" style="left:470px;top:25px;width:36px;height:36px;font-size:9px">C3</div>
+              <div class="graph-node concept-m" style="left:630px;top:95px;width:36px;height:36px;font-size:9px">C4</div>
+
+              <!-- Legend inside -->
+              <div style="position:absolute;bottom:10px;left:16px;display:flex;gap:14px">
+                <div class="color-swatch" style="font-size:9px"><div class="dot" style="background:var(--terracotta);width:8px;height:8px"></div>Scene</div>
+                <div class="color-swatch" style="font-size:9px"><div class="dot" style="background:var(--mastery);width:8px;height:8px"></div>Mastery</div>
+                <div class="color-swatch" style="font-size:9px"><div class="dot" style="background:var(--misconception);width:8px;height:8px"></div>Developing</div>
+                <div class="color-swatch" style="font-size:9px"><div class="dot" style="background:var(--critical);width:8px;height:8px"></div>Critical</div>
+              </div>
+            </div>
+            <p style="font-size:12px;color:var(--tertiary);margin-top:8px">Force-directed SVG layout: scene nodes connect to concept nodes. Colors indicate mastery status. Click any node to drill into the conversation detail.</p>
+          </div>
+
+          <!-- Chat conversation mock -->
+          <div style="margin-top:20px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+              <span class="material-symbols-outlined" style="font-size:18px;color:var(--wheat-gold)">forum</span>
+              <span class="detail-box-label" style="margin-bottom:0">Conversation Detail Panel</span>
+            </div>
+
+            <div class="detail-grid" style="grid-template-columns:1fr 1fr;margin-top:8px">
+              <div class="detail-box">
+                <div class="detail-box-label">Initial Answer</div>
+                <div class="detail-box-content" style="font-size:12px;font-weight:500;color:rgba(244,241,234,0.65);line-height:1.6">
+                  "When demand goes up, the supply curve shifts right and prices drop."
+                </div>
+              </div>
+              <div class="detail-box">
+                <div class="detail-box-label">Revised Answer</div>
+                <div class="detail-box-content" style="font-size:12px;font-weight:500;color:rgba(244,241,234,0.65);line-height:1.6">
+                  "An increase in demand shifts the demand curve right, moving along the existing supply curve to a higher equilibrium price."
+                </div>
+              </div>
+            </div>
+
+            <div class="chat-wrap">
+              <div class="chat-bubble character">
+                <div class="chat-role">
+                  <span class="material-symbols-outlined">smart_toy</span>
+                  Character
+                  <span class="chat-emotion">(curious)</span>
+                </div>
+                That's an interesting thought. But consider &mdash; if demand increases, which curve actually shifts?
+              </div>
+              <div class="chat-bubble student">
+                <div class="chat-role">
+                  <span class="material-symbols-outlined">school</span>
+                  Student
+                </div>
+                Oh wait, it's the demand curve that shifts right, not supply. So the price goes up as we move along the supply curve.
+              </div>
+              <div class="chat-bubble character">
+                <div class="chat-role">
+                  <span class="material-symbols-outlined">smart_toy</span>
+                  Character
+                  <span class="chat-emotion">(encouraging)</span>
+                </div>
+                Exactly! The supply curve stays put. The new equilibrium sits at a higher price point and higher quantity.
+              </div>
+            </div>
+          </div>
+
+          <div class="callout info">
+            <span class="material-symbols-outlined">info</span>
+            <div>The reasoning trace graph is a <strong>force-directed SVG</strong> rendered by the <code>ReasoningGraph</code> component. Scene nodes and concept nodes are connected by edges. Clicking a trace opens the <code>ConversationPanel</code> showing the full dialogue, including emotion indicators on character messages.</div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+  </section><!-- /timeline -->
+</div><!-- /wrapper -->
+
+<!-- Footer -->
+<footer class="guide-footer">
+  <div class="logo-mark">C</div>
+  <p>Cervantes &mdash; Scholarly Assessment System &mdash; La Mancha Design System</p>
+</footer>
+
+<!-- Scroll reveal -->
+<script>
+(function () {
+  var cards = document.querySelectorAll('.step-card');
+  if (!('IntersectionObserver' in window)) {
+    cards.forEach(function (c) { c.classList.add('visible'); });
+    return;
+  }
+  var observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  cards.forEach(function (c) { observer.observe(c); });
+})();
+</script>
+
+</body>
+</html>
