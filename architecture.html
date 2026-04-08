@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>System Architecture - Cervantes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+  <style>
+    /* ── La Mancha Design System ── */
+    :root {
+      --near-black: #1E1C18;
+      --parchment: #F4F1EA;
+      --terracotta: #C85A32;
+      --wheat-gold: #C4A245;
+      --mastery: #3B827E;
+      --critical: #9E3B3B;
+
+      --surface: #28261F;
+      --surface-raised: #322F27;
+      --border: #3D3A30;
+      --text-primary: #F4F1EA;
+      --text-secondary: #B8B3A6;
+      --text-muted: #7A7567;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--near-black);
+      color: var(--text-primary);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Layout ── */
+    .page-wrapper {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    /* ── Back Link ── */
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: var(--wheat-gold);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      margin-bottom: 2rem;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--terracotta); }
+    .back-link svg { width: 16px; height: 16px; }
+
+    /* ── Page Header ── */
+    .page-header {
+      margin-bottom: 3rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .page-header h1 {
+      font-size: 2.25rem;
+      font-weight: 800;
+      color: var(--parchment);
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+    }
+    .page-header .subtitle {
+      font-size: 1.05rem;
+      color: var(--text-secondary);
+      font-weight: 400;
+    }
+
+    /* ── Section ── */
+    section {
+      margin-bottom: 3.5rem;
+    }
+    section h2 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--wheat-gold);
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--border);
+      letter-spacing: -0.01em;
+    }
+    section h2 .section-num {
+      color: var(--terracotta);
+      font-weight: 800;
+      margin-right: 0.4rem;
+    }
+
+    /* ── Tables ── */
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    thead th {
+      background: var(--surface-raised);
+      color: var(--wheat-gold);
+      font-weight: 600;
+      text-align: left;
+      padding: 0.75rem 1rem;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+    tbody td {
+      padding: 0.7rem 1rem;
+      border-top: 1px solid var(--border);
+      vertical-align: top;
+    }
+    tbody tr:hover {
+      background: rgba(196, 162, 69, 0.04);
+    }
+    td:first-child {
+      color: var(--terracotta);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    td:nth-child(2) {
+      color: var(--parchment);
+      font-weight: 500;
+    }
+    td:nth-child(3), td:last-child {
+      color: var(--text-secondary);
+    }
+    .mono {
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 0.82rem;
+      color: var(--mastery);
+    }
+
+    /* ── Architecture Diagram ── */
+    .arch-diagram {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 2.5rem 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .arch-diagram::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--terracotta), var(--wheat-gold), var(--mastery));
+    }
+
+    .diagram-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .diagram-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .dbox {
+      border-radius: 8px;
+      padding: 0.85rem 1.25rem;
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-align: center;
+      min-width: 170px;
+      position: relative;
+      border: 1.5px solid;
+    }
+    .dbox .dbox-sub {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 400;
+      opacity: 0.7;
+      margin-top: 0.15rem;
+    }
+    .dbox-student {
+      background: rgba(200, 90, 50, 0.12);
+      border-color: var(--terracotta);
+      color: var(--terracotta);
+    }
+    .dbox-teacher {
+      background: rgba(196, 162, 69, 0.12);
+      border-color: var(--wheat-gold);
+      color: var(--wheat-gold);
+    }
+    .dbox-backend {
+      background: rgba(59, 130, 126, 0.12);
+      border-color: var(--mastery);
+      color: var(--mastery);
+      min-width: 200px;
+      padding: 1rem 1.5rem;
+    }
+    .dbox-db {
+      background: rgba(244, 241, 234, 0.06);
+      border-color: var(--text-secondary);
+      color: var(--text-secondary);
+      border-radius: 20px;
+    }
+    .dbox-ai {
+      background: rgba(158, 59, 59, 0.1);
+      border-color: var(--critical);
+      color: var(--critical);
+    }
+
+    .connector {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 1.3rem;
+      font-weight: 300;
+      letter-spacing: 0.1em;
+      min-width: 40px;
+    }
+    .connector-v {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      padding: 0.3rem 0;
+    }
+    .connector-v span {
+      font-size: 0.7rem;
+      letter-spacing: 0.05em;
+    }
+
+    .bracket-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+      position: relative;
+    }
+    .bracket-group::after {
+      content: '';
+      position: absolute;
+      right: -18px;
+      top: 15%;
+      height: 70%;
+      width: 12px;
+      border: 1.5px solid var(--text-muted);
+      border-left: none;
+      border-radius: 0 6px 6px 0;
+    }
+
+    .ai-group {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    /* ── Module Grid ── */
+    .module-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 0.65rem;
+    }
+    .module-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.65rem 0.85rem;
+      font-size: 0.82rem;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .module-card:hover {
+      border-color: var(--wheat-gold);
+      background: var(--surface-raised);
+    }
+    .module-card .mod-name {
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-weight: 600;
+      color: var(--mastery);
+      font-size: 0.82rem;
+    }
+    .module-card .mod-desc {
+      color: var(--text-secondary);
+      font-size: 0.75rem;
+      margin-top: 0.2rem;
+    }
+    .module-label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 600;
+      margin-bottom: 0.6rem;
+      margin-top: 1.25rem;
+    }
+    .module-label:first-child { margin-top: 0; }
+
+    /* ── Data Flow ── */
+    .flow-track {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      overflow-x: auto;
+      padding: 1rem 0;
+    }
+    .flow-step {
+      flex: 1;
+      min-width: 120px;
+      text-align: center;
+      position: relative;
+    }
+    .flow-step .step-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 0.6rem;
+      font-size: 0.75rem;
+      font-weight: 800;
+      border: 2px solid;
+    }
+    .flow-step .step-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--parchment);
+      margin-bottom: 0.2rem;
+    }
+    .flow-step .step-detail {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+    .flow-step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 22px;
+      right: -2px;
+      width: calc(100% - 50px);
+      height: 2px;
+      left: calc(50% + 25px);
+      background: linear-gradient(90deg, var(--wheat-gold), var(--terracotta));
+      opacity: 0.4;
+    }
+
+    .step-c1 .step-icon { background: rgba(200, 90, 50, 0.15); border-color: var(--terracotta); color: var(--terracotta); }
+    .step-c2 .step-icon { background: rgba(196, 162, 69, 0.15); border-color: var(--wheat-gold); color: var(--wheat-gold); }
+    .step-c3 .step-icon { background: rgba(59, 130, 126, 0.15); border-color: var(--mastery); color: var(--mastery); }
+    .step-c4 .step-icon { background: rgba(158, 59, 59, 0.12); border-color: var(--critical); color: var(--critical); }
+
+    /* ── Footer ── */
+    .page-footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .page-wrapper { padding: 1.25rem 1rem 3rem; }
+      .page-header h1 { font-size: 1.65rem; }
+      .diagram-row { flex-direction: column; gap: 0.5rem; }
+      .bracket-group::after { display: none; }
+      .connector { transform: rotate(90deg); min-width: auto; }
+      .ai-group { flex-direction: column; }
+      .dbox { min-width: 0; width: 100%; max-width: 260px; }
+      .module-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+      .flow-track { flex-direction: column; align-items: center; gap: 0.5rem; }
+      .flow-step:not(:last-child)::after { display: none; }
+      .flow-step { min-width: 0; width: 100%; max-width: 280px; }
+      table { font-size: 0.8rem; }
+      thead th, tbody td { padding: 0.5rem 0.65rem; }
+    }
+    @media (max-width: 480px) {
+      .page-header h1 { font-size: 1.35rem; }
+      section h2 { font-size: 1.1rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+
+    <!-- Navigation -->
+    <a href="index.html" class="back-link">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10 12 L6 8 L10 4"/>
+      </svg>
+      Back to Hub
+    </a>
+
+    <!-- Header -->
+    <header class="page-header">
+      <h1>System Architecture</h1>
+      <p class="subtitle">Cervantes &mdash; Visual Novel Assessment Platform</p>
+    </header>
+
+    <!-- 1. Tech Stack Overview -->
+    <section>
+      <h2><span class="section-num">1.</span> Tech Stack Overview</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Layer</th>
+              <th>Technology</th>
+              <th>Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Frontend (Student)</td>
+              <td>Next.js 16, React 19, Tailwind v4, Serwist PWA</td>
+              <td>Visual novel assessment experience</td>
+            </tr>
+            <tr>
+              <td>Frontend (Teacher)</td>
+              <td>Next.js 16, React 19, Tailwind v4, React Query</td>
+              <td>Analytics dashboard</td>
+            </tr>
+            <tr>
+              <td>Backend</td>
+              <td>FastAPI (Python 3.12), Uvicorn</td>
+              <td>REST API server</td>
+            </tr>
+            <tr>
+              <td>Database</td>
+              <td>Firestore (prod), PostgreSQL 16 (local dev)</td>
+              <td>Data persistence</td>
+            </tr>
+            <tr>
+              <td>AI &ndash; Curriculum</td>
+              <td>CurricuLLM-AU (OpenAI-compatible)</td>
+              <td>Rubric parsing, learning objective extraction</td>
+            </tr>
+            <tr>
+              <td>AI &ndash; Dialogue</td>
+              <td>Gemini 2.5 Flash (google-genai SDK)</td>
+              <td>Scene generation, Socratic dialogue, signal extraction</td>
+            </tr>
+            <tr>
+              <td>Auth</td>
+              <td>Firebase Auth</td>
+              <td>Email/password, Google, Microsoft OAuth</td>
+            </tr>
+            <tr>
+              <td>Deployment</td>
+              <td>Cloud Run (backend), Firebase Hosting (frontends)</td>
+              <td>Production hosting</td>
+            </tr>
+            <tr>
+              <td>Dev Tools</td>
+              <td>Docker Compose, Playwright, pytest</td>
+              <td>Local dev &amp; testing</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 2. Architecture Diagram -->
+    <section>
+      <h2><span class="section-num">2.</span> Architecture Diagram</h2>
+      <div class="arch-diagram">
+        <div class="diagram-row">
+
+          <!-- Frontend column -->
+          <div class="bracket-group">
+            <div class="dbox dbox-student">
+              Student PWA
+              <span class="dbox-sub">:3000</span>
+            </div>
+            <div class="dbox dbox-teacher">
+              Teacher Web
+              <span class="dbox-sub">:3001</span>
+            </div>
+          </div>
+
+          <div class="connector">&mdash;&mdash;&rarr;</div>
+
+          <!-- Backend -->
+          <div class="diagram-col">
+            <div class="dbox dbox-backend">
+              FastAPI Backend
+              <span class="dbox-sub">:8000 / :8080</span>
+            </div>
+            <div class="connector-v">&#8597;<br><span>AI calls</span></div>
+            <div class="ai-group">
+              <div class="dbox dbox-ai">
+                CurricuLLM
+                <span class="dbox-sub">Rubric parse</span>
+              </div>
+              <div class="dbox dbox-ai">
+                Gemini 2.5
+                <span class="dbox-sub">Dialogue &amp; signals</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="connector">&mdash;&mdash;&rarr;</div>
+
+          <!-- Database -->
+          <div class="dbox dbox-db">
+            Firestore
+            <span class="dbox-sub">Cloud / Emulator</span>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Backend Module Structure -->
+    <section>
+      <h2><span class="section-num">3.</span> Backend Module Structure</h2>
+      <p class="module-label">Feature Modules (13)</p>
+      <div class="module-grid">
+        <div class="module-card">
+          <div class="mod-name">auth</div>
+          <div class="mod-desc">Firebase token verification, role guard</div>
+        </div>
+        <div class="module-card">
+          <div class="mod-name">classes</div>
+          <div class="mod-desc">Class creation, roster management</div>
+        </div>
+        <div class="module-card">
+          <div class="mod-name">students</div>
+          <div class="mod-desc">Student profiles, enrollment</div>
+        </div>
+        <div class="module-card">
+          <div class="mod-name">arc</div>
+          <div class="mod-desc">Story arc definition, curriculum linking</div>
+        </div>
+        <div class="module-card">
+          <div class="mod-name">dialogue</div>
+          <div class="mod-desc">Gemini-powered Socratic conversation</div>
+        </div>
+        <div class="module-card">
+          <div class="mod-name">scenes</div>
+          <div class="mod-desc">Scene generation, sequencing</div>
+        </div>
+        <div class="module-card">
+          <div class="mod-name">character_pools</div>
+          <div class="mod-desc">NPC archetypes, personality traits</div>
+        </div>
+        <div class="module-card">
+          <div class="mod-name">character_mappings</div>
+          <div class="mod-desc">Student-to-character assignments</div>
+        </div>
+        <div class="module-card">
+          <div class="mod-name">signal_extraction</div>
+          <div class="mod-desc">LLM-based learning signal analysis</div>
+        </div>
+        <div class="module-card">
+          <div class="mod-name">reasoning_trace</div>
+          <div class="mod-desc">Transparency logs for AI decisions</div>
+        </div>
+        <div class="module-card">
+          <div class="mod-name">arc_endings</div>
+          <div class="mod-desc">Branching conclusions, mastery gates</div>
+        </div>
+        <div class="module-card">
+          <div class="mod-name">arc_journal</div>
+          <div class="mod-desc">Student reflection journal entries</div>
+        </div>
+      </div>
+      <p class="module-label">Core Utilities</p>
+      <div class="module-grid">
+        <div class="module-card">
+          <div class="mod-name">core/</div>
+          <div class="mod-desc">Config, Firestore client, shared middleware</div>
+        </div>
+        <div class="module-card">
+          <div class="mod-name">shared/</div>
+          <div class="mod-desc">Common schemas, response models</div>
+        </div>
+        <div class="module-card">
+          <div class="mod-name">prompts/</div>
+          <div class="mod-desc">LLM prompt templates for all AI features</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Firestore Collections -->
+    <section>
+      <h2><span class="section-num">4.</span> Firestore Collections</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Collection</th>
+              <th>Purpose</th>
+              <th>Key Fields</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="mono">users</td>
+              <td>Shared auth profile</td>
+              <td class="mono">uid, email, role, displayName</td>
+            </tr>
+            <tr>
+              <td class="mono">professors</td>
+              <td>Teacher-specific data</td>
+              <td class="mono">uid, department, institution</td>
+            </tr>
+            <tr>
+              <td class="mono">students</td>
+              <td>Student-specific data</td>
+              <td class="mono">uid, enrolledClasses, displayName</td>
+            </tr>
+            <tr>
+              <td class="mono">classes</td>
+              <td>Course definitions</td>
+              <td class="mono">classId, professorId, name, code</td>
+            </tr>
+            <tr>
+              <td class="mono">enrollments</td>
+              <td>Class membership junction</td>
+              <td class="mono">studentId, classId, enrolledAt</td>
+            </tr>
+            <tr>
+              <td class="mono">arcs</td>
+              <td>Story arcs per class</td>
+              <td class="mono">arcId, classId, title, objectives, rubric</td>
+            </tr>
+            <tr>
+              <td class="mono">scenes</td>
+              <td>Individual scenes in an arc</td>
+              <td class="mono">sceneId, arcId, order, type, content</td>
+            </tr>
+            <tr>
+              <td class="mono">character_pools</td>
+              <td>Available NPC characters</td>
+              <td class="mono">poolId, arcId, name, personality, role</td>
+            </tr>
+            <tr>
+              <td class="mono">student_scene_assignments</td>
+              <td>Per-student scene state</td>
+              <td class="mono">studentId, sceneId, status, responses</td>
+            </tr>
+            <tr>
+              <td class="mono">student_character_mappings</td>
+              <td>Student-NPC pairings</td>
+              <td class="mono">studentId, characterId, arcId</td>
+            </tr>
+            <tr>
+              <td class="mono">reasoning_traces</td>
+              <td>AI decision audit trail</td>
+              <td class="mono">traceId, sceneId, input, output, model</td>
+            </tr>
+            <tr>
+              <td class="mono">arc_journals</td>
+              <td>Student reflection entries</td>
+              <td class="mono">journalId, studentId, arcId, entries[]</td>
+            </tr>
+            <tr>
+              <td class="mono">arc_endings</td>
+              <td>Arc conclusion records</td>
+              <td class="mono">endingId, studentId, arcId, branch, score</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 5. Data Flow Diagram -->
+    <section>
+      <h2><span class="section-num">5.</span> Data Flow &mdash; Arc Lifecycle</h2>
+      <div class="arch-diagram">
+        <div class="flow-track">
+          <div class="flow-step step-c1">
+            <div class="step-icon">1</div>
+            <div class="step-label">Rubric Upload</div>
+            <div class="step-detail">Teacher uploads curriculum rubric (PDF/text)</div>
+          </div>
+          <div class="flow-step step-c2">
+            <div class="step-icon">2</div>
+            <div class="step-label">CurricuLLM Parse</div>
+            <div class="step-detail">Extract learning objectives &amp; criteria</div>
+          </div>
+          <div class="flow-step step-c3">
+            <div class="step-icon">3</div>
+            <div class="step-label">Gemini Plan</div>
+            <div class="step-detail">Generate arc structure, characters, branching</div>
+          </div>
+          <div class="flow-step step-c2">
+            <div class="step-icon">4</div>
+            <div class="step-label">Scene Generation</div>
+            <div class="step-detail">Create dialogue blocks, choices, prompts</div>
+          </div>
+          <div class="flow-step step-c1">
+            <div class="step-icon">5</div>
+            <div class="step-label">Student Dialogue</div>
+            <div class="step-detail">Socratic VN interaction with NPC characters</div>
+          </div>
+          <div class="flow-step step-c4">
+            <div class="step-icon">6</div>
+            <div class="step-label">Signal Extraction</div>
+            <div class="step-detail">Analyse responses for learning signals</div>
+          </div>
+          <div class="flow-step step-c3">
+            <div class="step-icon">7</div>
+            <div class="step-label">Teacher Analytics</div>
+            <div class="step-detail">Dashboard with mastery data &amp; reasoning traces</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="page-footer">
+      Cervantes &mdash; Cambridge EdTech Hackathon 2026
+    </footer>
+
+  </div>
+</body>
+</html>

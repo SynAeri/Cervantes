@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Local Dev Setup - Cervantes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+  <style>
+    /* ── La Mancha Design System ── */
+    :root {
+      --near-black: #1E1C18;
+      --parchment: #F4F1EA;
+      --terracotta: #C85A32;
+      --wheat-gold: #C4A245;
+      --mastery: #3B827E;
+      --critical: #9E3B3B;
+
+      --surface: #28261F;
+      --surface-raised: #322F27;
+      --border: #3D3A30;
+      --text-primary: #F4F1EA;
+      --text-secondary: #B8B3A6;
+      --text-muted: #7A7567;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--near-black);
+      color: var(--text-primary);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Layout ── */
+    .page-wrapper {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    /* ── Back Link ── */
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: var(--wheat-gold);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      margin-bottom: 2rem;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--terracotta); }
+    .back-link svg { width: 16px; height: 16px; }
+
+    /* ── Page Header ── */
+    .page-header {
+      margin-bottom: 3rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .page-header h1 {
+      font-size: 2.25rem;
+      font-weight: 800;
+      color: var(--parchment);
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+    }
+    .page-header .subtitle {
+      font-size: 1.05rem;
+      color: var(--text-secondary);
+      font-weight: 400;
+    }
+
+    /* ── Section ── */
+    section {
+      margin-bottom: 3.5rem;
+    }
+    section h2 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--wheat-gold);
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--border);
+      letter-spacing: -0.01em;
+    }
+    section h2 .section-num {
+      color: var(--terracotta);
+      font-weight: 800;
+      margin-right: 0.4rem;
+    }
+
+    /* ── Prose ── */
+    .prose {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      line-height: 1.75;
+      margin-bottom: 1.25rem;
+    }
+    .prose strong {
+      color: var(--parchment);
+      font-weight: 600;
+    }
+    .prose a {
+      color: var(--wheat-gold);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      transition: color 0.2s;
+    }
+    .prose a:hover { color: var(--terracotta); }
+
+    /* ── Prereq Grid ── */
+    .prereq-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    .prereq-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.85rem 1rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      transition: border-color 0.2s;
+    }
+    .prereq-card:hover {
+      border-color: var(--wheat-gold);
+    }
+    .prereq-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 0.7rem;
+      font-weight: 700;
+      border: 1.5px solid;
+    }
+    .prereq-icon.req { background: rgba(200, 90, 50, 0.12); border-color: var(--terracotta); color: var(--terracotta); }
+    .prereq-icon.opt { background: rgba(59, 130, 126, 0.12); border-color: var(--mastery); color: var(--mastery); }
+    .prereq-info .prereq-name {
+      font-weight: 600;
+      font-size: 0.88rem;
+      color: var(--parchment);
+    }
+    .prereq-info .prereq-detail {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 0.1rem;
+    }
+
+    /* ── Code Blocks ── */
+    .code-block {
+      background: #1a1814;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin: 1rem 0 1.5rem;
+    }
+    .code-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.55rem 1rem;
+      background: var(--surface-raised);
+      border-bottom: 1px solid var(--border);
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+    .code-header .lang-tag {
+      color: var(--wheat-gold);
+    }
+    .code-body {
+      padding: 1rem 1.25rem;
+      overflow-x: auto;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 0.82rem;
+      line-height: 1.65;
+      color: var(--text-secondary);
+    }
+    .code-body .cm { color: var(--text-muted); }       /* comment */
+    .code-body .kw { color: var(--terracotta); }        /* keyword / command */
+    .code-body .str { color: var(--mastery); }           /* string / value */
+    .code-body .var { color: var(--wheat-gold); }        /* variable / key */
+    .code-body .url { color: #8AACB8; }                 /* url */
+    .code-body .flag { color: #B89ACA; }                 /* flags */
+    .code-body .out { color: var(--text-muted); font-style: italic; } /* output */
+
+    /* ── Tree Structure ── */
+    .tree-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem 1.5rem;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 0.8rem;
+      line-height: 1.7;
+      color: var(--text-secondary);
+      overflow-x: auto;
+      margin: 1rem 0 1.5rem;
+    }
+    .tree-block .dir { color: var(--wheat-gold); font-weight: 600; }
+    .tree-block .file { color: var(--parchment); }
+    .tree-block .annot { color: var(--text-muted); font-style: italic; }
+
+    /* ── Step Indicators ── */
+    .step-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .step-num {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+      border: 2px solid;
+      margin-top: 0.15rem;
+    }
+    .step-num.s1 { background: rgba(200, 90, 50, 0.15); border-color: var(--terracotta); color: var(--terracotta); }
+    .step-num.s2 { background: rgba(196, 162, 69, 0.15); border-color: var(--wheat-gold); color: var(--wheat-gold); }
+    .step-num.s3 { background: rgba(59, 130, 126, 0.15); border-color: var(--mastery); color: var(--mastery); }
+    .step-num.s4 { background: rgba(158, 59, 59, 0.12); border-color: var(--critical); color: var(--critical); }
+    .step-content {
+      flex: 1;
+      min-width: 0;
+    }
+    .step-content h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--parchment);
+      margin-bottom: 0.4rem;
+    }
+    .step-content p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      line-height: 1.65;
+      margin-bottom: 0.5rem;
+    }
+    .step-content .note {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      background: rgba(196, 162, 69, 0.06);
+      border: 1px solid rgba(196, 162, 69, 0.15);
+      border-radius: 6px;
+      padding: 0.6rem 0.85rem;
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      margin-top: 0.75rem;
+    }
+    .step-content .note .note-label {
+      color: var(--wheat-gold);
+      font-weight: 700;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      flex-shrink: 0;
+    }
+
+    /* ── Tables ── */
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      margin: 1rem 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    thead th {
+      background: var(--surface-raised);
+      color: var(--wheat-gold);
+      font-weight: 600;
+      text-align: left;
+      padding: 0.75rem 1rem;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+    tbody td {
+      padding: 0.7rem 1rem;
+      border-top: 1px solid var(--border);
+      vertical-align: top;
+    }
+    tbody tr:hover {
+      background: rgba(196, 162, 69, 0.04);
+    }
+    td:first-child {
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 0.82rem;
+      color: var(--mastery);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    td .required {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 0.1rem 0.4rem;
+      border-radius: 3px;
+      vertical-align: middle;
+      margin-left: 0.25rem;
+    }
+    td .required.yes {
+      background: rgba(200, 90, 50, 0.15);
+      color: var(--terracotta);
+    }
+    td .required.no {
+      background: rgba(122, 117, 103, 0.15);
+      color: var(--text-muted);
+    }
+    td .where-tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.1rem 0.45rem;
+      border-radius: 3px;
+      background: rgba(59, 130, 126, 0.12);
+      color: var(--mastery);
+    }
+
+    /* ── Make Command Grid ── */
+    .make-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 0.65rem;
+      margin: 1rem 0;
+    }
+    .make-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.7rem 0.9rem;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .make-card:hover {
+      border-color: var(--wheat-gold);
+      background: var(--surface-raised);
+    }
+    .make-card .make-cmd {
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--mastery);
+    }
+    .make-card .make-desc {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-top: 0.15rem;
+    }
+    .make-label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 600;
+      margin-bottom: 0.6rem;
+      margin-top: 1.25rem;
+    }
+    .make-label:first-child { margin-top: 0; }
+
+    /* ── Issue Cards ── */
+    .issue-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+    .issue-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.15rem;
+      border-left: 3px solid var(--critical);
+      transition: border-color 0.2s;
+    }
+    .issue-card:hover {
+      border-color: var(--wheat-gold);
+      border-left-color: var(--wheat-gold);
+    }
+    .issue-card .issue-title {
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--parchment);
+      margin-bottom: 0.35rem;
+    }
+    .issue-card .issue-fix {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+    .issue-card .issue-fix code {
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 0.78rem;
+      background: rgba(59, 130, 126, 0.1);
+      color: var(--mastery);
+      padding: 0.1rem 0.4rem;
+      border-radius: 3px;
+    }
+
+    /* ── Deploy Section ── */
+    .deploy-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .deploy-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .deploy-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+    }
+    .deploy-card.deploy-backend::before {
+      background: linear-gradient(90deg, var(--mastery), var(--wheat-gold));
+    }
+    .deploy-card.deploy-frontend::before {
+      background: linear-gradient(90deg, var(--terracotta), var(--wheat-gold));
+    }
+    .deploy-card h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--parchment);
+      margin-bottom: 0.5rem;
+    }
+    .deploy-card .deploy-target {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-bottom: 0.6rem;
+    }
+    .deploy-card .deploy-detail {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+    .deploy-card .deploy-detail code {
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 0.78rem;
+      background: rgba(59, 130, 126, 0.1);
+      color: var(--mastery);
+      padding: 0.1rem 0.4rem;
+      border-radius: 3px;
+    }
+
+    /* ── Footer ── */
+    .page-footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .page-wrapper { padding: 1.25rem 1rem 3rem; }
+      .page-header h1 { font-size: 1.65rem; }
+      .prereq-grid { grid-template-columns: 1fr; }
+      .make-grid { grid-template-columns: 1fr; }
+      .deploy-grid { grid-template-columns: 1fr; }
+      .step-row { flex-direction: column; gap: 0.6rem; }
+      .step-num { width: 34px; height: 34px; font-size: 0.78rem; }
+      table { font-size: 0.8rem; }
+      thead th, tbody td { padding: 0.5rem 0.65rem; }
+      .code-body { font-size: 0.75rem; padding: 0.75rem 1rem; }
+      .tree-block { font-size: 0.72rem; padding: 1rem; }
+    }
+    @media (max-width: 480px) {
+      .page-header h1 { font-size: 1.35rem; }
+      section h2 { font-size: 1.1rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+
+    <!-- Navigation -->
+    <a href="index.html" class="back-link">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10 12 L6 8 L10 4"/>
+      </svg>
+      Back to Hub
+    </a>
+
+    <!-- Header -->
+    <header class="page-header">
+      <h1>Local Dev Setup</h1>
+      <p class="subtitle">Everything you need to run Cervantes locally &mdash; backend, both dashboards, and tests</p>
+    </header>
+
+    <!-- 1. Prerequisites -->
+    <section>
+      <h2><span class="section-num">1.</span> Prerequisites</h2>
+      <div class="prereq-grid">
+        <div class="prereq-card">
+          <div class="prereq-icon req">REQ</div>
+          <div class="prereq-info">
+            <div class="prereq-name">Docker &amp; Docker Compose</div>
+            <div class="prereq-detail">Runs PostgreSQL + FastAPI backend</div>
+          </div>
+        </div>
+        <div class="prereq-card">
+          <div class="prereq-icon req">REQ</div>
+          <div class="prereq-info">
+            <div class="prereq-name">Node.js 20+</div>
+            <div class="prereq-detail">Required for both Next.js frontends</div>
+          </div>
+        </div>
+        <div class="prereq-card">
+          <div class="prereq-icon opt">OPT</div>
+          <div class="prereq-info">
+            <div class="prereq-name">Python 3.12</div>
+            <div class="prereq-detail">Only if running backend outside Docker</div>
+          </div>
+        </div>
+        <div class="prereq-card">
+          <div class="prereq-icon req">REQ</div>
+          <div class="prereq-info">
+            <div class="prereq-name">Firebase Credentials</div>
+            <div class="prereq-detail">Service account JSON for cervantes-caebc</div>
+          </div>
+        </div>
+        <div class="prereq-card">
+          <div class="prereq-icon req">REQ</div>
+          <div class="prereq-info">
+            <div class="prereq-name">GEMINI_API_KEY</div>
+            <div class="prereq-detail">Google Gemini 2.5 Flash API key</div>
+          </div>
+        </div>
+        <div class="prereq-card">
+          <div class="prereq-icon req">REQ</div>
+          <div class="prereq-info">
+            <div class="prereq-name">CURRICULLM_API_KEY</div>
+            <div class="prereq-detail">CurricuLLM curriculum engine key</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Project Structure -->
+    <section>
+      <h2><span class="section-num">2.</span> Project Structure</h2>
+      <div class="tree-block"><span class="dir">Cervantes/</span>
+&#9500;&#9472;&#9472; <span class="dir">app/</span>
+&#9474;   &#9500;&#9472;&#9472; <span class="dir">backend/</span>          <span class="annot"># FastAPI backend</span>
+&#9474;   &#9474;   &#9500;&#9472;&#9472; <span class="dir">core/</span>       <span class="annot"># Auth, config, LLM clients, Firebase</span>
+&#9474;   &#9474;   &#9500;&#9472;&#9472; <span class="dir">features/</span>   <span class="annot"># 13 feature modules (routes, services, models)</span>
+&#9474;   &#9474;   &#9492;&#9472;&#9472; <span class="dir">sql/</span>        <span class="annot"># init.sql for local PostgreSQL</span>
+&#9474;   &#9492;&#9472;&#9472; <span class="dir">prompts/</span>           <span class="annot"># LLM prompt templates</span>
+&#9474;       &#9500;&#9472;&#9472; <span class="dir">system/</span>     <span class="annot"># System prompts</span>
+&#9474;       &#9500;&#9472;&#9472; <span class="dir">curricullm/</span> <span class="annot"># CurricuLLM-specific prompts</span>
+&#9474;       &#9500;&#9472;&#9472; <span class="dir">annotations/</span><span class="annot"># VN formatting annotations</span>
+&#9474;       &#9492;&#9472;&#9472; <span class="dir">examples/</span>   <span class="annot"># Few-shot examples</span>
+&#9500;&#9472;&#9472; <span class="dir">student-dashboard/</span>  <span class="annot"># Next.js 16 PWA (port 3000)</span>
+&#9500;&#9472;&#9472; <span class="dir">teacher-dashboard/</span>  <span class="annot"># Next.js 16 Web (port 3001)</span>
+&#9500;&#9472;&#9472; <span class="dir">dev/</span>                <span class="annot"># Docs, slides, research</span>
+&#9500;&#9472;&#9472; <span class="dir">scripts/</span>            <span class="annot"># Deployment scripts</span>
+&#9500;&#9472;&#9472; <span class="dir">assets/</span>             <span class="annot"># Brand assets</span>
+&#9500;&#9472;&#9472; <span class="file">docker-compose.yml</span>  <span class="annot"># Local dev orchestration</span>
+&#9500;&#9472;&#9472; <span class="file">Makefile</span>            <span class="annot"># Test runner commands</span>
+&#9492;&#9472;&#9472; <span class="file">firestore.indexes.json</span></div>
+    </section>
+
+    <!-- 3. Clone & Environment Setup -->
+    <section>
+      <h2><span class="section-num">3.</span> Getting Started</h2>
+
+      <div class="step-row">
+        <div class="step-num s1">1</div>
+        <div class="step-content">
+          <h3>Clone &amp; Environment Setup</h3>
+          <p>Clone the repository and create your environment file with the required secrets.</p>
+          <div class="code-block">
+            <div class="code-header"><span class="lang-tag">bash</span> Clone</div>
+            <div class="code-body"><span class="kw">git clone</span> <span class="url">https://github.com/SynAeri/Cervantes.git</span>
+<span class="kw">cd</span> Cervantes</div>
+          </div>
+          <p>Create <strong>.env</strong> in project root (or <strong>app/backend/.env</strong>):</p>
+          <div class="code-block">
+            <div class="code-header"><span class="lang-tag">env</span> .env</div>
+            <div class="code-body"><span class="var">DATABASE_URL</span>=<span class="str">postgresql://postgres:postgres@db:5432/cervantes</span>
+<span class="var">GEMINI_API_KEY</span>=<span class="str">your_gemini_api_key</span>
+<span class="var">CURRICULLM_API_KEY</span>=<span class="str">your_curricullm_api_key</span>
+<span class="var">JWT_SECRET</span>=<span class="str">your_jwt_secret</span>
+<span class="var">JWT_ALGORITHM</span>=<span class="str">HS256</span>
+<span class="var">JWT_EXPIRATION_HOURS</span>=<span class="str">168</span>
+<span class="var">GOOGLE_APPLICATION_CREDENTIALS</span>=<span class="str">app/backend/cervantes-service-account.json</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-row">
+        <div class="step-num s2">2</div>
+        <div class="step-content">
+          <h3>Start Backend</h3>
+          <p>Docker Compose runs <strong>PostgreSQL 16</strong> (port 5432) and the <strong>FastAPI</strong> server (port 8000).</p>
+          <div class="code-block">
+            <div class="code-header"><span class="lang-tag">bash</span> Backend</div>
+            <div class="code-body"><span class="kw">docker compose up</span> <span class="flag">--build</span>
+
+<span class="cm"># Backend at http://localhost:8000</span>
+<span class="cm"># Health check:</span>
+<span class="kw">curl</span> <span class="url">http://localhost:8000/health</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-row">
+        <div class="step-num s3">3</div>
+        <div class="step-content">
+          <h3>Start Student Dashboard</h3>
+          <p>The student-facing PWA runs on port 3000.</p>
+          <div class="code-block">
+            <div class="code-header"><span class="lang-tag">bash</span> Student Dashboard</div>
+            <div class="code-body"><span class="kw">cd</span> student-dashboard
+<span class="kw">npm install</span>
+<span class="kw">npm run dev</span>
+<span class="out"># &rarr; http://localhost:3000</span></div>
+          </div>
+          <div class="note">
+            <span class="note-label">Note</span>
+            Uses webpack (not Turbopack) for stability with Next.js 16.
+          </div>
+        </div>
+      </div>
+
+      <div class="step-row">
+        <div class="step-num s4">4</div>
+        <div class="step-content">
+          <h3>Start Teacher Dashboard</h3>
+          <p>The teacher analytics dashboard runs on port 3001.</p>
+          <div class="code-block">
+            <div class="code-header"><span class="lang-tag">bash</span> Teacher Dashboard</div>
+            <div class="code-body"><span class="kw">cd</span> teacher-dashboard
+<span class="kw">npm install</span>
+<span class="kw">npm run dev</span>
+<span class="out"># &rarr; http://localhost:3001</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Environment Variables Reference -->
+    <section>
+      <h2><span class="section-num">4.</span> Environment Variables Reference</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Variable</th>
+              <th>Required</th>
+              <th>Where</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>GEMINI_API_KEY</td>
+              <td><span class="required yes">Yes</span></td>
+              <td><span class="where-tag">Backend</span></td>
+              <td>Google Gemini 2.5 Flash API key</td>
+            </tr>
+            <tr>
+              <td>CURRICULLM_API_KEY</td>
+              <td><span class="required yes">Yes</span></td>
+              <td><span class="where-tag">Backend</span></td>
+              <td>CurricuLLM curriculum engine key</td>
+            </tr>
+            <tr>
+              <td>DATABASE_URL</td>
+              <td><span class="required yes">Yes</span></td>
+              <td><span class="where-tag">Backend</span></td>
+              <td>PostgreSQL connection string</td>
+            </tr>
+            <tr>
+              <td>JWT_SECRET</td>
+              <td><span class="required yes">Yes</span></td>
+              <td><span class="where-tag">Backend</span></td>
+              <td>JWT signing secret</td>
+            </tr>
+            <tr>
+              <td>GOOGLE_APPLICATION_CREDENTIALS</td>
+              <td><span class="required yes">Yes</span></td>
+              <td><span class="where-tag">Backend</span></td>
+              <td>Path to Firebase service account JSON</td>
+            </tr>
+            <tr>
+              <td>NEXT_PUBLIC_API_URL</td>
+              <td><span class="required no">No</span></td>
+              <td><span class="where-tag">Frontends</span></td>
+              <td>Backend URL (default: http://localhost:8080)</td>
+            </tr>
+            <tr>
+              <td>NEXT_PUBLIC_E2E_TEST</td>
+              <td><span class="required no">No</span></td>
+              <td><span class="where-tag">Frontends</span></td>
+              <td>Enable E2E test mode (bypasses Firebase auth)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 5. Testing -->
+    <section>
+      <h2><span class="section-num">5.</span> Testing</h2>
+      <p class="prose">All test commands are defined in the <strong>Makefile</strong>. Install test dependencies first with <code style="font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:0.85rem;background:rgba(59,130,126,0.1);color:var(--mastery);padding:0.1rem 0.4rem;border-radius:3px;">make install-test-deps</code>.</p>
+
+      <div class="code-block">
+        <div class="code-header"><span class="lang-tag">bash</span> Run All Tests</div>
+        <div class="code-body"><span class="kw">make</span> test-all</div>
+      </div>
+
+      <p class="make-label">Backend Tests</p>
+      <div class="make-grid">
+        <div class="make-card">
+          <div class="make-cmd">make test-unit</div>
+          <div class="make-desc">Unit tests</div>
+        </div>
+        <div class="make-card">
+          <div class="make-cmd">make test-integration</div>
+          <div class="make-desc">Integration tests (mocked Firebase)</div>
+        </div>
+        <div class="make-card">
+          <div class="make-cmd">make test-dynamic</div>
+          <div class="make-desc">LLM output schema validation</div>
+        </div>
+        <div class="make-card">
+          <div class="make-cmd">make test-eval</div>
+          <div class="make-desc">Pedagogical quality metrics</div>
+        </div>
+        <div class="make-card">
+          <div class="make-cmd">make test-coverage</div>
+          <div class="make-desc">Coverage report &rarr; htmlcov/</div>
+        </div>
+      </div>
+
+      <p class="make-label">E2E Tests (Playwright)</p>
+      <div class="make-grid">
+        <div class="make-card">
+          <div class="make-cmd">make test-e2e-student</div>
+          <div class="make-desc">Student dashboard E2E</div>
+        </div>
+        <div class="make-card">
+          <div class="make-cmd">make test-e2e-teacher</div>
+          <div class="make-desc">Teacher dashboard E2E</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. Deployment -->
+    <section>
+      <h2><span class="section-num">6.</span> Deployment</h2>
+      <div class="deploy-grid">
+        <div class="deploy-card deploy-backend">
+          <h4>Backend &rarr; GCP Cloud Run</h4>
+          <div class="deploy-target">Region: australia-southeast1 &bull; Project: cervantes-caebc &bull; Service: cervantes-backend</div>
+          <div class="code-block" style="margin-bottom:0.5rem">
+            <div class="code-header"><span class="lang-tag">bash</span> Deploy</div>
+            <div class="code-body"><span class="kw">./scripts/deploy.sh</span> <span class="flag">--env-file</span> <span class="str">app/backend/.env</span></div>
+          </div>
+        </div>
+        <div class="deploy-card deploy-frontend">
+          <h4>Frontends &rarr; Firebase App Hosting</h4>
+          <div class="deploy-target">Auto-deploy on push to main</div>
+          <div class="deploy-detail">
+            Configured in <code>student-dashboard/apphosting.yaml</code> and <code>teacher-dashboard/apphosting.yaml</code>. No manual deploy step required &mdash; pushes to the main branch trigger automatic builds and deployment.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. Common Issues -->
+    <section>
+      <h2><span class="section-num">7.</span> Common Issues</h2>
+      <div class="issue-list">
+        <div class="issue-card">
+          <div class="issue-title">Pydantic Settings rejects extra env vars</div>
+          <div class="issue-fix">Remove extra variables from <code>.env</code> or add <code>model_config = SettingsConfigDict(extra="ignore")</code> to your settings class.</div>
+        </div>
+        <div class="issue-card">
+          <div class="issue-title">Missing PyPDF2 / python-docx</div>
+          <div class="issue-fix">These are optional processing dependencies. Install with <code>pip install PyPDF2 python-docx</code>.</div>
+        </div>
+        <div class="issue-card">
+          <div class="issue-title">GOOGLE_APPLICATION_CREDENTIALS path not found</div>
+          <div class="issue-fix">The path must be absolute or relative to the working directory of the running process. Inside Docker, the working directory is <code>/app</code>.</div>
+        </div>
+        <div class="issue-card">
+          <div class="issue-title">Port conflicts between local and Cloud Run defaults</div>
+          <div class="issue-fix">Backend uses port <code>8000</code> (Docker) or <code>8080</code> (Cloud Run). Frontend defaults expect 8080 &mdash; set <code>NEXT_PUBLIC_API_URL=http://localhost:8000</code> for local dev.</div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="page-footer">
+      Cervantes &mdash; Cambridge EdTech Hackathon 2026
+    </footer>
+
+  </div>
+</body>
+</html>
