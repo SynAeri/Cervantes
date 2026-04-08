@@ -90,7 +90,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Public paths that don't require authentication
     const publicPaths = ['/login', '/'];
-    const isPublicPath = publicPaths.includes(pathname) || pathname.match(/^\/[a-f0-9-]{36}$/); // Match /{arcId} pattern
+    const isPublicPath = publicPaths.includes(pathname)
+      || pathname.match(/^\/[a-f0-9-]{36}$/)  // Match /{arcId} pattern
+      || pathname.startsWith('/scene/')         // Scene player (validated by arc access check)
+      || pathname.startsWith('/arc-ending/')    // Arc ending display
+      || pathname === '/journal';               // Journal viewer
 
     if (!isAuthenticated && !isPublicPath) {
       router.replace('/login');
