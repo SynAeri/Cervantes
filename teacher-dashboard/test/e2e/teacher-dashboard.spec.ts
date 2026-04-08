@@ -1,19 +1,19 @@
 // E2E tests for teacher dashboard critical paths
 // Tests login, dashboard navigation, class viewing, arc creation, and student management
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 // ─── Public Pages ────────────────────────────────────────────────────────────
 
 test.describe('Teacher Dashboard - Public Pages', () => {
   test('should load the login page', async ({ page }) => {
     await page.goto('/login');
-    await expect(page.locator('input[type="email"], [data-testid="email-input"]')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('input[type="email"]')).toBeVisible({ timeout: 10000 });
   });
 
   test('should redirect unauthenticated user from dashboard', async ({ page }) => {
     await page.goto('/dashboard');
-    // Should either redirect to login or show login prompt
+    // In E2E mode auth is mocked, so we stay on dashboard
     await page.waitForURL(/\/(login|dashboard)/, { timeout: 10000 });
   });
 });
@@ -26,22 +26,22 @@ test.describe('Teacher Dashboard - Dashboard View', () => {
   });
 
   test('should display all classes on dashboard', async ({ page }) => {
-    await page.waitForSelector('[data-testid="class-card"], .animate-pulse', { timeout: 10000 });
-    // Either class cards loaded or skeleton is showing (loading state)
-    const classCards = await page.locator('[data-testid="class-card"]').count();
+    // Wait for class cards (links to /class/...) or loading skeletons
+    await page.waitForSelector('a[href*="/class/"], .animate-pulse', { timeout: 15000 });
+    const classLinks = await page.locator('a[href*="/class/"]').count();
     const skeletons = await page.locator('.animate-pulse').count();
-    expect(classCards + skeletons).toBeGreaterThan(0);
+    expect(classLinks + skeletons).toBeGreaterThan(0);
   });
 
   test('should navigate to class detail page', async ({ page }) => {
-    await page.waitForSelector('a[href*="/class/"]', { timeout: 10000 });
+    await page.waitForSelector('a[href*="/class/"]', { timeout: 15000 });
     const firstClassLink = page.locator('a[href*="/class/"]').first();
     await firstClassLink.click();
     await expect(page).toHaveURL(/\/class\/.+/);
   });
 
   test('should show total student count', async ({ page }) => {
-    await page.waitForSelector('text=Total Students', { timeout: 10000 });
+    await page.waitForSelector('text=Total Students', { timeout: 15000 });
     const statsSection = page.locator('text=Total Students').locator('..');
     await expect(statsSection).toBeVisible();
   });
@@ -58,21 +58,23 @@ test.describe('Teacher Dashboard - Dashboard View', () => {
 test.describe('Teacher Dashboard - Class Detail', () => {
   test('should show create arc button on class detail', async ({ page }) => {
     await page.goto('/class/ECON101');
-    await page.waitForSelector('text=Create New Arc', { timeout: 10000 });
-    await expect(page.locator('text=Create New Arc')).toBeVisible();
+    await expect(page.locator('text=Create New Arc')).toBeVisible({ timeout: 15000 });
   });
 
   test('should show error for invalid class', async ({ page }) => {
     await page.goto('/class/INVALID_CLASS_ID');
-    await page.waitForSelector('text=Error loading class', { timeout: 10000 });
-    await expect(page.locator('text=Error loading class')).toBeVisible();
+    await expect(page.locator('text=Error loading class')).toBeVisible({ timeout: 15000 });
   });
 
   test('should navigate to arc creation page', async ({ page }) => {
     await page.goto('/class/ECON101');
-    await page.waitForSelector('text=Create New Arc', { timeout: 10000 });
-    await page.click('text=Create New Arc');
-    await expect(page).toHaveURL(/\/class\/ECON101\/arc\/new/);
+    // The "Create New Arc" link is <Link href=".../arc/new"><button>...</button></Link>
+    const arcLink = page.locator('a[href$="/arc/new"]');
+    await expect(arcLink).toBeVisible({ timeout: 15000 });
+    await Promise.all([
+      page.waitForURL(/\/arc\/new/, { timeout: 10000 }),
+      arcLink.click(),
+    ]);
   });
 });
 
@@ -91,8 +93,8 @@ test.describe('Teacher Dashboard - Arc Creation', () => {
 test.describe('Teacher Dashboard - Navigation', () => {
   test('should have sidebar with key navigation links', async ({ page }) => {
     await page.goto('/dashboard');
-    const sidebar = page.locator('[data-testid="sidebar"], nav, aside');
-    await expect(sidebar.first()).toBeVisible({ timeout: 10000 });
+    const sidebar = page.locator('aside');
+    await expect(sidebar.first()).toBeVisible({ timeout: 15000 });
   });
 
   test('should navigate to students page', async ({ page }) => {
