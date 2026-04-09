@@ -7,7 +7,7 @@ const TEACHER_BASE_URL =
 
 test.describe('Hosted Teacher Validation', () => {
   test('can register and reach the arc creation workflow', async ({ page }) => {
-    const email = `codex.${Date.now()}@example.com`;
+    const email = `codex.${Date.now()}.${Math.random().toString(36).slice(2, 8)}@example.com`;
     const password = 'CodexTest123!';
 
     await page.goto(`${TEACHER_BASE_URL}/login`);
@@ -27,7 +27,7 @@ test.describe('Hosted Teacher Validation', () => {
   test('uploads economics goals and starts generation', async ({ page }) => {
     test.setTimeout(120_000);
 
-    const email = `codex.${Date.now()}@example.com`;
+    const email = `codex.${Date.now()}.${Math.random().toString(36).slice(2, 8)}@example.com`;
     const password = 'CodexTest123!';
     const filePath = path.resolve(__dirname, 'fixtures/economics-goals.txt');
 

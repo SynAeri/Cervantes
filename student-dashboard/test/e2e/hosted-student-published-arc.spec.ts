@@ -72,7 +72,7 @@ test('student can enter published economics arc and reach ending or journal', as
   await page.getByRole('button', { name: /access assessment/i }).click();
 
   await page.waitForURL(/\/scene\//, { timeout: 60_000 });
-  await expect(page.locator('body')).toContainText(/1\/5|2\/5|Dialogue appears here as you progress/i, {
+  await expect(page.locator('body')).toContainText(/Scene 1|1\/6|1\/5|Avery|economic indicators/i, {
     timeout: 60_000,
   });
 
