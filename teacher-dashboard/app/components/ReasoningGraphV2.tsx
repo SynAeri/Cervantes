@@ -17,6 +17,7 @@ import {
   ConnectionMode,
   Panel,
   MarkerType,
+  Position,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import type { ReasoningTrace, Scene, RubricDimension } from '../lib/types';
@@ -42,7 +43,7 @@ interface ArcEnding {
   created_at: string;
 }
 
-interface SceneNodeData {
+interface SceneNodeData extends Record<string, unknown> {
   label: string;
   status?: 'mastery' | 'revised_with_scaffolding' | 'critical_gap';
   trace?: ReasoningTrace;
@@ -51,12 +52,12 @@ interface SceneNodeData {
   type: 'scene';
 }
 
-interface ConceptNodeData {
+interface ConceptNodeData extends Record<string, unknown> {
   label: string;
   type: 'concept';
 }
 
-interface EndingNodeData {
+interface EndingNodeData extends Record<string, unknown> {
   label: string;
   endingType: 'good_end' | 'bad_end' | 'iffy_end';
   performanceLevel: string;
@@ -334,8 +335,8 @@ function buildGraphLayout(
         type: 'ending',
       } as EndingNodeData,
       draggable: true,
-      sourcePosition: 'right' as const,
-      targetPosition: 'left' as const,
+      sourcePosition: Position.Right,
+      targetPosition: Position.Left,
     });
   }
 
@@ -366,8 +367,8 @@ function buildGraphLayout(
         type: 'scene',
       } as SceneNodeData,
       draggable: true,
-      sourcePosition: 'right' as const,
-      targetPosition: 'left' as const,
+      sourcePosition: Position.Right,
+      targetPosition: Position.Left,
     });
 
     // Connect to ending node if it exists
@@ -455,8 +456,8 @@ function buildGraphLayout(
             type: 'concept',
           } as ConceptNodeData,
           draggable: true,
-          sourcePosition: 'right' as const,
-          targetPosition: 'left' as const,
+          sourcePosition: Position.Right,
+          targetPosition: Position.Left,
         });
 
         edges.push({

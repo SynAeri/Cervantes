@@ -7,7 +7,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useReasoningTraces } from '../hooks/useReasoningTraces';
 import { ReasoningGraph } from './ReasoningGraph';
 import { api } from '../lib/api';
-import type { ReasoningTrace, ConversationTurn, ArcEnding } from '../lib/types';
+import type { ReasoningTrace, ConversationTurn, ArcEnding, RubricDimension } from '../lib/types';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -72,7 +72,7 @@ function formatRelativeTime(dateStr?: string): string {
 function generateMockRubricData(
   status: 'mastery' | 'revised_with_scaffolding' | 'critical_gap',
   conversationLength: number
-): Record<string, { performance: string; evidence: string; reasoning: string }> {
+): Record<string, RubricDimension> {
   const rubricDimensions = [
     'Understanding of core concepts',
     'Application of knowledge',
@@ -80,7 +80,7 @@ function generateMockRubricData(
     'Communication clarity'
   ];
 
-  const mockData: Record<string, { performance: string; evidence: string; reasoning: string }> = {};
+  const mockData: Record<string, RubricDimension> = {};
 
   rubricDimensions.forEach((dimension, index) => {
     let performance: 'strong' | 'weak' | 'adequate';
@@ -309,7 +309,7 @@ function ConversationPanel({
             </p>
           </div>
           <div className="space-y-3">
-            {Object.entries(trace.rubric_alignment).map(([dimension, data]) => (
+            {Object.entries(trace.rubric_alignment ?? {}).map(([dimension, data]) => (
               <div key={dimension} className="border border-warm-grey rounded-lg p-3 bg-parchment/30">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-[12px] font-bold text-primary">{dimension}</span>
