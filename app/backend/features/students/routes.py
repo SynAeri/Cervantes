@@ -252,7 +252,12 @@ async def get_student_reasoning_traces(student_id: str, current_user: dict = Dep
         traces = []
         async for doc in traces_docs:
             if doc.exists:
-                traces.append(doc.to_dict())
+                data = doc.to_dict()
+                # Serialize Firestore timestamps to ISO strings
+                created_at = data.get("created_at")
+                if hasattr(created_at, "isoformat"):
+                    data["created_at"] = created_at.isoformat()
+                traces.append(data)
 
         return traces
 

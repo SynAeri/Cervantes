@@ -74,7 +74,14 @@ async def get_all_traces_for_student(
 
         traces = await traces_query.get()
 
-        return [trace.to_dict() for trace in traces]
+        result = []
+        for trace in traces:
+            data = trace.to_dict()
+            created_at = data.get("created_at")
+            if hasattr(created_at, "isoformat"):
+                data["created_at"] = created_at.isoformat()
+            result.append(data)
+        return result
 
     except Exception as e:
         logger.error(f"Failed to get reasoning traces for student {student_id}: {str(e)}")

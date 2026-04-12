@@ -17,8 +17,8 @@ function JournalContent() {
   const [error, setError] = useState<string | null>(null);
   const [showGraph, setShowGraph] = useState(false);
 
-  const studentId = searchParams.get('studentId') || localStorage.getItem('currentStudentId') || '';
-  const arcId = searchParams.get('arcId') || localStorage.getItem('currentArcId') || '';
+  const studentId = searchParams.get('studentId') || (typeof window !== 'undefined' ? localStorage.getItem('currentStudentId') : '') || '';
+  const arcId = searchParams.get('arcId') || (typeof window !== 'undefined' ? localStorage.getItem('currentArcId') : '') || '';
 
   useEffect(() => {
     const fetchJournal = async () => {

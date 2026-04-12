@@ -110,7 +110,8 @@ function buildGraph(
     // Use scene_order from Firestore schema, fallback to extracting from scene_id (e.g., "scene1" -> 1)
     const sceneNumber = (scene as any)?.scene_order ??
                        scene?.scene_number ??
-                       (trace.scene_id ? parseInt(trace.scene_id.replace(/\D/g, '')) : null) ??
+                       (trace as any)?.scene_order ??
+                       (trace.scene_id?.match(/^scene(\d+)$/) ? parseInt(trace.scene_id.replace('scene', '')) : null) ??
                        idx + 1;
     const arcNumber = arcGroups.get(trace.arc_id || 'unknown') || 1;
 

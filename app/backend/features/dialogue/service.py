@@ -407,6 +407,8 @@ Example: "character_dialogue": "[character:name] *emotion* Text\\n[character:nam
         "trace_id": trace_id,
         "student_id": student_id,
         "scene_id": scene_id,
+        "arc_id": arc_id,
+        "scene_order": scene_order,
         "conversation_history": [turn.model_dump() for turn in conversation_history],
         "created_at": datetime.utcnow().isoformat(),
     }
