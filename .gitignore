@@ -91,3 +91,4 @@ screenshots/
 
 # stray screenshots
 /*.png
+deploy-backend.sh

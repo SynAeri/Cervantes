@@ -4,7 +4,7 @@
 
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Link from 'next/link';
 import { api } from '../lib/api';
 import { useAuth } from '../../lib/auth-context';
@@ -48,12 +48,21 @@ export function ArcStatusBox({
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingStage, setProcessingStage] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
+  const [hasUploaded, setHasUploaded] = useState(false);
+
+  useEffect(() => {
+    const uploaded = localStorage.getItem(`arc_uploaded_${classId}`);
+    setHasUploaded(!!uploaded);
+  }, [classId]);
+
+  // treat arc as present only if the professor has gone through the upload flow
+  const effectiveArc = hasUploaded ? currentArc : null;
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
-    if (currentArc) return; // Only allow drag when no arc exists
+    if (effectiveArc) return; // Only allow drag when no arc exists
     e.preventDefault();
     setIsDragging(true);
-  }, [currentArc]);
+  }, [effectiveArc]);
 
   const handleDragLeave = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -64,7 +73,7 @@ export function ArcStatusBox({
     e.preventDefault();
     setIsDragging(false);
 
-    if (currentArc) return; // Only allow drop when no arc exists
+    if (effectiveArc) return; // Only allow drop when no arc exists
 
     const files = Array.from(e.dataTransfer.files).filter(file =>
       file.type === 'application/pdf' ||
@@ -75,7 +84,7 @@ export function ArcStatusBox({
     if (files.length === 0) return;
 
     await processFile(files[0]);
-  }, [currentArc, classId]);
+  }, [effectiveArc, classId]);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -122,6 +131,8 @@ export function ArcStatusBox({
       }
 
       const arc = await api.arc.getById(arcId);
+      localStorage.setItem(`arc_uploaded_${classId}`, 'true');
+      setHasUploaded(true);
       setIsProcessing(false);
       onArcGenerated(arc);
     } catch (error: any) {
@@ -183,7 +194,7 @@ export function ArcStatusBox({
     );
   }
 
-  if (currentArc) {
+  if (effectiveArc) {
     return (
       <div className="bg-warm-white p-8 rounded-xl border border-warm-grey flex flex-col h-full">
         <div className="flex items-center justify-between mb-8">
@@ -195,27 +206,27 @@ export function ArcStatusBox({
             <div className="space-y-4 flex-1 min-w-0">
               <div>
                 <p className="text-[11px] text-tertiary font-bold uppercase mb-1">Arc ID</p>
-                <p className="text-[13px] font-bold text-primary">{currentArc.arc_id}</p>
+                <p className="text-[13px] font-bold text-primary">{effectiveArc.arc_id}</p>
               </div>
               <div>
                 <p className="text-[11px] text-tertiary font-bold uppercase mb-1">Status</p>
-                <p className="text-[13px] font-bold text-terracotta">{currentArc.status}</p>
+                <p className="text-[13px] font-bold text-terracotta">{effectiveArc.status}</p>
               </div>
               <div>
                 <p className="text-[11px] text-tertiary font-bold uppercase mb-1">Scenes</p>
-                <p className="text-[13px] font-bold text-primary">{currentArc.scenes?.length || 0} scenes</p>
+                <p className="text-[13px] font-bold text-primary">{effectiveArc.scenes?.length || 0} scenes</p>
               </div>
-              {currentArc.status === 'published' && (
+              {effectiveArc.status === 'published' && (
                 <>
                   <div className="min-w-0">
                     <p className="text-[11px] text-tertiary font-bold uppercase mb-1">Student Link</p>
                     <a
-                      href={`${process.env.NEXT_PUBLIC_STUDENT_URL || 'https://cervantes-caebc.web.app'}/${currentArc.arc_id}`}
+                      href={`${process.env.NEXT_PUBLIC_STUDENT_URL || 'https://cervantes-caebc.web.app'}/${effectiveArc.arc_id}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-[13px] font-bold text-[#2563eb] hover:text-[#1d4ed8] transition-colors flex items-center gap-1 group min-w-0"
                     >
-                      <span className="truncate min-w-0">student-portal/{currentArc.arc_id}</span>
+                      <span className="truncate min-w-0">student-portal/{effectiveArc.arc_id}</span>
                       <span className="material-symbols-outlined text-xs flex-shrink-0 group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
                     </a>
                   </div>
@@ -266,7 +277,7 @@ export function ArcStatusBox({
                     onClick={() => setMenuOpen(false)}
                   />
                   <div className="absolute right-0 mt-1 w-40 bg-card-surface border border-warm-grey rounded shadow-lg z-20">
-                    <Link href={`/arc/${currentArc.arc_id}?mode=edit`}>
+                    <Link href={`/arc/${effectiveArc.arc_id}?mode=edit`}>
                       <button
                         onClick={() => setMenuOpen(false)}
                         className="w-full px-4 py-2 text-left text-xs text-secondary hover:bg-parchment flex items-center gap-2"
@@ -283,7 +294,7 @@ export function ArcStatusBox({
 
           {/* Action Buttons - Bottom Right */}
           <div className="flex justify-end gap-3 mt-auto">
-            {currentArc.status === 'draft' && onReviewClick && (
+            {effectiveArc.status === 'draft' && onReviewClick && (
               <button
                 onClick={onReviewClick}
                 className="px-6 py-2 text-[10px] font-extrabold uppercase tracking-widest rounded transition-all flex items-center gap-2 bg-terracotta text-parchment hover:bg-terracotta/90"
@@ -292,11 +303,11 @@ export function ArcStatusBox({
                 Review & Confirm
               </button>
             )}
-            {currentArc.status === 'approved' && (
+            {effectiveArc.status === 'approved' && (
               <button
-                disabled={!currentArc.scenes || currentArc.scenes.length === 0}
+                disabled={!effectiveArc.scenes || effectiveArc.scenes.length === 0}
                 className={`px-6 py-2 text-[10px] font-extrabold uppercase tracking-widest rounded transition-all flex items-center gap-2 ${
-                  !currentArc.scenes || currentArc.scenes.length === 0
+                  !effectiveArc.scenes || effectiveArc.scenes.length === 0
                     ? 'bg-warm-grey text-tertiary cursor-not-allowed opacity-50'
                     : 'bg-terracotta text-parchment hover:bg-terracotta/80'
                 }`}
@@ -306,9 +317,9 @@ export function ArcStatusBox({
                 Publish Scenes
               </button>
             )}
-            {currentArc.status === 'published' && (
+            {effectiveArc.status === 'published' && (
               <>
-                <Link href={`/arc/${currentArc.arc_id}`}>
+                <Link href={`/arc/${effectiveArc.arc_id}`}>
                   <button className="px-6 py-2 text-[10px] font-extrabold uppercase tracking-widest rounded transition-all flex items-center gap-2 bg-wheat text-parchment hover:bg-wheat/90">
                     <span className="material-symbols-outlined text-sm">visibility</span>
                     View Scenes
