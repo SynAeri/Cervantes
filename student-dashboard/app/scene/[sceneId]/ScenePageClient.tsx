@@ -21,9 +21,10 @@ export function ScenePageClient({ params }: { params: Promise<{ sceneId: string 
   const [isCompleting, setIsCompleting] = useState(false);
   const [processingMessage, setProcessingMessage] = useState('');
 
-  // Get studentId and arcId from URL params
+  // Get studentId, arcId, and optional sceneOrder from URL params
   const studentId = searchParams.get('studentId');
   const arcId = searchParams.get('arcId');
+  const sceneOrderParam = searchParams.get('sceneOrder');
 
   // Store in localStorage for journal access
   useEffect(() => {
@@ -42,12 +43,17 @@ export function ScenePageClient({ params }: { params: Promise<{ sceneId: string 
       }
 
       try {
-        // Extract scene_order from sceneId (format: "scene1" -> 1)
+        // Extract scene_order from sceneId (format: "scene1" -> 1) or fall back to
+        // the sceneOrder URL param (used when scene IDs are UUIDs, e.g. demo arc)
         const sceneOrderMatch = sceneId.match(/scene(\d+)/);
-        if (!sceneOrderMatch) {
-          throw new Error('Invalid scene ID format');
+        const sceneOrder = sceneOrderMatch
+          ? parseInt(sceneOrderMatch[1], 10)
+          : sceneOrderParam
+          ? parseInt(sceneOrderParam, 10)
+          : null;
+        if (!sceneOrder) {
+          throw new Error('Could not determine scene order');
         }
-        const sceneOrder = parseInt(sceneOrderMatch[1], 10);
 
         // Fetch scene by arc_id and scene_order, with student_id to get assigned character
         const data = await api.scene.getByOrder(arcId, sceneOrder, studentId);
@@ -79,9 +85,12 @@ export function ScenePageClient({ params }: { params: Promise<{ sceneId: string 
     setIsCompleting(true);
 
     try {
-      // Extract scene_order from sceneId
       const sceneOrderMatch = sceneId.match(/scene(\d+)/);
-      const sceneOrder = sceneOrderMatch ? parseInt(sceneOrderMatch[1], 10) : 1;
+      const sceneOrder = sceneOrderMatch
+        ? parseInt(sceneOrderMatch[1], 10)
+        : sceneOrderParam
+        ? parseInt(sceneOrderParam, 10)
+        : 1;
 
       // Append conversation history to arc journal
       if (conversationHistory.length > 0) {
@@ -152,16 +161,17 @@ export function ScenePageClient({ params }: { params: Promise<{ sceneId: string 
       await api.scene.markCompleted(arcId, sceneOrder, studentId);
 
       // Check if there's a next scene
-      const nextSceneId = `scene${sceneOrder + 1}`;
+      const nextSceneOrder = sceneOrder + 1;
 
       try {
         // Try to fetch the next scene to see if it exists
-        const nextSceneData = await api.scene.getByOrder(arcId, sceneOrder + 1, studentId);
+        const nextSceneData = await api.scene.getByOrder(arcId, nextSceneOrder, studentId);
 
-        // If it exists, navigate to it
+        // If it exists, navigate to it using scene_id from response (supports UUID scene IDs)
         if (nextSceneData) {
-          console.log(`Scene ${sceneOrder} complete, navigating to scene ${sceneOrder + 1}`);
-          router.push(`/scene/${nextSceneId}?studentId=${studentId}&arcId=${arcId}`);
+          const nextSceneId = nextSceneData.scene_id || `scene${nextSceneOrder}`;
+          console.log(`Scene ${sceneOrder} complete, navigating to scene ${nextSceneOrder}`);
+          router.push(`/scene/${nextSceneId}?studentId=${studentId}&arcId=${arcId}&sceneOrder=${nextSceneOrder}`);
           return;
         }
       } catch (err: any) {

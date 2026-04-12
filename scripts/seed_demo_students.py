@@ -44,15 +44,15 @@ async def seed():
     else:
         print(f"Found {len(scenes)} scenes for arc")
 
-    # Fetch character pools for this arc to pick variant A for all demo students
+    # Fetch character pools for this arc - keyed by scene_order (pools don't store scene_id)
     pools_query = db.collection("character_pools").where("arc_id", "==", DEMO_ARC_ID)
     pool_docs = pools_query.stream()
-    pools_by_scene = {}
+    pools_by_order = {}
     async for doc in pool_docs:
         if doc.exists:
             pool = doc.to_dict()
-            pools_by_scene[pool.get("scene_id")] = pool
-    print(f"Found character pools for {len(pools_by_scene)} scenes")
+            pools_by_order[pool.get("scene_order")] = pool
+    print(f"Found character pools for {len(pools_by_order)} scenes")
 
     for i in range(1, DEMO_STUDENT_COUNT + 1):
         student_uid = f"student_demo_{str(i).zfill(3)}"
@@ -87,8 +87,8 @@ async def seed():
         for scene in scenes:
             scene_id = scene.get("scene_id")
             scene_order = scene.get("scene_order", 0)
-            pool = pools_by_scene.get(scene_id, {})
-            pool_id = pool.get("character_pool_id", "")
+            pool = pools_by_order.get(scene_order, {})
+            pool_id = pool.get("pool_id", "")
 
             # Assign variant A for all demo students (simplest approach)
             assignment_id = f"{student_uid}_{DEMO_ARC_ID}_{scene_id}"

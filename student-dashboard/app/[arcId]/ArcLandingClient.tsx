@@ -55,8 +55,9 @@ export function ArcLandingClient({ params }: { params: Promise<{ arcId: string }
         localStorage.setItem('turnsRemaining', String(data.turns_remaining));
 
         const firstSceneId = data.first_assignment?.scene_id;
+        const firstSceneOrder = data.first_assignment?.scene_order;
         if (firstSceneId) {
-          router.push(`/scene/${firstSceneId}?studentId=${data.student_id}&arcId=${arcId}`);
+          router.push(`/scene/${firstSceneId}?studentId=${data.student_id}&arcId=${arcId}&sceneOrder=${firstSceneOrder}`);
         } else {
           setErrorType('processing');
           setErrorMessage('Demo scenes are still being set up. Please check back shortly.');
