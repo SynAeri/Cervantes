@@ -12,6 +12,7 @@ import { FreeformInput } from './FreeformInput';
 import { MultiPartFreeformInput } from './MultiPartFreeformInput';
 import { CharacterSprite } from './CharacterSprite';
 import { api, BASE_URL } from '../../lib/api';
+import { DemoProgressGraph } from '../DemoProgressGraph';
 
 interface VNPlayerProps {
   sceneContent: string;
@@ -46,6 +47,8 @@ export function VNPlayer({
   const [characterMappings, setCharacterMappings] = useState<any>(null); // Character sprite mappings
   const [nameToMappingIndex, setNameToMappingIndex] = useState<Map<string, any>>(new Map()); // Reverse lookup: assigned_name -> mapping
   const [isMobile, setIsMobile] = useState(false); // Track mobile viewport
+  const [journalStudentId, setJournalStudentId] = useState('');
+  const [journalArcId, setJournalArcId] = useState('');
 
   // Detect mobile viewport and handle resize
   useEffect(() => {
@@ -95,6 +98,8 @@ export function VNPlayer({
       const arcId = searchParams.get('arcId');
 
       if (studentId && arcId) {
+        setJournalStudentId(studentId);
+        setJournalArcId(arcId);
         try {
           const journalData = await api.arcJournal.get(studentId, arcId);
           setArcJournalEntries(journalData.entries || []);
@@ -606,6 +611,13 @@ export function VNPlayer({
             </>
           )}
         </div>
+
+        {/* Progress graph at bottom of sidebar */}
+        {journalStudentId && journalArcId && (
+          <div className="border-t border-parchment/10 p-4 flex-shrink-0">
+            <DemoProgressGraph studentId={journalStudentId} arcId={journalArcId} />
+          </div>
+        )}
       </div>
 
       {/* Overlay when journal is open */}
