@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from app.backend.core.firebase import init_firebase, get_firestore_db
 
-DEMO_ARC_ID = "ae8b30a5-5d48-41c4-9826-ba62ff348afe"
+DEMO_ARC_ID = "2d684a9d-1e50-41e4-9838-82da00338258"
 DEMO_STUDENT_COUNT = 20
 
 

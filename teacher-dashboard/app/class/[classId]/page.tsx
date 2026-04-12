@@ -217,12 +217,14 @@ export default function ClassDetailPage({ params }: { params: Promise<{ classId:
                 <span className="material-symbols-outlined text-sm">arrow_back</span>
                 Back to Dashboard
               </Link>
-              <Link href={`/class/${classId}/arc/new`}>
-                <button className="text-[10px] font-extrabold text-terracotta hover:text-terracotta/80 transition-all uppercase tracking-widest flex items-center gap-1">
-                  Create New Arc
-                  <span className="material-symbols-outlined text-xs">add</span>
-                </button>
-              </Link>
+              {!currentArc && (
+                <Link href={`/class/${classId}/arc/new`}>
+                  <button className="text-[10px] font-extrabold text-terracotta hover:text-terracotta/80 transition-all uppercase tracking-widest flex items-center gap-1">
+                    Create New Arc
+                    <span className="material-symbols-outlined text-xs">add</span>
+                  </button>
+                </Link>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

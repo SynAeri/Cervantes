@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { api } from '../lib/api';
 import { useAuth } from '../../lib/auth-context';
 
-const DEMO_ARC_ID = 'ae8b30a5-5d48-41c4-9826-ba62ff348afe';
+const FALLBACK_ARC_ID = '2d684a9d-1e50-41e4-9838-82da00338258';
 
 interface ArcStatusBoxProps {
   classId: string;
@@ -86,7 +86,7 @@ export function ArcStatusBox({
   const processFile = async (_file: File) => {
     setIsProcessing(true);
 
-    // Demo mode: run through fake generation stages, then return the pre-existing demo arc
+    // Demo mode: run through fake generation stages, then return the pre-existing arc for this class
     const stages = [
       'Reading document...',
       'Parsing assessment structure...',
@@ -107,18 +107,28 @@ export function ArcStatusBox({
     }, 1500);
 
     try {
-      // Wait for all stages to display, then fetch the pre-built demo arc
+      // Wait for all stages to display, then fetch whichever arc already exists for this class
       await new Promise(resolve => setTimeout(resolve, stages.length * 1500 + 500));
       clearInterval(stageInterval);
 
-      const arc = await api.arc.getById(DEMO_ARC_ID);
+      let arcId = FALLBACK_ARC_ID;
+      try {
+        const classArcs = await api.arc.getByClass(classId);
+        if (classArcs && classArcs.length > 0) {
+          arcId = classArcs[0].arc_id;
+        }
+      } catch {
+        // fall through to fallback
+      }
+
+      const arc = await api.arc.getById(arcId);
       setIsProcessing(false);
       onArcGenerated(arc);
     } catch (error: any) {
       clearInterval(stageInterval);
       setIsProcessing(false);
-      console.error('Failed to load demo arc:', error);
-      alert('Could not load demo arc: ' + error.message);
+      console.error('Failed to load arc:', error);
+      alert('Could not load arc: ' + error.message);
     }
   };
 

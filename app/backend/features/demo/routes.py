@@ -10,7 +10,7 @@ from app.backend.core.firebase import get_firestore_db
 
 router = APIRouter(prefix="/api/demo", tags=["demo"])
 
-DEMO_ARC_ID = "ae8b30a5-5d48-41c4-9826-ba62ff348afe"
+DEMO_ARC_ID = "2d684a9d-1e50-41e4-9838-82da00338258"
 DEMO_STUDENT_POOL = [f"student_demo_{str(i).zfill(3)}" for i in range(1, 21)]
 DIALOGUE_TURN_LIMIT = 15
 DEMO_EXPIRES_AT = datetime(2026, 4, 19, 23, 59, 59)  # one week from launch
