@@ -297,20 +297,24 @@ async def get_student_arc_progress(
     Used by teacher dashboard to display student progress.
     """
     try:
+        normalized_student_id = student_id if student_id.startswith("student_") else f"student_{student_id}"
         assignments_ref = db.collection("student_scene_assignments")
-        query = assignments_ref.where("student_id", "==", student_id).where("arc_id", "==", arc_id)
+        query = assignments_ref.where("student_id", "==", normalized_student_id).where("arc_id", "==", arc_id)
         assignments_docs = query.stream()
 
         assignments = []
         async for doc in assignments_docs:
             if doc.exists:
                 data = doc.to_dict()
+                # Convert Firestore timestamps to ISO strings to avoid serialization issues
+                started_at = data.get("started_at")
+                completed_at = data.get("completed_at")
                 assignments.append({
-                    "scene_order": data.get("scene_order"),
+                    "scene_id": data.get("scene_id"),
+                    "scene_order": int(data.get("scene_order") or 0),
                     "status": data.get("status"),
-                    "started_at": data.get("started_at"),
-                    "completed_at": data.get("completed_at"),
-                    "assigned_variant": data.get("assigned_variant"),
+                    "started_at": started_at.isoformat() if hasattr(started_at, "isoformat") else None,
+                    "completed_at": completed_at.isoformat() if hasattr(completed_at, "isoformat") else None,
                 })
 
         # Sort by scene_order

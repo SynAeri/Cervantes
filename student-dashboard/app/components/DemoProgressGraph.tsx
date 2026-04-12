@@ -8,9 +8,11 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { BASE_URL } from '../lib/api';
 
 interface SceneAssignment {
-  scene_id: string;
+  scene_id?: string;
   scene_order: number;
   status: 'not_started' | 'started' | 'completed';
+  started_at?: string | null;
+  completed_at?: string | null;
 }
 
 interface ReasoningTrace {
@@ -93,7 +95,7 @@ export function DemoProgressGraph({ studentId, arcId }: DemoProgressGraphProps) 
   const fetchData = useCallback(async () => {
     try {
       const [assignmentsRes, tracesRes, endingRes] = await Promise.allSettled([
-        fetch(`${BASE_URL}/api/scene/progress/student/${studentId.replace('student_', '')}/arc/${arcId}`),
+        fetch(`${BASE_URL}/api/scene/progress/student/${studentId}/arc/${arcId}`),
         fetch(`${BASE_URL}/api/reasoning-trace/student/${studentId}`),
         fetch(`${BASE_URL}/api/arc-endings/student/${studentId}/arc/${arcId}`),
       ]);
@@ -249,12 +251,12 @@ export function DemoProgressGraph({ studentId, arcId }: DemoProgressGraphProps) 
               : ASSIGNMENT_COLORS[a.status] ?? '#8A7F72';
 
             return (
-              <g key={a.scene_order}>
+              <g key={Number(a.scene_order)}>
                 <circle cx={pos.x} cy={pos.y} r={nodeR}
                   fill={`${color}20`} stroke={color} strokeWidth="2" />
                 <text x={pos.x} y={pos.y + nodeR * 0.35} textAnchor="middle"
                   fontSize={nodeR * 0.75} fontWeight="bold" style={{ fill: color }}>
-                  {a.scene_order}
+                  {Number(a.scene_order)}
                 </text>
                 {/* Status dot */}
                 <circle cx={pos.x + nodeR * 0.7} cy={pos.y - nodeR * 0.7} r={nodeR * 0.22}
@@ -276,12 +278,12 @@ export function DemoProgressGraph({ studentId, arcId }: DemoProgressGraphProps) 
               : ASSIGNMENT_LABELS[a.status] ?? 'Unknown';
 
             return (
-              <div key={a.scene_order} className="flex items-center gap-3 px-3 py-2 rounded-lg"
+              <div key={Number(a.scene_order)} className="flex items-center gap-3 px-3 py-2 rounded-lg"
                 style={{ backgroundColor: `${color}10`, borderLeft: `3px solid ${color}` }}>
                 <span className="text-xs font-bold w-5 text-center flex-shrink-0" style={{ color }}>
-                  {a.scene_order}
+                  {Number(a.scene_order)}
                 </span>
-                <span className="text-xs text-parchment/70 flex-1">Scene {a.scene_order}</span>
+                <span className="text-xs text-parchment/70 flex-1">Scene {Number(a.scene_order)}</span>
                 <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded flex-shrink-0"
                   style={{ backgroundColor: `${color}20`, color }}>
                   {label}
