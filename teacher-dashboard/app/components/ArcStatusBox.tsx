@@ -1,5 +1,6 @@
 // Arc Status Box with integrated document upload
-// Shows arc status or accepts drag-and-drop files for arc generation
+// In demo/showcase mode the upload flow returns a pre-existing arc instead of generating a new one
+// Delete arc is disabled - the demo arc stays fixed
 
 'use client';
 
@@ -8,6 +9,8 @@ import Link from 'next/link';
 import { api } from '../lib/api';
 import { useAuth } from '../../lib/auth-context';
 
+const DEMO_ARC_ID = 'ae8b30a5-5d48-41c4-9826-ba62ff348afe';
+
 interface ArcStatusBoxProps {
   classId: string;
   currentArc: any;
@@ -15,7 +18,7 @@ interface ArcStatusBoxProps {
   isPublishing?: boolean;
   onArcGenerated: (arc: any) => void;
   onPublish: () => void;
-  onDelete: () => void;
+  onDelete?: () => void;
   onReviewClick?: () => void;
   progressData?: {
     total_students: number;
@@ -36,7 +39,7 @@ export function ArcStatusBox({
   isPublishing = false,
   onArcGenerated,
   onPublish,
-  onDelete,
+  onDelete: _onDelete,
   onReviewClick,
   progressData
 }: ArcStatusBoxProps) {
@@ -80,9 +83,10 @@ export function ArcStatusBox({
     }
   };
 
-  const processFile = async (file: File) => {
+  const processFile = async (_file: File) => {
     setIsProcessing(true);
 
+    // Demo mode: run through fake generation stages, then return the pre-existing demo arc
     const stages = [
       'Reading document...',
       'Parsing assessment structure...',
@@ -103,26 +107,18 @@ export function ArcStatusBox({
     }, 1500);
 
     try {
-      // Upload rubric using the API client (handles auth)
-      const uploadData = await api.arc.uploadRubric(classId, file);
-
-      // Generate arc
-      const arc = await api.arc.generate({
-        class_id: classId,
-        rubric_text: uploadData.text,
-        professor_id: user?.uid || 'unknown',
-        student_subjects: [],
-        student_extracurriculars: [],
-      });
-
+      // Wait for all stages to display, then fetch the pre-built demo arc
+      await new Promise(resolve => setTimeout(resolve, stages.length * 1500 + 500));
       clearInterval(stageInterval);
+
+      const arc = await api.arc.getById(DEMO_ARC_ID);
       setIsProcessing(false);
-      onArcGenerated(arc); // This will trigger the review modal
+      onArcGenerated(arc);
     } catch (error: any) {
       clearInterval(stageInterval);
       setIsProcessing(false);
-      console.error('Arc generation failed:', error);
-      alert('Arc generation failed: ' + error.message);
+      console.error('Failed to load demo arc:', error);
+      alert('Could not load demo arc: ' + error.message);
     }
   };
 
@@ -269,16 +265,6 @@ export function ArcStatusBox({
                         Edit Arc
                       </button>
                     </Link>
-                    <button
-                      onClick={() => {
-                        setMenuOpen(false);
-                        onDelete();
-                      }}
-                      className="w-full px-4 py-2 text-left text-xs text-[#9E3B3B] hover:bg-[#9E3B3B]/10 flex items-center gap-2"
-                    >
-                      <span className="material-symbols-outlined text-sm">delete</span>
-                      Delete Arc
-                    </button>
                   </div>
                 </>
               )}

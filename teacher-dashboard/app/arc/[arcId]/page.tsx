@@ -45,7 +45,6 @@ export default function ArcDetailsPage({ params }: { params: Promise<{ arcId: st
   const [arc, setArc] = useState<Arc | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [editingScene, setEditingScene] = useState<string | null>(null);
   const [editingUnderstandings, setEditingUnderstandings] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -76,21 +75,6 @@ export default function ArcDetailsPage({ params }: { params: Promise<{ arcId: st
 
     fetchArc();
   }, [resolvedParams.arcId, searchParams]);
-
-  const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this arc? This action cannot be undone.')) {
-      return;
-    }
-
-    setIsDeleting(true);
-    try {
-      await api.arc.delete(resolvedParams.arcId);
-      router.push(`/class/${arc?.class_id}`);
-    } catch (err: any) {
-      alert('Failed to delete arc: ' + err.message);
-      setIsDeleting(false);
-    }
-  };
 
   const handlePublish = async () => {
     if (!confirm('Publish this arc to students?')) {
@@ -223,19 +207,7 @@ export default function ArcDetailsPage({ params }: { params: Promise<{ arcId: st
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleDelete}
-            disabled={isDeleting}
-            className="px-4 py-2 bg-[#9E3B3B] text-parchment rounded hover:bg-[#9E3B3B]/80 transition-colors text-xs font-bold flex items-center gap-2 disabled:opacity-50"
-            title="Delete Arc"
-          >
-            <span className="material-symbols-outlined text-sm">
-              {isDeleting ? 'refresh' : 'delete'}
-            </span>
-            Delete Arc
-          </button>
-        </div>
+        <div className="flex items-center gap-2"></div>
       </div>
 
       {/* Content */}

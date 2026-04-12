@@ -5,7 +5,6 @@
 
 import { use, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Sidebar } from '../../components/Sidebar';
 import { TopBar } from '../../components/TopBar';
 import { StudentProgressTable } from '../../components/StudentProgressTable';
@@ -21,7 +20,6 @@ import type { Arc } from '../../lib/types';
 
 export default function ClassDetailPage({ params }: { params: Promise<{ classId: string }> }) {
   const { classId } = use(params);
-  const router = useRouter();
   const { data: classData, isLoading: classLoading, error: classError } = useClass(classId);
   const { data: arcs, isLoading: arcsLoading, refetch: refetchArcs } = useArcs(classId);
   const { data: students, isLoading: studentsLoading } = useClassStudents(classId);
@@ -98,38 +96,14 @@ export default function ClassDetailPage({ params }: { params: Promise<{ classId:
     }
   };
 
-  const handleRegenerate = async () => {
-    if (!pendingArc) return;
-
-    // Delete the draft arc
-    if (confirm('Discard this arc and start over?')) {
-      try {
-        await api.arc.delete(pendingArc.arc_id);
-        setShowReviewModal(false);
-        setPendingArc(null);
-        refetchArcs();
-      } catch (e: any) {
-        alert('Failed to delete arc: ' + e.message);
-      }
-    }
+  const handleRegenerate = () => {
+    // In demo mode arc regeneration is disabled - just close the modal
+    setShowReviewModal(false);
+    setPendingArc(null);
   };
 
-  const handleCloseModal = async () => {
-    // When X is clicked, delete the draft arc
-    if (pendingArc && pendingArc.status === 'draft') {
-      if (confirm('Discard this draft arc?')) {
-        try {
-          await api.arc.delete(pendingArc.arc_id);
-          setShowReviewModal(false);
-          setPendingArc(null);
-          refetchArcs();
-        } catch (e: any) {
-          alert('Failed to delete arc: ' + e.message);
-        }
-      }
-    } else {
-      setShowReviewModal(false);
-    }
+  const handleCloseModal = () => {
+    setShowReviewModal(false);
   };
 
   const handlePublish = async () => {
@@ -201,17 +175,6 @@ export default function ClassDetailPage({ params }: { params: Promise<{ classId:
     }
   };
 
-  const handleDelete = async () => {
-    if (!currentArc) return;
-    if (confirm('Delete this arc and all scenes? This cannot be undone.')) {
-      try {
-        await api.arc.delete(currentArc.arc_id);
-        refetchArcs();
-      } catch (e: any) {
-        alert('Failed to delete arc: ' + e.message);
-      }
-    }
-  };
 
   // Extract unique dimension names from students
   const dimensionNames = students && students.length > 0
@@ -365,7 +328,6 @@ export default function ClassDetailPage({ params }: { params: Promise<{ classId:
                 isPublishing={isPublishing}
                 onArcGenerated={handleArcGenerated}
                 onPublish={() => setShowPublishConfirm(true)}
-                onDelete={handleDelete}
                 onReviewClick={handleReviewClick}
                 progressData={progressData}
               />

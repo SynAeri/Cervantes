@@ -19,6 +19,7 @@ from app.backend.features.reasoning_trace.routes import router as reasoning_trac
 from app.backend.features.arc_endings.routes import router as arc_endings_router
 from app.backend.features.arc_journal.routes import router as arc_journal_router
 from app.backend.features.character_mappings.routes import router as character_mappings_router
+from app.backend.features.demo.routes import router as demo_router
 
 
 @asynccontextmanager
@@ -57,6 +58,7 @@ app.include_router(reasoning_trace_router, prefix="/api/reasoning-trace", tags=[
 app.include_router(arc_endings_router, prefix="/api/arc-endings", tags=["arc-endings"])
 app.include_router(arc_journal_router)
 app.include_router(character_mappings_router)
+app.include_router(demo_router)
 
 
 @app.get("/")

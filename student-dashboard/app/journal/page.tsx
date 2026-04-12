@@ -1,11 +1,13 @@
 // Journal page - displays arc journal for a student
 // Shows complete conversation history across all scenes
+// In demo mode, also shows the progress graph view below the journal
 
 'use client';
 
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { api } from '../lib/api';
+import { DemoProgressGraph } from '../components/DemoProgressGraph';
 
 function JournalContent() {
   const router = useRouter();
@@ -13,8 +15,8 @@ function JournalContent() {
   const [journalData, setJournalData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showGraph, setShowGraph] = useState(false);
 
-  // Get studentId and arcId from URL or localStorage
   const studentId = searchParams.get('studentId') || localStorage.getItem('currentStudentId') || '';
   const arcId = searchParams.get('arcId') || localStorage.getItem('currentArcId') || '';
 
@@ -32,7 +34,6 @@ function JournalContent() {
         setError(null);
       } catch (err: any) {
         console.error('Failed to load journal:', err);
-        // If 404, journal might not exist yet
         if (err.status === 404) {
           setError('No journal found for this arc. Complete some scenes first!');
         } else {
@@ -63,7 +64,7 @@ function JournalContent() {
           </p>
           {journalData?.status === 'completed' && (
             <div className="mt-4 inline-block px-4 py-2 bg-wheat-gold/20 border border-wheat-gold/40 rounded-lg">
-              <span className="text-wheat-gold text-sm font-medium">✓ Arc Completed</span>
+              <span className="text-wheat-gold text-sm font-medium">Arc Completed</span>
             </div>
           )}
         </div>
@@ -120,6 +121,31 @@ function JournalContent() {
             <p className="text-parchment/60 text-sm">
               No journal entries yet. Complete scenes to build your arc journal.
             </p>
+          </div>
+        )}
+
+        {/* Progress graph section - only when student and arc are known */}
+        {studentId && arcId && (
+          <div className="mt-8">
+            <button
+              onClick={() => setShowGraph(prev => !prev)}
+              className="w-full flex items-center justify-between px-5 py-3.5 bg-parchment/5 border border-parchment/15 rounded-xl hover:bg-parchment/10 hover:border-parchment/25 transition-all group"
+            >
+              <div className="flex items-center gap-3">
+                <span className="material-symbols-outlined text-lg text-wheat-gold">hub</span>
+                <span className="text-sm font-bold text-parchment uppercase tracking-widest">View Progress Graph</span>
+                <span className="text-[9px] font-bold uppercase tracking-widest text-terracotta bg-terracotta/10 px-2 py-0.5 rounded">Live</span>
+              </div>
+              <span className={`material-symbols-outlined text-parchment/40 transition-transform duration-200 ${showGraph ? 'rotate-180' : ''}`}>
+                expand_more
+              </span>
+            </button>
+
+            {showGraph && (
+              <div className="mt-3">
+                <DemoProgressGraph studentId={studentId} arcId={arcId} />
+              </div>
+            )}
           </div>
         )}
 
