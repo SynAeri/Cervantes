@@ -8,7 +8,7 @@
 <p align="center">
   <a href="https://cervantes-teacher--cervantes-caebc.asia-southeast1.hosted.app"><img src="https://img.shields.io/badge/Live_Demo-Teacher_Dashboard-C85A32?style=for-the-badge&labelColor=1E1C18&logo=firebase&logoColor=fff" alt="Teacher Demo"/></a>
   &nbsp;
-  <a href="https://cervantes-caebc.web.app"><img src="https://img.shields.io/badge/Live_Demo-Student_PWA-C4A245?style=for-the-badge&labelColor=1E1C18&logo=firebase&logoColor=fff" alt="Student Demo"/></a>
+  <a href="https://cervantes-backend-prod--cervantes-caebc.asia-southeast1.hosted.app/2d684a9d-1e50-41e4-9838-82da00338258"><img src="https://img.shields.io/badge/Live_Demo-Student_PWA-C4A245?style=for-the-badge&labelColor=1E1C18&logo=firebase&logoColor=fff" alt="Student Demo"/></a>
   &nbsp;
   <a href="https://synaeri.github.io/Cervantes/"><img src="https://img.shields.io/badge/Docs-Tutorial_Site-3B827E?style=for-the-badge&labelColor=1E1C18" alt="Docs"/></a>
 </p>
