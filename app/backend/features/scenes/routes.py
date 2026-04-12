@@ -289,7 +289,6 @@ async def complete_scene(
 async def get_student_arc_progress(
     student_id: str,
     arc_id: str,
-    user: Annotated[dict, Depends(get_current_user)],
     db=Depends(get_firestore_db),
 ):
     """Get all scene progress for a student in an arc.
