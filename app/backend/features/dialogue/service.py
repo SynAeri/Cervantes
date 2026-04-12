@@ -42,16 +42,25 @@ async def generate_dialogue_turn(
     print(f"DEBUG: student_response={student_response}")
     print(f"DEBUG: conversation_history length={len(conversation_history)}")
 
-    # Extract scene_order from scene_id (format: "scene3" -> 3)
+    # Resolve scene: support both legacy "sceneN" IDs and UUID scene IDs
     scene_order_match = re.match(r"scene(\d+)", scene_id)
-    if not scene_order_match:
-        raise ValueError(f"Invalid scene_id format: {scene_id}. Expected format: 'sceneN' where N is a number")
-    scene_order = int(scene_order_match.group(1))
-    print(f"DEBUG: Extracted scene_order={scene_order}")
 
-    # Query scene by arc_id and scene_order (same pattern as scenes/routes.py)
     scenes_ref = db.collection("scenes")
-    scenes_query = scenes_ref.where(filter=FieldFilter("arc_id", "==", arc_id)).where(filter=FieldFilter("scene_order", "==", scene_order))
+    if scene_order_match:
+        # Legacy format: extract order and query by arc+order
+        scene_order = int(scene_order_match.group(1))
+        print(f"DEBUG: Extracted scene_order={scene_order} from legacy ID")
+        scenes_query = scenes_ref.where(filter=FieldFilter("arc_id", "==", arc_id)).where(filter=FieldFilter("scene_order", "==", scene_order))
+    else:
+        # UUID format: fetch document directly by ID, then get scene_order from it
+        print(f"DEBUG: UUID scene_id={scene_id}, fetching directly")
+        scene_doc = await scenes_ref.document(scene_id).get()
+        if not scene_doc.exists:
+            raise ValueError(f"Scene not found: {scene_id}")
+        scene_order = scene_doc.to_dict().get("scene_order")
+        print(f"DEBUG: Resolved scene_order={scene_order} from UUID scene")
+        scenes_query = scenes_ref.where(filter=FieldFilter("arc_id", "==", arc_id)).where(filter=FieldFilter("scene_order", "==", scene_order))
+
     scenes_docs = scenes_query.stream()
 
     scene = None

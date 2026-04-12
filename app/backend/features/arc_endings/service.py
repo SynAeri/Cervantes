@@ -38,26 +38,26 @@ async def generate_arc_ending(
         raise ValueError(f"Arc not found: {arc_id}")
     arc = arc_doc.to_dict()
 
-    # Fetch climax scene data
-    # climax_scene_id has format "scene4" -> extract scene_order and query by arc_id + scene_order
+    # Fetch climax scene - supports both legacy "sceneN" and UUID scene IDs
     scene_order_match = re.match(r"scene(\d+)", climax_scene_id)
-    if not scene_order_match:
-        raise ValueError(f"Invalid climax_scene_id format: {climax_scene_id}")
-    climax_scene_order = int(scene_order_match.group(1))
-
-    # Query for climax scene by arc_id, then filter by scene_order in Python
-    # (Workaround for composite index requirement)
-    climax_scenes_query = db.collection("scenes")\
-        .where(filter=FieldFilter("arc_id", "==", arc_id))
-    climax_scenes_docs = climax_scenes_query.stream()
 
     climax_scene = None
-    async for doc in climax_scenes_docs:
-        if doc.exists:
-            scene_data = doc.to_dict()
-            if scene_data.get("scene_order") == climax_scene_order:
-                climax_scene = scene_data
-                break
+    if scene_order_match:
+        climax_scene_order = int(scene_order_match.group(1))
+        climax_scenes_query = db.collection("scenes")\
+            .where(filter=FieldFilter("arc_id", "==", arc_id))
+        climax_scenes_docs = climax_scenes_query.stream()
+        async for doc in climax_scenes_docs:
+            if doc.exists:
+                scene_data = doc.to_dict()
+                if scene_data.get("scene_order") == climax_scene_order:
+                    climax_scene = scene_data
+                    break
+    else:
+        # UUID scene ID: fetch directly
+        scene_doc = await db.collection("scenes").document(climax_scene_id).get()
+        if scene_doc.exists:
+            climax_scene = scene_doc.to_dict()
 
     if not climax_scene:
         raise ValueError(f"Climax scene not found: {climax_scene_id}")
