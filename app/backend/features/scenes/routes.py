@@ -191,21 +191,28 @@ async def start_scene(
     Frontend should call this when the student opens a scene.
     """
     try:
-        # Normalize student_id
         normalized_student_id = student_id if student_id.startswith("student_") else f"student_{student_id}"
-        assignment_id = f"{normalized_student_id}_{arc_id}_scene{scene_order}"
 
-        # Check if assignment exists
-        assignment_doc = await db.collection("student_scene_assignments").document(assignment_id).get()
+        # Query by fields instead of constructed doc ID (supports both UUID and legacy scene IDs)
+        q = (
+            db.collection("student_scene_assignments")
+            .where(filter=FieldFilter("student_id", "==", normalized_student_id))
+            .where(filter=FieldFilter("arc_id", "==", arc_id))
+            .where(filter=FieldFilter("scene_order", "==", scene_order))
+        )
+        assignment_doc_ref = None
+        async for doc in q.stream():
+            if doc.exists:
+                assignment_doc_ref = doc.reference
+                break
 
-        if not assignment_doc.exists:
+        if not assignment_doc_ref:
             raise HTTPException(
                 status_code=404,
                 detail="Assignment not found. Student may need to be assigned to arc first."
             )
 
-        # Update status
-        await db.collection("student_scene_assignments").document(assignment_id).update({
+        await assignment_doc_ref.update({
             "status": "started",
             "started_at": firestore.SERVER_TIMESTAMP
         })
@@ -239,21 +246,28 @@ async def complete_scene(
     Frontend should call this when the student submits their final response.
     """
     try:
-        # Normalize student_id
         normalized_student_id = student_id if student_id.startswith("student_") else f"student_{student_id}"
-        assignment_id = f"{normalized_student_id}_{arc_id}_scene{scene_order}"
 
-        # Check if assignment exists
-        assignment_doc = await db.collection("student_scene_assignments").document(assignment_id).get()
+        # Query by fields instead of constructed doc ID (supports both UUID and legacy scene IDs)
+        q = (
+            db.collection("student_scene_assignments")
+            .where(filter=FieldFilter("student_id", "==", normalized_student_id))
+            .where(filter=FieldFilter("arc_id", "==", arc_id))
+            .where(filter=FieldFilter("scene_order", "==", scene_order))
+        )
+        assignment_doc_ref = None
+        async for doc in q.stream():
+            if doc.exists:
+                assignment_doc_ref = doc.reference
+                break
 
-        if not assignment_doc.exists:
+        if not assignment_doc_ref:
             raise HTTPException(
                 status_code=404,
                 detail="Assignment not found. Student may need to be assigned to arc first."
             )
 
-        # Update status
-        await db.collection("student_scene_assignments").document(assignment_id).update({
+        await assignment_doc_ref.update({
             "status": "completed",
             "completed_at": firestore.SERVER_TIMESTAMP
         })
