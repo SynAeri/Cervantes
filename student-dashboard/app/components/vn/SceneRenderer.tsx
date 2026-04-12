@@ -8,10 +8,11 @@ import { VNPlayer } from './VNPlayer';
 interface SceneRendererProps {
   sceneId: string;
   sceneData: any;
+  sceneOrder?: number;
   onComplete: (conversationHistory: any[]) => void;
 }
 
-export function SceneRenderer({ sceneId, sceneData, onComplete }: SceneRendererProps) {
+export function SceneRenderer({ sceneId, sceneData, sceneOrder, onComplete }: SceneRendererProps) {
   if (!sceneData) {
     return (
       <div className="min-h-screen bg-vn-bg flex items-center justify-center">
@@ -31,6 +32,7 @@ export function SceneRenderer({ sceneId, sceneData, onComplete }: SceneRendererP
       characterName={sceneData.assigned_character?.name || sceneData.character?.name || 'Character'}
       characterRole={sceneData.assigned_character?.role || sceneData.character?.role || 'Unknown'}
       sceneId={sceneId}
+      sceneOrder={sceneOrder}
       location={sceneData.location || 'office'}
       onSceneComplete={onComplete}
     />

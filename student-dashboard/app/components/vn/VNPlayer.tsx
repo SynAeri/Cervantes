@@ -18,6 +18,7 @@ interface VNPlayerProps {
   characterName: string;
   characterRole: string;
   sceneId: string;
+  sceneOrder?: number;
   location?: string;
   onSceneComplete: (conversationHistory: any[]) => void;
 }
@@ -27,6 +28,7 @@ export function VNPlayer({
   characterName,
   characterRole,
   sceneId,
+  sceneOrder,
   location = 'office',
   onSceneComplete,
 }: VNPlayerProps) {
@@ -161,6 +163,22 @@ export function VNPlayer({
     }
   }, [currentBlockIndex, currentBlock]);
 
+  // Fire-and-forget journal append so mid-scene navigation shows current dialogue
+  const appendTurnsToJournal = (turns: any[]) => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const studentId = searchParams.get('studentId');
+    const arcId = searchParams.get('arcId');
+    if (!studentId || !arcId || turns.length === 0) return;
+    const order = sceneOrder ?? 1;
+    api.arcJournal.append({
+      student_id: studentId,
+      arc_id: arcId,
+      scene_id: sceneId,
+      scene_order: order,
+      new_entries: turns,
+    }).catch(() => {});
+  };
+
   const handleNext = () => {
     // Build updated history with current block
     let updatedHistory = conversationHistory;
@@ -286,6 +304,12 @@ export function VNPlayer({
 
       const data = await dialogueResponse.json();
 
+      // Persist student + character turns to journal so mid-scene navigation shows progress
+      appendTurnsToJournal([
+        ...newHistory.slice(conversationHistory.length),
+        { role: 'character', content: data.character_dialogue, character_id: characterName, emotion_tag: data.emotion_tag, timestamp: new Date().toISOString() },
+      ]);
+
       // Parse the AI response to extract dialogue and player_prompt blocks
       // NOTE: Individual blocks will be added to conversation history as user clicks through via handleNext()
       const parsedBlocks = parseVNScene(data.character_dialogue);
@@ -384,6 +408,12 @@ export function VNPlayer({
       }
 
       const data = await dialogueResponse.json();
+
+      // Persist student + character turns to journal so mid-scene navigation shows progress
+      appendTurnsToJournal([
+        { role: 'student', content: response, timestamp: new Date().toISOString() },
+        { role: 'character', content: data.character_dialogue, character_id: characterName, emotion_tag: data.emotion_tag, timestamp: new Date().toISOString() },
+      ]);
 
       // Parse the AI response to extract dialogue and player_prompt blocks
       // NOTE: Individual blocks will be added to conversation history as user clicks through via handleNext()

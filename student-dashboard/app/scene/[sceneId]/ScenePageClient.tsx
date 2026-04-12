@@ -3,7 +3,7 @@
 
 'use client';
 
-import { use, useState, useEffect } from 'react';
+import { use, useState, useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { SceneRenderer } from '../../components/vn/SceneRenderer';
 import { useSaveReasoningTrace } from '../../hooks/useJournal';
@@ -26,6 +26,11 @@ export function ScenePageClient({ params }: { params: Promise<{ sceneId: string 
   const arcId = searchParams.get('arcId');
   const sceneOrderParam = searchParams.get('sceneOrder');
 
+  const sceneOrder = useMemo(() => {
+    const match = sceneId.match(/scene(\d+)/);
+    return match ? parseInt(match[1], 10) : sceneOrderParam ? parseInt(sceneOrderParam, 10) : 1;
+  }, [sceneId, sceneOrderParam]);
+
   // Store in localStorage for journal access
   useEffect(() => {
     if (studentId && arcId) {
@@ -43,14 +48,6 @@ export function ScenePageClient({ params }: { params: Promise<{ sceneId: string 
       }
 
       try {
-        // Extract scene_order from sceneId (format: "scene1" -> 1) or fall back to
-        // the sceneOrder URL param (used when scene IDs are UUIDs, e.g. demo arc)
-        const sceneOrderMatch = sceneId.match(/scene(\d+)/);
-        const sceneOrder = sceneOrderMatch
-          ? parseInt(sceneOrderMatch[1], 10)
-          : sceneOrderParam
-          ? parseInt(sceneOrderParam, 10)
-          : null;
         if (!sceneOrder) {
           throw new Error('Could not determine scene order');
         }
@@ -85,13 +82,6 @@ export function ScenePageClient({ params }: { params: Promise<{ sceneId: string 
     setIsCompleting(true);
 
     try {
-      const sceneOrderMatch = sceneId.match(/scene(\d+)/);
-      const sceneOrder = sceneOrderMatch
-        ? parseInt(sceneOrderMatch[1], 10)
-        : sceneOrderParam
-        ? parseInt(sceneOrderParam, 10)
-        : 1;
-
       // Append conversation history to arc journal
       if (conversationHistory.length > 0) {
         console.log(`Appending ${conversationHistory.length} entries to arc journal`);
@@ -304,6 +294,7 @@ export function ScenePageClient({ params }: { params: Promise<{ sceneId: string 
       <SceneRenderer
         sceneId={sceneId}
         sceneData={sceneData}
+        sceneOrder={sceneOrder}
         onComplete={handleSceneComplete}
       />
 

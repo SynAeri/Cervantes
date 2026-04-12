@@ -21,6 +21,7 @@ interface ReasoningTrace {
   scene_order: number;
   status: 'mastery' | 'revised_with_scaffolding' | 'critical_gap' | null;
   arc_id: string;
+  created_at?: string;
 }
 
 interface ArcEnding {
@@ -114,7 +115,7 @@ export function DemoProgressGraph({ studentId, arcId }: DemoProgressGraphProps) 
         for (const t of data) {
           if (t.arc_id === arcId) {
             const existing = map[t.scene_order];
-            if (!existing || t.created_at > existing.created_at) {
+            if (!existing || (t.created_at ?? '') > (existing.created_at ?? '')) {
               map[t.scene_order] = t;
             }
           }
